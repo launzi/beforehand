@@ -178,3 +178,56 @@ def test_record_missing_required_field_is_counted(conn):
 def test_stats_report_what_was_written(conn):
     stats = ingest_records(conn, [visit()])
     assert stats.get("visits") == 1
+
+
+# ── 카운터가 실제 결과와 일치하는가 (실데이터가 드러낸 결함) ──────────────────
+
+def test_url_counter_matches_actual_url_rows(conn):
+    """같은 URL 을 여러 번 방문하면 url 행은 하나다.
+
+    실데이터에서 이 카운터가 처리 레코드 수(32,539)를 보고했고 실제 행은 11,496 이었다.
+    카운터가 거짓말하면 적재 결과를 대조할 방법이 사라진다.
+    """
+    stats = ingest_records(conn, [visit(us=KNOWN_US), visit(us=KNOWN_US + 1), visit(us=KNOWN_US + 2)])
+    assert stats["urls"] == count(conn, "urls") == 1
+
+
+def test_visit_counter_matches_actual_visit_rows(conn):
+    stats = ingest_records(conn, [visit(us=KNOWN_US), visit(us=KNOWN_US + 1)])
+    assert stats["visits"] == count(conn, "visits") == 2
+
+
+# ── 중복 흡수를 드러낸다 — 조용히 사라지면 유실을 발견할 수 없다 ──────────────
+
+def test_duplicate_visit_key_is_counted_as_deduped(conn):
+    """Chrome 은 같은 URL·같은 마이크로초에 여러 visits 행을 만든다(리다이렉트·프레임).
+
+    실데이터 32,539건 중 26건이 여기 해당했고 조용히 사라졌다.
+    흡수 자체는 옳지만 몇 건이 흡수됐는지는 보고돼야 한다.
+    """
+    same = visit(us=KNOWN_US)
+    stats = ingest_records(conn, [same, dict(same)])
+    assert count(conn, "visits") == 1
+    assert stats.get("deduped") == 1
+
+
+def test_reingesting_a_batch_reports_all_of_it_as_deduped(conn):
+    batch = [visit(us=KNOWN_US), visit(us=KNOWN_US + 1)]
+    ingest_records(conn, batch)
+    again = ingest_records(conn, batch)
+    assert again.get("visits") == 0
+    assert again.get("deduped") == 2
+
+
+def test_duplicate_search_key_is_counted_as_deduped(conn):
+    rec = {"kind": "search", "profile": "Default",
+           "url": "https://example.com/s?q=font", "term": "font",
+           "first_seen_us": KNOWN_US}
+    stats = ingest_records(conn, [rec, dict(rec)])
+    assert count(conn, "searches") == 1
+    assert stats.get("deduped") == 1
+
+
+def test_deduped_is_zero_when_nothing_collides(conn):
+    stats = ingest_records(conn, [visit(us=KNOWN_US), visit(us=KNOWN_US + 1)])
+    assert stats.get("deduped") == 0
