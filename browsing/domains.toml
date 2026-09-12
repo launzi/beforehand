@@ -1,0 +1,140 @@
+# 기본 분류 룰 — 공개 배포본.
+#
+# 여기에는 **누구에게나 해당하는 공개 서비스만** 둔다.
+# 어느 회사에 다니는지, 어느 은행을 쓰는지, 어떤 채용 사이트를 보는지는 그 자체로
+# 개인정보다. 그런 호스트는 domains.local.toml 에 두고 git 밖에 둔다.
+# (domains.local.toml.example 참고)
+#
+# sensitivity 는 "none" 또는 "restricted" 만 쓴다.
+# restricted 로 표시된 카테고리는 질의·주간 리포트에서 기본 제외되고
+# --include-restricted 로만 나온다.
+#
+# 규칙 호스트는 자기 자신과 모든 서브도메인에 적용된다.
+# 여러 규칙이 걸리면 라벨 수가 많은(더 구체적인) 쪽이 이긴다.
+
+[ai-tools]
+sensitivity = "none"
+hosts = [
+    "claude.ai",
+    "chatgpt.com",
+    "openai.com",
+    "gemini.google.com",
+    "perplexity.ai",
+    "huggingface.co",
+    "tokenfactory.nebius.com",
+    "nebius.com",
+    "tavily.com",
+    "langchain.com",
+    "smith.langchain.com",
+]
+
+[infra]
+sensitivity = "none"
+hosts = [
+    "github.com",
+    "gitlab.com",
+    "bitbucket.org",
+    "vercel.com",
+    "netlify.com",
+    "cloudflare.com",
+    "npmjs.com",
+    "pypi.org",
+    "docker.com",
+    "stackoverflow.com",
+]
+
+[research]
+sensitivity = "none"
+hosts = [
+    "arxiv.org",
+    "scholar.google.com",
+    "semanticscholar.org",
+    "acm.org",
+    "ieee.org",
+    "nature.com",
+    "sciencedirect.com",
+]
+
+[docs]
+sensitivity = "none"
+hosts = [
+    "developer.mozilla.org",
+    "docs.python.org",
+    "readthedocs.io",
+    "w3.org",
+]
+
+[productivity]
+sensitivity = "none"
+hosts = [
+    "notion.so",
+    "atlassian.net",
+    "slack.com",
+    "figma.com",
+    "docs.google.com",
+    "drive.google.com",
+    "calendar.google.com",
+]
+
+[mail]
+sensitivity = "none"
+hosts = [
+    "mail.google.com",
+    "outlook.com",
+    "outlook.office.com",
+    "outlook.cloud.microsoft",
+    "proton.me",
+]
+
+[search]
+sensitivity = "none"
+hosts = [
+    "google.com",
+    "duckduckgo.com",
+    "bing.com",
+    "naver.com",
+]
+
+[social]
+sensitivity = "none"
+hosts = [
+    "x.com",
+    "twitter.com",
+    "instagram.com",
+    "linkedin.com",
+    "reddit.com",
+    "facebook.com",
+    "threads.net",
+    "discord.com",
+]
+
+[media]
+sensitivity = "none"
+hosts = [
+    "youtube.com",
+    "netflix.com",
+    "spotify.com",
+    "twitch.tv",
+    "vimeo.com",
+]
+
+[news]
+sensitivity = "none"
+hosts = [
+    "nytimes.com",
+    "economist.com",
+    "bbc.com",
+    "reuters.com",
+    "bloomberg.com",
+    "ft.com",
+    "theguardian.com",
+]
+
+[commerce]
+sensitivity = "none"
+hosts = [
+    "amazon.com",
+    "ebay.com",
+    "aliexpress.com",
+    "etsy.com",
+]
