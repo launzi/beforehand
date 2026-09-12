@@ -47,15 +47,53 @@ def choose_best(rounds: list[Round]) -> Round | None:
     )
 
 
+_FEEDBACK_MARKER = re.compile(r'^[ \t]*(#?)[ \t]*SPEC_FEEDBACK[ \t]*:[ \t]*(.*)$',
+                              re.IGNORECASE | re.MULTILINE)
+
+
 def extract_spec_feedback(text: str) -> str:
+    """SPEC_FEEDBACK 을 찾아 본문만 돌려준다. 없으면 "".
+
+    두 형태를 받는다.
+      SPEC_FEEDBACK: ...        평문 (호환)
+      # SPEC_FEEDBACK: ...      주석 — 실제로 쓰이는 형태
+
+    ⚠ 주석 형태가 기본인 이유: Nebius CLI 의 code 모드는 fenced python 블록만
+      추출하므로, 블록 밖에 쓴 피드백은 루프에 닿기 전에 사라진다(실측).
+
+    주석 블록이면 뒤따르는 주석 줄까지 모아 '#' 를 벗겨 산문으로 돌려준다.
+    'none'(대소문자·마침표 무관)은 "스펙은 명확했고 내 실수였다"는 뜻이라
+    피드백으로 세지 않는다 — 안 그러면 목록이 none 으로 찬다.
     """
-    Find SPEC_FEEDBACK: marker and return everything after it, stripped.
-    Handles single trailing line or multi-line block. Returns "" when absent.
-    """
-    match = re.search(r'SPEC_FEEDBACK:\s*(.*)', text, re.DOTALL)
-    if not match:
+    if not text:
         return ""
-    return match.group(1).strip()
+    m = _FEEDBACK_MARKER.search(text)
+    if not m:
+        return ""
+
+    is_comment = bool(m.group(1))
+    first = m.group(2).strip()
+    lines = [first] if first else []
+
+    # 뒤따르는 줄을 이어 붙인다.
+    # ⚠ 마커 줄의 개행을 먼저 벗긴다. 안 벗기면 splitlines() 의 첫 항목이 빈 문자열이라
+    #   즉시 멈춰서 멀티라인 피드백이 통째로 유실된다(실측).
+    rest = text[m.end():].lstrip("\n")
+    if is_comment:
+        # 주석 블록: '#' 로 시작하는 줄까지만
+        for raw in rest.splitlines():
+            stripped = raw.strip()
+            if not stripped.startswith("#"):
+                break
+            lines.append(stripped.lstrip("#").strip())
+    else:
+        # 평문 블록: 마커 이후 전부 (옛 형태 호환)
+        lines.extend(x.strip() for x in rest.splitlines())
+
+    body = "\n".join(x for x in lines if x).strip()
+    if re.fullmatch(r'none\.?', body, re.IGNORECASE):
+        return ""
+    return body
 
 
 def _strip_feedback_marker(code: str) -> tuple[str, str]:
@@ -120,8 +158,10 @@ def run_loop(
                 f"Test output:\n{prev_round.output}\n\n"
                 f"Return corrected code only. "
                 f"At the very end, append a line or block starting with "
-                f"`SPEC_FEEDBACK:` naming which part of the spec was ambiguous or missing. "
-                f"Write \"SPEC_FEEDBACK: none\" when the spec was clear and the mistake was your own."
+                f"`# SPEC_FEEDBACK:` naming which part of the spec was ambiguous or missing. "
+                f"It must be a comment INSIDE the code itself — anything outside the fenced "
+                f"code block is discarded before it reaches this loop. "
+                f"Write `# SPEC_FEEDBACK: none` when the spec was clear and the mistake was your own."
             )
 
         # Generate code

@@ -1,14 +1,16 @@
-"""Helper to convert Chrome page-transition integers into readable labels."""
-
+"""
+Helper for converting Chrome page-transition integers into readable labels.
+"""
 
 def transition_label(transition: int | None) -> str:
-    """Return a human-readable label for a Chrome page-transition value.
+    """
+    Convert a Chrome page-transition integer to a human-readable label.
 
-    The core transition type is encoded in the low byte (bits 0-7).
-    Upper bits contain qualifier flags which are ignored.
+    The core transition type is stored in the low byte (bits 0-7).
+    Upper bits contain qualifier flags and are ignored.
 
     Args:
-        transition: The integer transition value from Chrome, or None.
+        transition: The transition integer from Chrome, or None.
 
     Returns:
         A string label for the transition type, or "unknown" if not recognized.
@@ -16,7 +18,7 @@ def transition_label(transition: int | None) -> str:
     if transition is None:
         return "unknown"
 
-    # Extract the low byte (core type)
+    # Extract the core type from the low byte
     core_type = transition & 0xFF
 
     # Map core types to labels
@@ -35,3 +37,5 @@ def transition_label(transition: int | None) -> str:
     }
 
     return labels.get(core_type, "unknown")
+
+#

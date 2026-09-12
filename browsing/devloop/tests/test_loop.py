@@ -253,3 +253,65 @@ def test_real_pass_still_stops_the_loop(tmp_path):
     run_loop(spec, tmp_path / "out.py", generate=gen,
              run_tests=fake_runner([(4, 0, "ok")]), max_rounds=3)
     assert len(gen.prompts) == 1
+
+
+# ── SPEC_FEEDBACK 을 코드 블록 안에서 받는다 ─────────────────────────────────
+#
+# nebius CLI 의 code 모드는 ```python 블록만 추출한다. 블록 밖에 쓴 SPEC_FEEDBACK 은
+# 루프에 도달하기 전에 버려진다. 그래서 주석 형태로 블록 안에서 받는다.
+
+def test_extracts_feedback_written_as_a_comment():
+    text = "print('x')\n# SPEC_FEEDBACK: return type was never stated\n"
+    assert "return type was never stated" in extract_spec_feedback(text)
+
+
+def test_extracts_multiline_comment_feedback():
+    text = """print('x')
+# SPEC_FEEDBACK:
+# - the timezone was unspecified
+# - the error path was unclear
+"""
+    fb = extract_spec_feedback(text)
+    assert "timezone was unspecified" in fb
+    assert "error path was unclear" in fb
+
+
+def test_comment_markers_are_stripped_from_feedback_text():
+    """피드백 본문에 주석 기호가 남으면 사람이 읽기 나쁘다."""
+    text = "code\n# SPEC_FEEDBACK:\n# - point one\n"
+    fb = extract_spec_feedback(text)
+    assert not fb.lstrip().startswith("#")
+    assert "point one" in fb
+
+
+def test_comment_feedback_is_removed_from_saved_code(tmp_path):
+    out = tmp_path / "out.py"
+    spec = tmp_path / "s.md"
+    spec.write_text("x")
+    run_loop(spec, out,
+             generate=FakeGen(["print('hi')\n# SPEC_FEEDBACK: something was vague\n"]),
+             run_tests=fake_runner([(1, 0, "ok")]), max_rounds=1)
+    saved = out.read_text()
+    assert "SPEC_FEEDBACK" not in saved
+    assert "print('hi')" in saved
+
+
+def test_feedback_saying_none_is_not_collected():
+    """스펙이 명확했다면 수집할 게 없다 — 'none' 을 피드백으로 쌓지 않는다."""
+    assert extract_spec_feedback("code\n# SPEC_FEEDBACK: none\n") == ""
+
+
+def test_feedback_saying_none_case_insensitive():
+    assert extract_spec_feedback("code\n# SPEC_FEEDBACK: None.\n") == ""
+
+
+def test_retry_prompt_asks_for_comment_form(tmp_path):
+    """프롬프트가 블록 안 주석으로 쓰라고 명시해야 한다."""
+    spec = tmp_path / "s.md"
+    spec.write_text("x")
+    gen = FakeGen(["c1", "c2"])
+    run_loop(spec, tmp_path / "out.py", generate=gen,
+             run_tests=fake_runner([(0, 1, "f"), (1, 0, "ok")]), max_rounds=3)
+    retry = gen.prompts[1]
+    assert "# SPEC_FEEDBACK:" in retry
+    assert "comment" in retry.lower()
