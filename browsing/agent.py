@@ -85,16 +85,19 @@ class AgentState(TypedDict, total=False):
 # Triage — LLM judges whether a signal is worth acting on
 # ============================================================
 
-# Token Factory Nano measurements (2026-10-03): /no_think still used 89-137
-# completion tokens; caps <=200 exhausted reasoning, while 300 returned ACT.
-# Allow 400 for triage; skills retain their 150-300 output budget plus 300
-# reasoning tokens. These are ceilings, not guaranteed usage or success.
-TRIAGE_MAX_TOKENS = 400
+# Token Factory Nano measurements (2026-10-03): /no_think does not stop reasoning.
+# A short probe used 89-137 completion tokens, but the 12 real synthetic-persona
+# triage prompts (2 calls each) used 90-1674, and the same prompt varied 394 vs
+# 1674. A 400 cap failed 2-3 of 12 signals with finish_reason=length. Nano is
+# cheap, so cap generously: triage 2048 (max observed 1674 + margin); skills get
+# their 150-300 output budget plus the same 2048 reasoning allowance.
+# These are ceilings, not guaranteed usage or success.
+TRIAGE_MAX_TOKENS = 2048
 SKILL_MAX_TOKENS = {
-    "unresolved": 600,  # 300 output + 300 reasoning
-    "new_entry": 500,   # 200 output + 300 reasoning
-    "recurring": 500,   # 200 output + 300 reasoning
-    "dropped": 450,     # 150 output + 300 reasoning
+    "unresolved": 2348,  # 300 output + 2048 reasoning
+    "new_entry": 2248,   # 200 output + 2048 reasoning
+    "recurring": 2248,   # 200 output + 2048 reasoning
+    "dropped": 2198,     # 150 output + 2048 reasoning
 }
 
 TRIAGE_SYSTEM = (
