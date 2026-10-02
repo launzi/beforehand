@@ -128,6 +128,8 @@ def generate(scenario_path: Path, out: Path, *, llm=None, attempts: int = 3) -> 
     prompt = (
         "Invent browsing history for this entirely fictional scenario. No real people, "
         "personal identifiers, credentials, email addresses, or copied history. Public services only. "
+        "Use exactly these hostnames from scenario.allowed_hosts for every HTTPS URL. "
+        "Do not add or remove www., substitute bare domains, or use other subdomains. "
         "Return strict JSON only: {\"visits\":[{\"url\":\"https://...\",\"title\":\"...\","
         "\"at\":\"ISO-8601 with timezone\",\"search_term\":\"optional search text\"}]}. "
         "Use distinct timestamps inside [since, until). Include every planted signal. "

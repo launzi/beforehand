@@ -3,7 +3,7 @@ fictional = true
 # Stable story time keeps a published demo reproducible.
 since = "2026-09-01T00:00:00+00:00"
 until = "2026-10-01T00:00:00+00:00"
-allowed_hosts = ["notion.so", "figma.com", "docs.python.org", "github.com", "www.google.com"]
+allowed_hosts = ["www.notion.so", "www.figma.com", "docs.python.org", "github.com", "www.google.com"]
 
 [persona]
 role = "A fictional hobby maker learning Python and planning a small creative project"
@@ -11,12 +11,12 @@ context = "No name, employer, address, account, or other personal identifier. En
 
 [[signals]]
 kind = "new_entry"
-host = "notion.so"
+host = "www.notion.so"
 story = "Opened signup and left before completing setup."
 
 [[signals]]
 kind = "new_entry"
-host = "figma.com"
+host = "www.figma.com"
 story = "Started onboarding but did not finish."
 
 [[signals]]

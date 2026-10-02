@@ -36,10 +36,14 @@ DEMO_STATE_DIR=.demo-state python -m uvicorn browsing.web.app:create_app \
 
 Open `http://127.0.0.1:8080/`. No provider calls occur on startup, page views,
 profile selection, cache export, or `GET /healthz`. The built-in fixture is
-hand-authored; its precomputed walkthrough uses scripted fake providers and is
+scripted; its precomputed walkthrough uses scripted fake providers and is
 explicitly labeled **CACHED / illustrative-fixture**. It demonstrates pipeline
 behavior, not past API usage. A live attempt is labeled **LIVE**; revisiting a
 successful result is labeled **CACHED / live**.
+
+After editing the maker scenario, rebuild the offline visits and all profile
+caches with `python -m browsing.web regenerate-fixtures` (fake providers only).
+See [fixture regeneration](web/fixtures/README.md) for inputs and reproducibility.
 
 The public default allows research. Select **Search disabled** or **Confirm
 research first** to compare `deny` and `hold` decisions. Profiles are predefined

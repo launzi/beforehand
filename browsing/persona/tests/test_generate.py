@@ -38,6 +38,9 @@ def test_generate_validates_all_planted_signals_and_ingest_schema(tmp_path):
         assert {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")} == {
             "urls", "visits", "searches", "downloads", "domains", "sync_state"}
     assert llm.calls[0][1]["tier"] == "super"
+    assert "Use exactly these hostnames from scenario.allowed_hosts" in llm.calls[0][0]
+    assert "www.notion.so" in llm.calls[0][0]
+    assert "www.figma.com" in llm.calls[0][0]
 
 
 def test_missing_signal_retries_then_fails_without_output(tmp_path):
@@ -45,7 +48,7 @@ def test_missing_signal_retries_then_fails_without_output(tmp_path):
     payload["visits"] = [v for v in payload["visits"] if "figma" not in v["url"]]
     llm = FakeLLM([json.dumps(payload)] * 3)
     output = tmp_path / "browsing.db"
-    with pytest.raises(GenerationError, match="after 3 attempts.*figma.com"):
+    with pytest.raises(GenerationError, match=r"after 3 attempts.*www\.figma\.com"):
         generate(DEFAULT_SCENARIO, output, llm=llm)
     assert len(llm.calls) == 3
     assert "Missing required signals" in llm.calls[1][0]
@@ -77,7 +80,7 @@ def test_existing_output_is_not_overwritten(tmp_path):
 
 @pytest.mark.parametrize("change", [
     {"url": "https://unlisted.example/signup"},
-    {"url": "https://account:secret@notion.so/signup"},
+    {"url": "https://account:secret@www.notion.so/signup"},
     {"at": "2026-09-02T00:00:00"},
     {"at": "2027-01-01T00:00:00+00:00"},
     {"title": ""},
@@ -93,4 +96,12 @@ def test_duplicate_records_fail_even_when_all_signals_detectable():
     payload = json.loads(FIXTURE.read_text())
     payload["visits"].append(payload["visits"][0])
     with sqlite3.connect(":memory:") as conn, pytest.raises(GenerationError, match="Ingest rejected"):
+        populate(conn, payload, load_scenario(DEFAULT_SCENARIO))
+
+
+@pytest.mark.parametrize("host", ["notion.so", "figma.com", "app.www.notion.so", "www.figma.com.evil.example"])
+def test_hostname_aliases_remain_forbidden(host):
+    payload = json.loads(FIXTURE.read_text())
+    payload["visits"][0]["url"] = f"https://{host}/signup"
+    with sqlite3.connect(":memory:") as conn, pytest.raises(GenerationError, match="Only HTTPS URLs"):
         populate(conn, payload, load_scenario(DEFAULT_SCENARIO))

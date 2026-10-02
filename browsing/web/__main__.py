@@ -1,4 +1,4 @@
-"""Export previously successful demo runs without invoking any provider."""
+"""Export successful demo runs or regenerate the offline scripted walkthrough."""
 import argparse
 import json
 from pathlib import Path
@@ -33,8 +33,17 @@ def main():
     export.add_argument("--db", type=Path)
     export.add_argument("--state", type=Path, required=True)
     export.add_argument("--out", type=Path, required=True)
+    regenerate = sub.add_parser("regenerate-fixtures", help="Rebuild the maker example using fake providers only")
+    from browsing.persona.generate import DEFAULT_SCENARIO
+    from browsing.web.app import ROOT
+    regenerate.add_argument("--scenario", type=Path, default=DEFAULT_SCENARIO)
+    regenerate.add_argument("--output-dir", type=Path, default=ROOT / "fixtures")
     args = parser.parse_args()
-    export_cache(db_path=args.db, state_dir=args.state, out=args.out)
+    if args.command == "regenerate-fixtures":
+        from browsing.web.regenerate import regenerate_fixtures
+        regenerate_fixtures(scenario_path=args.scenario, output_dir=args.output_dir)
+    else:
+        export_cache(db_path=args.db, state_dir=args.state, out=args.out)
 
 
 if __name__ == "__main__":
