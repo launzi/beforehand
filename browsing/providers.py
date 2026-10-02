@@ -252,12 +252,18 @@ class _NebiusLLM:
             choice = raw["choices"][0]
             finish_reason = choice.get("finish_reason")
             message = choice["message"]
-            content = message.get("content", "")
+            content = message.get("content")
+            if content is None:
+                content = ""
         except (KeyError, IndexError, TypeError) as e:
             raise ProviderError("malformed nebius response") from e
 
         if finish_reason == "length" and not content.strip():
             raise ProviderError(f"nemotron finish_reason=length (tier={tier}, model={model_id})")
+        if not content.strip():
+            raise ProviderError(
+                f"nemotron empty content (finish_reason={finish_reason}, tier={tier}, model={model_id})"
+            )
 
         return content
 

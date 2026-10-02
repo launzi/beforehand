@@ -18,7 +18,10 @@ import sqlite3
 
 import pytest
 
-from browsing.agent import Action, SKILLS, build_graph, run_agent
+from browsing.agent import (
+    Action, SKILLS, SKILL_MAX_TOKENS, TRIAGE_MAX_TOKENS,
+    build_graph, run_agent, triage_signal,
+)
 from browsing.ingest import init_db, ingest_records
 from browsing.signals import Signal
 
@@ -85,6 +88,37 @@ def sig(kind="new_entry", host="newsvc.test", term=None, key=None):
 
 
 # ── triage 가 걸러낸다 ───────────────────────────────────────────────────────
+
+def test_triage_budget_leaves_room_for_reasoning():
+    calls = []
+
+    class RecordingLLM:
+        def complete(self, prompt, **kwargs):
+            calls.append(kwargs)
+            return "\nACT"
+
+    assert triage_signal(sig(), llm=RecordingLLM())
+    assert TRIAGE_MAX_TOKENS >= 400
+    assert calls[0]["max_tokens"] == TRIAGE_MAX_TOKENS
+
+
+@pytest.mark.parametrize("kind,output_budget", [
+    ("unresolved", 300), ("new_entry", 200), ("recurring", 200), ("dropped", 150),
+])
+def test_skill_budget_preserves_output_plus_reasoning(kind, output_budget):
+    calls = []
+
+    class RecordingLLM:
+        def complete(self, prompt, **kwargs):
+            calls.append(kwargs)
+            return "A complete suggestion."
+
+    result = SKILLS[kind](sig(kind=kind, term="synthetic topic"),
+                          llm=RecordingLLM(), search=FakeSearch(), verdict=True)
+    assert result == "A complete suggestion."
+    assert SKILL_MAX_TOKENS[kind] >= output_budget + 300
+    assert calls[0]["max_tokens"] == SKILL_MAX_TOKENS[kind]
+
 
 def test_skipped_signal_produces_no_action(conn):
     llm = FakeLLM({})           # 전부 SKIP

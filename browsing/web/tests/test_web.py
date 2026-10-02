@@ -10,6 +10,7 @@ import pytest
 import httpx
 
 from browsing import providers
+from browsing.agent import TRIAGE_SYSTEM
 from browsing.mandate import load_mandate
 from browsing.persona.generate import DEFAULT_SCENARIO, generate
 from browsing.web.app import PROFILES, ROOT, create_app, execute, load_dataset
@@ -58,7 +59,7 @@ async def post_run(client, profile="public"):
 
 class FakeLLM:
     def complete(self, prompt, **kwargs):
-        return "ACT" if kwargs.get("max_tokens") == 10 else "Fictional suggestion <script>alert(1)</script>"
+        return "ACT" if kwargs.get("system") == TRIAGE_SYSTEM else "Fictional suggestion <script>alert(1)</script>"
 
 
 class FakeSearch:

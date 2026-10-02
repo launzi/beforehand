@@ -161,24 +161,29 @@ def test_blank_query_raises(monkeypatch):
 
 # ── LLM 응답 ─────────────────────────────────────────────────────────────────
 
-def test_llm_returns_text(monkeypatch):
+@pytest.mark.parametrize("content", ["hello", "\nACT", "  answer\n"])
+def test_llm_returns_text(monkeypatch, content):
     p = _offline_llm(monkeypatch, lambda **kw: {
-        "choices": [{"message": {"content": "hello"}, "finish_reason": "stop"}],
+        "choices": [{"message": {"content": content}, "finish_reason": "stop"}],
         "usage": {"completion_tokens": 3},
     })
-    assert p.complete("hi") == "hello"
+    assert p.complete("hi") == content
 
 
-def test_llm_empty_content_raises_not_returns_blank(monkeypatch):
+@pytest.mark.parametrize("content", [None, "", " \n\t"])
+@pytest.mark.parametrize("finish_reason", ["length", "stop"])
+def test_llm_empty_content_raises_not_returns_blank(monkeypatch, content, finish_reason):
     """Nemotron 은 추론 예산에 먹히면 빈 content 를 준다. 그것을 답으로 쓰면 안 된다."""
     p = _offline_llm(monkeypatch, lambda **kw: {
-        "choices": [{"message": {"content": "", "reasoning": "thinking..."},
-                     "finish_reason": "length"}],
+        "choices": [{"message": {"content": content, "reasoning": "thinking..."},
+                     "finish_reason": finish_reason}],
         "usage": {"completion_tokens": 100},
     })
     with pytest.raises(ProviderError) as e:
         p.complete("hi")
-    assert "length" in str(e.value) or "empty" in str(e.value).lower()
+    assert f"finish_reason={finish_reason}" in str(e.value)
+    if finish_reason == "stop":
+        assert "empty content" in str(e.value)
 
 
 def test_llm_tier_selects_a_model(monkeypatch):

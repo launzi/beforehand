@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import urlencode
 
+from browsing.agent import TRIAGE_SYSTEM
 from browsing.persona.generate import DEFAULT_SCENARIO, load_scenario, populate
 from browsing.web.app import PROFILES, ROOT, execute
 
@@ -48,7 +49,7 @@ def scripted_visits(scenario: dict) -> dict:
 
 class ScriptedLLM:
     def complete(self, prompt, **kwargs):
-        if kwargs.get("max_tokens") == 10:
+        if kwargs.get("system") == TRIAGE_SYSTEM:
             return "ACT"
         for marker, reply in (
             ("gone quiet", "Illustrative nudge: is the paused project still relevant?"),

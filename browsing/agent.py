@@ -85,6 +85,18 @@ class AgentState(TypedDict, total=False):
 # Triage — LLM judges whether a signal is worth acting on
 # ============================================================
 
+# Token Factory Nano measurements (2026-10-03): /no_think still used 89-137
+# completion tokens; caps <=200 exhausted reasoning, while 300 returned ACT.
+# Allow 400 for triage; skills retain their 150-300 output budget plus 300
+# reasoning tokens. These are ceilings, not guaranteed usage or success.
+TRIAGE_MAX_TOKENS = 400
+SKILL_MAX_TOKENS = {
+    "unresolved": 600,  # 300 output + 300 reasoning
+    "new_entry": 500,   # 200 output + 300 reasoning
+    "recurring": 500,   # 200 output + 300 reasoning
+    "dropped": 450,     # 150 output + 300 reasoning
+}
+
 TRIAGE_SYSTEM = (
     "You are a triage judge for a personal browsing intelligence system. "
     "You receive one signal at a time with its evidence. "
@@ -125,7 +137,7 @@ def triage_signal(signal: Signal, *, llm) -> bool:
     #   LLM 이 죽은 것과 "판단 결과 건너뜀"은 전혀 다른 사건인데, 삼켜서 False 를
     #   돌려주면 둘이 같은 모습이 된다. 배치를 막지 않는 것은 호출부(run_triage)가
     #   신호 하나 단위로 잡아 errors 에 기록하며 이미 책임진다.
-    reply = llm.complete(prompt, tier="nano", system=TRIAGE_SYSTEM, max_tokens=10)
+    reply = llm.complete(prompt, tier="nano", system=TRIAGE_SYSTEM, max_tokens=TRIAGE_MAX_TOKENS)
 
     reply_upper = (reply or "").strip().upper()
     return reply_upper.startswith("ACT") or "ACT" in reply_upper
@@ -183,7 +195,7 @@ def skill_unresolved(signal: Signal, *, llm, search, verdict: bool) -> str:
 
     # ⚠ LLM 실패를 문자열로 돌려주지 않는다 — 상위(run_act)가 신호 단위로
     #   잡아 errors 에 기록한다. 여기서 삼키면 실패가 행동 결과로 위장된다.
-    return llm.complete(prompt, tier="nano", system=SKILL_SYSTEM, max_tokens=300)
+    return llm.complete(prompt, tier="nano", system=SKILL_SYSTEM, max_tokens=SKILL_MAX_TOKENS["unresolved"])
 # ---- new_entry: judge if setup looks finished ----
 
 NEW_ENTRY_PROMPT = """Host: {host}
@@ -206,7 +218,7 @@ def skill_new_entry(signal: Signal, *, llm, search, verdict: bool) -> str:
 
     # ⚠ LLM 실패를 문자열로 돌려주지 않는다 — 상위(run_act)가 신호 단위로
     #   잡아 errors 에 기록한다. 여기서 삼키면 실패가 행동 결과로 위장된다.
-    return llm.complete(prompt, tier="nano", system=SKILL_SYSTEM, max_tokens=200)
+    return llm.complete(prompt, tier="nano", system=SKILL_SYSTEM, max_tokens=SKILL_MAX_TOKENS["new_entry"])
 # ---- recurring: name the through-line ----
 
 RECURRING_PROMPT = """Host: {host}
@@ -229,7 +241,7 @@ def skill_recurring(signal: Signal, *, llm, search, verdict: bool) -> str:
 
     # ⚠ LLM 실패를 문자열로 돌려주지 않는다 — 상위(run_act)가 신호 단위로
     #   잡아 errors 에 기록한다. 여기서 삼키면 실패가 행동 결과로 위장된다.
-    return llm.complete(prompt, tier="nano", system=SKILL_SYSTEM, max_tokens=200)
+    return llm.complete(prompt, tier="nano", system=SKILL_SYSTEM, max_tokens=SKILL_MAX_TOKENS["recurring"])
 # ---- dropped: short "is this still live?" nudge ----
 
 DROPPED_PROMPT = """Host: {host}
@@ -252,7 +264,7 @@ def skill_dropped(signal: Signal, *, llm, search, verdict: bool) -> str:
 
     # ⚠ LLM 실패를 문자열로 돌려주지 않는다 — 상위(run_act)가 신호 단위로
     #   잡아 errors 에 기록한다. 여기서 삼키면 실패가 행동 결과로 위장된다.
-    return llm.complete(prompt, tier="nano", system=SKILL_SYSTEM, max_tokens=150)
+    return llm.complete(prompt, tier="nano", system=SKILL_SYSTEM, max_tokens=SKILL_MAX_TOKENS["dropped"])
 def _format_hits(hits: list[dict]) -> str:
     """Format search hits for the unresolved prompt."""
     if not hits:
