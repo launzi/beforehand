@@ -52,10 +52,10 @@ class ScriptedLLM:
         if kwargs.get("system") == TRIAGE_SYSTEM:
             return "ACT"
         for marker, reply in (
-            ("gone quiet", "Illustrative nudge: is the paused project still relevant?"),
-            ("initial setup", "Illustrative suggestion: review the next setup step; a signup visit alone does not prove completion."),
-            ("through-line", "Illustrative summary: repeated visits suggest continued learning on this host."),
-            ("Search hits:", "Illustrative briefing: compare build steps and hosting before choosing a static site generator."),
+            ("gone quiet", "You visited this project on several days, then it went quiet. If it still matters, reopen it and pick one small task to resume."),
+            ("initial setup", "You opened the signup path, but this history alone can't tell whether setup finished. Check the service's settings page for any remaining step."),
+            ("through-line", "You keep coming back to the same pages across several days. Jot down what you were looking up so it's easier to find next time."),
+            ("Search hits:", "You searched for a static site generator comparison, but these example results don't show how the options differ. Compare one thing, such as the deploy steps, in each candidate's official docs."),
         ):
             if marker in prompt:
                 return reply

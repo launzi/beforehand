@@ -4,7 +4,7 @@
     "public": {
       "profile": "public",
       "mandate_digest": "b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8",
-      "created_at": "2026-10-02T22:57:49.656310+00:00",
+      "created_at": "2026-10-02T23:19:05.090513+00:00",
       "source": "illustrative-fixture",
       "status": "complete",
       "result": {
@@ -12,7 +12,7 @@
           {
             "signal_key": "02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b",
             "kind": "dropped",
-            "text": "Illustrative nudge: is the paused project still relevant?",
+            "text": "You visited this project on several days, then it went quiet. If it still matters, reopen it and pick one small task to resume.",
             "evidence": {
               "active_days": 3,
               "last_visit_us": 13433162400000000,
@@ -22,7 +22,7 @@
           {
             "signal_key": "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
             "kind": "new_entry",
-            "text": "Illustrative suggestion: review the next setup step; a signup visit alone does not prove completion.",
+            "text": "You opened the signup path, but this history alone can't tell whether setup finished. Check the service's settings page for any remaining step.",
             "evidence": {
               "onboarding_paths": [
                 "/onboarding"
@@ -34,7 +34,7 @@
           {
             "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
             "kind": "new_entry",
-            "text": "Illustrative suggestion: review the next setup step; a signup visit alone does not prove completion.",
+            "text": "You opened the signup path, but this history alone can't tell whether setup finished. Check the service's settings page for any remaining step.",
             "evidence": {
               "onboarding_paths": [
                 "/signup"
@@ -46,7 +46,7 @@
           {
             "signal_key": "4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f",
             "kind": "recurring",
-            "text": "Illustrative summary: repeated visits suggest continued learning on this host.",
+            "text": "You keep coming back to the same pages across several days. Jot down what you were looking up so it's easier to find next time.",
             "evidence": {
               "distinct_days": 3,
               "total_visits": 3,
@@ -57,7 +57,7 @@
           {
             "signal_key": "75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070",
             "kind": "recurring",
-            "text": "Illustrative summary: repeated visits suggest continued learning on this host.",
+            "text": "You keep coming back to the same pages across several days. Jot down what you were looking up so it's easier to find next time.",
             "evidence": {
               "distinct_days": 3,
               "total_visits": 3,
@@ -68,7 +68,7 @@
           {
             "signal_key": "285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb",
             "kind": "unresolved",
-            "text": "Illustrative briefing: compare build steps and hosting before choosing a static site generator.",
+            "text": "You searched for a static site generator comparison, but these example results don't show how the options differ. Compare one thing, such as the deploy steps, in each candidate's official docs.",
             "evidence": {
               "term": "python static site generator comparison",
               "search_count": 1,
@@ -212,12 +212,12 @@
           }
         ]
       },
-      "trace": "{\"ts\": \"2026-10-02T22:57:49.660158+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.660227+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.660266+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.660296+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.660336+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.660374+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n"
+      "trace": "{\"ts\": \"2026-10-02T23:19:05.094499+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.094564+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.094602+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.094633+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.094661+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.094696+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n"
     },
     "no-search": {
       "profile": "no-search",
       "mandate_digest": "fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119",
-      "created_at": "2026-10-02T22:57:49.660877+00:00",
+      "created_at": "2026-10-02T23:19:05.095224+00:00",
       "source": "illustrative-fixture",
       "status": "complete",
       "result": {
@@ -225,7 +225,7 @@
           {
             "signal_key": "02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b",
             "kind": "dropped",
-            "text": "Illustrative nudge: is the paused project still relevant?",
+            "text": "You visited this project on several days, then it went quiet. If it still matters, reopen it and pick one small task to resume.",
             "evidence": {
               "active_days": 3,
               "last_visit_us": 13433162400000000,
@@ -235,7 +235,7 @@
           {
             "signal_key": "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
             "kind": "new_entry",
-            "text": "Illustrative suggestion: review the next setup step; a signup visit alone does not prove completion.",
+            "text": "You opened the signup path, but this history alone can't tell whether setup finished. Check the service's settings page for any remaining step.",
             "evidence": {
               "onboarding_paths": [
                 "/onboarding"
@@ -247,7 +247,7 @@
           {
             "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
             "kind": "new_entry",
-            "text": "Illustrative suggestion: review the next setup step; a signup visit alone does not prove completion.",
+            "text": "You opened the signup path, but this history alone can't tell whether setup finished. Check the service's settings page for any remaining step.",
             "evidence": {
               "onboarding_paths": [
                 "/signup"
@@ -259,7 +259,7 @@
           {
             "signal_key": "4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f",
             "kind": "recurring",
-            "text": "Illustrative summary: repeated visits suggest continued learning on this host.",
+            "text": "You keep coming back to the same pages across several days. Jot down what you were looking up so it's easier to find next time.",
             "evidence": {
               "distinct_days": 3,
               "total_visits": 3,
@@ -270,7 +270,7 @@
           {
             "signal_key": "75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070",
             "kind": "recurring",
-            "text": "Illustrative summary: repeated visits suggest continued learning on this host.",
+            "text": "You keep coming back to the same pages across several days. Jot down what you were looking up so it's easier to find next time.",
             "evidence": {
               "distinct_days": 3,
               "total_visits": 3,
@@ -410,12 +410,12 @@
           }
         ]
       },
-      "trace": "{\"ts\": \"2026-10-02T22:57:49.662903+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.662961+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.662998+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.663027+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.663054+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.663077+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"deny\", \"reason\": \"External search provider calls are not allowed\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n"
+      "trace": "{\"ts\": \"2026-10-02T23:19:05.097320+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.097376+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.097410+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.097458+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.097503+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.097530+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"deny\", \"reason\": \"External search provider calls are not allowed\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n"
     },
     "confirm-research": {
       "profile": "confirm-research",
       "mandate_digest": "618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e",
-      "created_at": "2026-10-02T22:57:49.663576+00:00",
+      "created_at": "2026-10-02T23:19:05.097975+00:00",
       "source": "illustrative-fixture",
       "status": "complete",
       "result": {
@@ -423,7 +423,7 @@
           {
             "signal_key": "02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b",
             "kind": "dropped",
-            "text": "Illustrative nudge: is the paused project still relevant?",
+            "text": "You visited this project on several days, then it went quiet. If it still matters, reopen it and pick one small task to resume.",
             "evidence": {
               "active_days": 3,
               "last_visit_us": 13433162400000000,
@@ -433,7 +433,7 @@
           {
             "signal_key": "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
             "kind": "new_entry",
-            "text": "Illustrative suggestion: review the next setup step; a signup visit alone does not prove completion.",
+            "text": "You opened the signup path, but this history alone can't tell whether setup finished. Check the service's settings page for any remaining step.",
             "evidence": {
               "onboarding_paths": [
                 "/onboarding"
@@ -445,7 +445,7 @@
           {
             "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
             "kind": "new_entry",
-            "text": "Illustrative suggestion: review the next setup step; a signup visit alone does not prove completion.",
+            "text": "You opened the signup path, but this history alone can't tell whether setup finished. Check the service's settings page for any remaining step.",
             "evidence": {
               "onboarding_paths": [
                 "/signup"
@@ -457,7 +457,7 @@
           {
             "signal_key": "4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f",
             "kind": "recurring",
-            "text": "Illustrative summary: repeated visits suggest continued learning on this host.",
+            "text": "You keep coming back to the same pages across several days. Jot down what you were looking up so it's easier to find next time.",
             "evidence": {
               "distinct_days": 3,
               "total_visits": 3,
@@ -468,7 +468,7 @@
           {
             "signal_key": "75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070",
             "kind": "recurring",
-            "text": "Illustrative summary: repeated visits suggest continued learning on this host.",
+            "text": "You keep coming back to the same pages across several days. Jot down what you were looking up so it's easier to find next time.",
             "evidence": {
               "distinct_days": 3,
               "total_visits": 3,
@@ -608,7 +608,7 @@
           }
         ]
       },
-      "trace": "{\"ts\": \"2026-10-02T22:57:49.665655+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.665712+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.665748+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.665779+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.665807+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T22:57:49.665829+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"hold\", \"reason\": \"Action 'research_briefing' requires user confirmation\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n"
+      "trace": "{\"ts\": \"2026-10-02T23:19:05.100016+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.100073+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.100108+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.100137+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.100185+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:19:05.100224+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"hold\", \"reason\": \"Action 'research_briefing' requires user confirmation\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n"
     }
   }
 }

@@ -38,10 +38,23 @@ def main():
     from browsing.web.app import ROOT
     regenerate.add_argument("--scenario", type=Path, default=DEFAULT_SCENARIO)
     regenerate.add_argument("--output-dir", type=Path, default=ROOT / "fixtures")
+    evaluate = sub.add_parser("eval-live", help="Call live providers on an explicit validated synthetic DB")
+    evaluate.add_argument("--db", type=Path, required=True)
+    evaluate.add_argument("--runs", type=int, default=3)
+    evaluate.add_argument("--profile", choices=tuple(PROFILES), action="append",
+                          help="Repeat for selected profiles; default: all three")
     args = parser.parse_args()
     if args.command == "regenerate-fixtures":
         from browsing.web.regenerate import regenerate_fixtures
         regenerate_fixtures(scenario_path=args.scenario, output_dir=args.output_dir)
+    elif args.command == "eval-live":
+        if args.runs < 1:
+            parser.error("--runs must be positive")
+        from browsing.web.eval_live import evaluate_live
+        result = evaluate_live(db_path=args.db, runs=args.runs, profiles=args.profile)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        if result["status"] != "complete":
+            raise SystemExit(1)
     else:
         export_cache(db_path=args.db, state_dir=args.state, out=args.out)
 

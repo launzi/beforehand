@@ -13,8 +13,8 @@ an explicit mandate and records the judgment and outcome in a local JSONL trace.
    stays on the user's device; only scrubbed minimal fragments are used for
    inference. Search queries go to the selected search provider. The public demo
    uses entirely fictional history; no real browser data is deployed.
-3. **Proposes and proves.** Deterministic `triage → mandate → action` checks allow,
-   hold, or deny execution. A local trace records the mandate digest, reason, and
+3. **Proposes and proves.** Model triage judges usefulness; deterministic mandate
+   checks allow, hold, or deny execution. A local trace records the mandate digest, reason, and
    outcome. These are inspectable audit records, not cryptographic attestation.
 4. **Open source and self-hostable.** One codebase, with private data and local
    configuration kept out of the public distribution. Providers are replaceable;
@@ -54,10 +54,37 @@ policy and the policy used by a cached result have separately displayed digests.
 
 Provide `NEBIUS_API_KEY` and `TAVILY_API_KEY` as runtime environment variables.
 Click **Run agent** to invoke the existing providers and agent loop. The existing
-agent uses Nemotron Nano for triage and skill text. Tavily is called for an
+agent uses Nemotron Ultra for triage and Nano for skill text. Triage uses a
+kind-specific evidence rubric with an 8,192-token reasoning/output ceiling;
+this is a provisional cap, not measured usage or a guarantee of repeatability.
+Skills request 2–3 English sentences: an observation and one suggested next step.
+Tavily is called for an
 unresolved search only if triage returns ACT and the mandate permits research;
 SKIP, hold, and deny intentionally avoid that search call. Disabling search does
 not disable LLM inference.
+
+For an explicitly requested live quality evaluation of a validated synthetic DB:
+
+```sh
+python -m browsing.web eval-live --db /path/to/synthetic.db --runs 3
+```
+
+This command **calls paid providers**; it is not an offline test. It runs all three
+mandate profiles by default. Repeat `--profile public` / `--profile no-search` /
+`--profile confirm-research` to select a subset. With 12 signals and 3 runs per
+profile, it makes 108 triage attempts, plus permitted skills and search calls.
+It does not use the web server's daily budget or cached results; the CLI operator
+chooses the run count. Input must have a matching synthetic validation manifest;
+no browser path or `DEMO_DB` fallback is used. The demo's 20-signal limit applies.
+
+JSON on stdout contains per-signal/per-profile ACT rates, counts, evidence,
+skill samples, raw triage replies, errors and mandate audit traces. Rates exclude
+triage errors (reported separately); malformed replies retain the agent's SKIP
+fallback and remain visible in raw replies. A failed run produces JSON and exit 1;
+invalid input raises before provider creation. Review samples for grounding and
+sentence count: the offline tests verify prompt contracts, not live quality.
+Temporary trace files are created beside the supplied DB and removed after capture
+in JSON. Save stdout to a timestamped file if results need to be retained.
 
 - `DEMO_DAILY_LIMIT`: total attempted runs per UTC day, default `20`; `0` disables
   live execution. Errors consume budget too. Each run processes at most 20 signals.
