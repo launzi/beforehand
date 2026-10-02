@@ -1,0 +1,3 @@
+allowed_skills = ["unresolved", "new_entry", "recurring", "dropped"]
+allow_search = false
+require_confirmation = []

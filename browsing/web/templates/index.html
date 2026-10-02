@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Before you ask · Browsing AI</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#eaf1fa;background:#101820;color-scheme:dark}body{max-width:1100px;margin:auto;padding:30px 22px}h1{font-size:clamp(2rem,6vw,3.8rem);margin-bottom:.2em}h2{margin-top:1.6em}p{line-height:1.6}.muted{color:#b4c3ce}.tag{border:1px solid #6f8996;border-radius:20px;padding:4px 10px;font-size:.8rem;display:inline-block}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}.card,aside{border:1px solid #3b515e;border-radius:12px;padding:18px;background:#172630}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#101820;padding:12px;border-radius:8px;font-size:.82rem}code{overflow-wrap:anywhere}button,select{font:inherit;padding:10px 15px;border-radius:6px;border:1px solid #668694}button{background:#a8efd0;color:#102d24;cursor:pointer}label{display:block;margin:8px 0}.allow{color:#a8efd0}.deny,.error{color:#ffafad}.hold{color:#ffde94}a{color:#a8dbff}details{margin:12px 0}.notice{border-left:4px solid #ffde94;padding:12px}footer{margin-top:40px;border-top:1px solid #3b515e}form{margin:12px 0}
+</style></head><body>
+<header><span class="tag">Personal AI · Entirely synthetic demo</span><h1>Before you ask.</h1>
+<p class="muted">Unfinished signups. A question left open. A project gone quiet.<br>Your past actions can reveal what deserves attention next.</p></header>
+<p>{{ scenario.persona.role }}. Story window: {{ scenario.since }} → {{ scenario.until }}.</p>
+<p>These are rule-detected candidates, not proof of intent or incomplete registration. Recurring currently means repeat visits to the same host.</p>
+<h2>Detected signals <span class="tag">{{ signals|length }}</span></h2>
+<div class="grid">{% for signal in signals %}<article class="card">
+<span class="tag">{{ signal.kind }}</span><h3>{{ signal.term or signal.host }}</h3>
+<details><summary>Detection evidence</summary><pre>{{ signal.evidence|tojson(indent=2) }}</pre></details>
+{% set decision = decisions.get(signal.key) %}
+{% if decision %}
+<p><strong>1 · Triage:</strong> {{ decision.triage }}</p>
+<p class="{{ decision.mandate.verdict }}"><strong>2 · Mandate: {{ decision.mandate.verdict|upper }}</strong><br>{{ decision.mandate.reason }}</p>
+<details><summary>Applied mandate digest</summary><code>{{ decision.mandate.mandate_digest }}</code></details>
+<p><strong>3 · Execution:</strong> {{ decision.execution_status }}</p>
+{% if decision.execution_error %}<p class="error">{{ decision.execution_error }}</p>{% endif %}
+{% if actions.get(signal.key) %}<p>{{ actions[signal.key].text }}</p>{% endif %}
+{% else %}<p>1 · Triage: not run<br>2 · Mandate: not evaluated<br>3 · Execution: not run</p>{% endif %}
+</article>{% endfor %}</div>
+<h2>Propose it. Prove it.</h2>
+<aside>
+<form method="get" action="/"><label for="profile">Current mandate</label><select name="profile" id="profile">{% for key,label in profiles.items() %}<option value="{{ key }}" {% if key==profile %}selected{% endif %}>{{ label }}</option>{% endfor %}</select> <button type="submit">Select profile</button></form>
+<pre>{{ mandate_text }}</pre><p>Current digest: <code>{{ mandate.digest }}</code></p>
+<p>Search disabled blocks external search actions; triage and other LLM inference still use Token Factory. A held action does not execute until the policy changes and you rerun.</p>
+<form method="post" action="/run"><input type="hidden" name="profile" value="{{ profile }}"><input type="hidden" name="csrf" value="{{ csrf }}"><button type="submit">Run agent</button></form>
+<p class="muted">Real Nemotron inference via Nebius Token Factory. Tavily is called when research passes triage and the mandate. One run at a time; at most {{ daily_limit }} attempts per UTC day across this server.</p>
+</aside>
+{% if notice %}<p class="notice" role="status">{{ notice }}</p>{% endif %}
+<h2>Run provenance</h2>
+{% if snapshot %}<p><strong>{{ mode|upper }}</strong> · {{ snapshot.source }} · {{ snapshot.status }} · {{ snapshot.created_at }}</p>
+{% if snapshot.mandate_digest != mandate.digest %}<p class="notice">These are the last successful results under a different mandate. The selected policy has not been run here. Compare the result digest below with the current digest above.</p>{% endif %}
+{% if snapshot.source == 'illustrative-fixture' %}<p>This precomputed walkthrough uses scripted fake providers. It is an illustration of the real pipeline, not evidence of a live API call.</p>{% endif %}
+<p>Result profile: {{ snapshot.profile }} · Result digest: <code>{{ snapshot.mandate_digest }}</code></p>
+{% if snapshot.result.errors %}<pre class="error">{{ snapshot.result.errors|tojson(indent=2) }}</pre>{% endif %}
+<details open><summary>Unmodified local trace · JSONL</summary><pre id="trace">{{ snapshot.trace }}</pre></details>
+{% else %}<p>No cached run for this dataset and mandate yet. Detection works offline; run once to populate its cache.</p>{% endif %}
+<footer><h2>Your context. Your control.</h2><p><strong>Zero account permissions.</strong> No OAuth, passwords, or email access. In the personal version, raw history stays on your device; only scrubbed minimal fragments are used for inference. Search queries are sent to the selected search provider.</p><p><strong>Open source and self-hostable.</strong> Providers are replaceable; local Nemotron execution is not a verified feature. This hosted demo contains only invented history. Local traces are audit records, not cryptographic attestation.</p></footer>
+</body></html>

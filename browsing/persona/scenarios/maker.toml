@@ -1,0 +1,35 @@
+id = "synthetic-maker"
+fictional = true
+# Stable story time keeps a published demo reproducible.
+since = "2026-09-01T00:00:00+00:00"
+until = "2026-10-01T00:00:00+00:00"
+allowed_hosts = ["notion.so", "figma.com", "docs.python.org", "github.com", "www.google.com"]
+
+[persona]
+role = "A fictional hobby maker learning Python and planning a small creative project"
+context = "No name, employer, address, account, or other personal identifier. Entirely invented."
+
+[[signals]]
+kind = "new_entry"
+host = "notion.so"
+story = "Opened signup and left before completing setup."
+
+[[signals]]
+kind = "new_entry"
+host = "figma.com"
+story = "Started onboarding but did not finish."
+
+[[signals]]
+kind = "unresolved"
+term = "python static site generator comparison"
+story = "Searched without deciding; fewer than three follow-through visits within 30 minutes."
+
+[[signals]]
+kind = "dropped"
+host = "github.com"
+story = "Worked on a fictional project on at least three different days, then stopped at least seven days before until."
+
+[[signals]]
+kind = "recurring"
+host = "docs.python.org"
+story = "Learning Python: visited on at least three different days, including the final week."
