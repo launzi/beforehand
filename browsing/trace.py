@@ -49,8 +49,8 @@ class Tracer:
         except (TypeError, ValueError):
             return repr(obj)
 
-    def _write_event(self, event: dict) -> None:
-        """Write a single event as a JSON line. Never raises."""
+    def _write_event(self, event: dict, *, strict: bool = False) -> None:
+        """Write JSONL; policy audit records must surface I/O failures."""
         if not self._enabled or self._file is None:
             return
 
@@ -62,8 +62,29 @@ class Tracer:
             self._file.write(line + "\n")
             self._file.flush()
         except OSError:
+            if strict:
+                raise
             # File I/O failure — give up on this event but don't crash the run
             pass
+
+    def close(self) -> None:
+        if self._file is not None:
+            self._file.close()
+
+    def decision(self, *, signal_key: str, signal_kind: str, triage: str,
+                 mandate_digest: str, verdict: str, reason: str, executed: bool,
+                 execution_status: str, planned_action: dict | None,
+                 execution_error: str | None) -> None:
+        """Record mandate judgments locally; never disguise a failed audit write."""
+        self._write_event({
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "kind": "mandate_decision",
+            "signal_key": signal_key, "signal_kind": signal_kind,
+            "triage": triage, "planned_action": planned_action,
+            "mandate_digest": mandate_digest, "verdict": verdict, "reason": reason,
+            "executed": executed, "execution_status": execution_status,
+            "execution_error": execution_error,
+        }, strict=True)
 
     def event(self, _kind: str, /, **fields) -> None:
         """Write a single event with timestamp and kind."""

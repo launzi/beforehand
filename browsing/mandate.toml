@@ -1,0 +1,7 @@
+# Public default: preserve the submission's Tavily runtime search path.
+# Skill IDs refer to declarations beside skill_* in agent.py.
+allowed_skills = ["unresolved", "new_entry", "recurring", "dropped"]
+allow_search = true
+# Action kinds: research_briefing, setup_check, theme_summary, followup_nudge.
+# Adding a kind holds that action until the user changes the mandate and reruns.
+require_confirmation = []

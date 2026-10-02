@@ -4,18 +4,24 @@ Agent loop that turns browsing signals into actions.
 Signals arrive pre-computed from browsing/signals.py. This module decides which
 ones are worth acting on, and produces an action for those.
 
-Pipeline: detect (rules, done elsewhere) -> triage (LLM judges) -> act (skills) -> surface
+Pipeline: detect -> triage (LLM) -> mandate (rules) -> act (skills) -> surface
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, field, replace
+from pathlib import Path
 from typing import Callable
 
 from langgraph.graph import StateGraph, END
 from typing_extensions import TypedDict
 
 from browsing.signals import Signal
+from browsing.mandate import (
+    DEFAULT_BASE_PATH, DEFAULT_LOCAL_PATH, MandateDecision, PlannedAction,
+    declares_action, evaluate_mandate, load_mandate,
+)
+from browsing.trace import Tracer, disable_external_tracing
 
 
 # ============================================================
@@ -32,11 +38,29 @@ class Action:
 
 
 @dataclass(frozen=True, slots=True)
+class SignalDecision:
+    """Policy judgment and execution outcome, including held/denied signals.
+
+    executed means the skill was invoked, not that it succeeded. Signals outside
+    max_signals have no triage or policy judgment and do not appear here.
+    """
+    signal_key: str
+    signal_kind: str
+    triage: str
+    planned_action: PlannedAction | None
+    mandate: MandateDecision
+    executed: bool = False
+    execution_status: str = "not_run"
+    execution_error: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class AgentResult:
     """Result of running the agent over a batch of signals."""
     actions: list[Action]
     errors: list[str]
-    stats: dict            # {"acted": int, "skipped": int, "errors": int}
+    stats: dict            # acted/skipped/errors; held/denied count blocked ACTs
+    decisions: list[SignalDecision] = field(default_factory=list)
 
 
 # ============================================================
@@ -51,7 +75,9 @@ class AgentState(TypedDict, total=False):
     max_signals: int
     llm: object
     search: object
-    _verdicts: dict[str, bool]
+    _verdicts: dict[str, bool | None]
+    _decisions: dict[str, SignalDecision]
+    decisions: list[SignalDecision]
     _processed_count: int
 
 
@@ -139,6 +165,9 @@ Search hits:
 Write a short briefing (2-4 sentences) explaining what this term refers to and why it might matter."""
 
 
+@declares_action(PlannedAction(
+    "unresolved", "unresolved", "research_briefing", uses_search=True, uses_llm=True,
+))
 def skill_unresolved(signal: Signal, *, llm, search, verdict: bool) -> str:
     """Search for the term and write a briefing from the hits."""
     if signal.term is None:
@@ -164,6 +193,9 @@ Evidence:
 Does the initial setup for this host look finished? Answer in 2-3 sentences."""
 
 
+@declares_action(PlannedAction(
+    "new_entry", "new_entry", "setup_check", uses_search=False, uses_llm=True,
+))
 def skill_new_entry(signal: Signal, *, llm, search, verdict: bool) -> str:
     """Ask LLM whether setup looks finished based on evidence."""
     if signal.host is None:
@@ -184,6 +216,9 @@ Evidence:
 What is the through-line connecting these visits? Name the persistent theme or purpose in 2-3 sentences."""
 
 
+@declares_action(PlannedAction(
+    "recurring", "recurring", "theme_summary", uses_search=False, uses_llm=True,
+))
 def skill_recurring(signal: Signal, *, llm, search, verdict: bool) -> str:
     """Ask LLM to name the through-line across visits."""
     if signal.host is None:
@@ -204,6 +239,9 @@ Evidence:
 This host has gone quiet. Phrase a short nudge (1-2 sentences) asking if it's still live or relevant."""
 
 
+@declares_action(PlannedAction(
+    "dropped", "dropped", "followup_nudge", uses_search=False, uses_llm=True,
+))
 def skill_dropped(signal: Signal, *, llm, search, verdict: bool) -> str:
     """Ask LLM to phrase a short nudge."""
     if signal.host is None:
@@ -246,12 +284,16 @@ def run_triage(
     *,
     llm,
     max_signals: int,
-) -> tuple[dict[str, bool], dict, list[str]]:
+) -> tuple[dict[str, bool | None], dict, list[str]]:
     """
     Run triage on signals up to max_signals.
     Returns (verdicts, stats, errors).
     """
-    verdicts: dict[str, bool] = {}
+    if max_signals < 0:
+        raise ValueError("max_signals must be non-negative")
+    if len({signal.key for signal in signals}) != len(signals):
+        raise ValueError("Signal keys must be unique within a batch")
+    verdicts: dict[str, bool | None] = {}
     stats = {"acted": 0, "skipped": 0, "errors": 0}
     errors: list[str] = []
 
@@ -271,54 +313,64 @@ def run_triage(
         except Exception as e:
             errors.append(f"triage:{signal.key}: {e}")
             stats["errors"] += 1
-            verdicts[signal.key] = False
+            verdicts[signal.key] = None  # ERROR is distinct from a triage SKIP
 
     return verdicts, stats, errors
 
 
 def run_act(
     signals: list[Signal],
-    verdicts: dict[str, bool],
+    verdicts: dict[str, bool | None],
     *,
     llm,
     search,
     stats: dict,
     errors: list[str],
-) -> tuple[list[Action], dict, list[str]]:
+    decisions: dict[str, SignalDecision],
+    tracer: Tracer,
+) -> tuple[list[Action], dict, list[str], list[SignalDecision]]:
     """
-    Run skills for signals with ACT verdict.
-    Returns (actions, updated_stats, updated_errors).
+    Run skills only for ACT + allow. Every processed signal gets an audit record.
     """
     actions: list[Action] = []
+    outcomes: list[SignalDecision] = []
+    stats = {**stats, "held": 0, "denied": 0}
+    errors = list(errors)
 
     for signal in signals:
-        verdict = verdicts.get(signal.key, False)
-        if not verdict:
+        if signal.key not in verdicts:
             continue
-
+        verdict = verdicts[signal.key]
+        record = decisions[signal.key]  # Missing authorization is an error, never allow.
         skill = SKILLS.get(signal.kind)
-        if skill is None:
-            # No skill registered — count as error (spec says count it, never crash)
-            errors.append(f"act:{signal.key}: no skill for kind '{signal.kind}'")
-            stats["errors"] += 1
-            stats["acted"] -= 1  # undo the acted count from triage
-            continue
+        if verdict and record.mandate.verdict != "allow":
+            stats["acted"] -= 1
+            stats["held" if record.mandate.verdict == "hold" else "denied"] += 1
+            if record.planned_action is None:
+                errors.append(f"mandate:{signal.key}: no declared skill for kind '{signal.kind}'")
+                stats["errors"] += 1
+        elif verdict:
+            try:
+                text = skill(signal, llm=llm, search=search, verdict=True)
+                actions.append(Action(signal.key, signal.kind, text, signal.evidence))
+                record = replace(record, executed=True, execution_status="succeeded")
+            except Exception as e:
+                errors.append(f"act:{signal.key}: {e}")
+                stats["errors"] += 1
+                stats["acted"] -= 1
+                record = replace(record, executed=True, execution_status="failed", execution_error=str(e))
 
-        try:
-            text = skill(signal, llm=llm, search=search, verdict=verdict)
-            action = Action(
-                signal_key=signal.key,
-                kind=signal.kind,
-                text=text,
-                evidence=signal.evidence,
-            )
-            actions.append(action)
-        except Exception as e:
-            errors.append(f"act:{signal.key}: {e}")
-            stats["errors"] += 1
-            stats["acted"] -= 1  # undo the acted count from triage
+        tracer.decision(
+            signal_key=record.signal_key, signal_kind=record.signal_kind,
+            triage=record.triage, planned_action=asdict(record.planned_action) if record.planned_action else None,
+            mandate_digest=record.mandate.mandate_digest,
+            verdict=record.mandate.verdict, reason=record.mandate.reason,
+            executed=record.executed, execution_status=record.execution_status,
+            execution_error=record.execution_error,
+        )
+        outcomes.append(record)
 
-    return actions, stats, errors
+    return actions, stats, errors, outcomes
 
 
 # ============================================================
@@ -340,7 +392,31 @@ def triage_node(state: AgentState) -> AgentState:
     return state
 
 
-def act_node(state: AgentState) -> AgentState:
+def mandate_node(
+    state: AgentState, *, base_path: Path = DEFAULT_BASE_PATH,
+    local_path: Path | None = DEFAULT_LOCAL_PATH,
+) -> AgentState:
+    """Snapshot both TOML layers once per invocation, then judge without an LLM."""
+    mandate = load_mandate(base_path, local_path)
+    decisions = {}
+    for signal in state["signals"]:
+        if signal.key not in state["_verdicts"]:
+            continue
+        verdict = state["_verdicts"][signal.key]
+        plan = getattr(SKILLS.get(signal.kind), "planned_action", None)
+        decisions[signal.key] = SignalDecision(
+            signal.key, signal.kind,
+            "ERROR" if verdict is None else "ACT" if verdict else "SKIP",
+            plan, evaluate_mandate(mandate, signal, plan),
+        )
+    state["_decisions"] = decisions
+    if mandate.error is not None:
+        state["errors"] = [*state["errors"], f"mandate: {mandate.error}"]
+        state["stats"] = {**state["stats"], "errors": state["stats"]["errors"] + 1}
+    return state
+
+
+def act_node(state: AgentState, *, tracer: Tracer | None = None) -> AgentState:
     """Run the skill for each signal that got ACT verdict."""
     signals = state["signals"]
     verdicts = state.get("_verdicts", {})
@@ -349,13 +425,21 @@ def act_node(state: AgentState) -> AgentState:
     stats = state.get("stats", {"acted": 0, "skipped": 0, "errors": 0})
     errors = state.get("errors", [])
 
-    actions, stats, errors = run_act(
-        signals, verdicts, llm=llm, search=search, stats=stats, errors=errors
-    )
+    # Caller-owned tracers stay open; the default local tracer lives for one run.
+    active_tracer = tracer if tracer is not None else Tracer()
+    try:
+        actions, stats, errors, decisions = run_act(
+            signals, verdicts, llm=llm, search=search, stats=stats, errors=errors,
+            decisions=state["_decisions"], tracer=active_tracer,
+        )
+    finally:
+        if tracer is None:
+            active_tracer.close()
 
     state["actions"] = actions
     state["stats"] = stats
     state["errors"] = errors
+    state["decisions"] = decisions
     return state
 
 
@@ -363,32 +447,37 @@ def act_node(state: AgentState) -> AgentState:
 # Graph builder
 # ============================================================
 
-def build_graph(*, llm, search) -> StateGraph:
+def build_graph(
+    *, llm, search, mandate_path: Path = DEFAULT_BASE_PATH,
+    mandate_local_path: Path | None = DEFAULT_LOCAL_PATH, tracer: Tracer | None = None,
+) -> StateGraph:
     """
     Build and compile the LangGraph for the agent.
-    Nodes: triage -> act -> END
+    Nodes: triage -> mandate -> act -> END
     """
+    disable_external_tracing()
     graph = StateGraph(AgentState)
 
     # ⚠ llm·search 는 클로저로 잡는다. state 에서 꺼내면 build_graph 의 인자가
     #   무의미해지고, 호출자가 상태에 provider 를 끼워 넣어야 한다.
     def _triage(state):
-        verdicts, stats, errors = run_triage(
-            state["signals"], llm=llm, max_signals=state.get("max_signals", 20))
-        return {"_verdicts": verdicts, "stats": stats, "errors": errors}
+        # Enforce local-only tracing even when a compiled graph is reused.
+        disable_external_tracing()
+        return triage_node({**state, "llm": llm})
+
+    def _mandate(state):
+        return mandate_node(state, base_path=mandate_path, local_path=mandate_local_path)
 
     def _act(state):
-        actions, stats, errors = run_act(
-            state["signals"], state.get("_verdicts", {}), llm=llm, search=search,
-            stats=state.get("stats", {"acted": 0, "skipped": 0, "errors": 0}),
-            errors=state.get("errors", []))
-        return {"actions": actions, "stats": stats, "errors": errors}
+        return act_node({**state, "llm": llm, "search": search}, tracer=tracer)
 
     graph.add_node("triage", _triage)
+    graph.add_node("mandate", _mandate)
     graph.add_node("act", _act)
 
     graph.set_entry_point("triage")
-    graph.add_edge("triage", "act")
+    graph.add_edge("triage", "mandate")
+    graph.add_edge("mandate", "act")
     graph.add_edge("act", END)
 
     # Compile with llm and search baked into the initial state
@@ -411,6 +500,9 @@ def run_agent(
     llm,
     search,
     max_signals: int = 20,
+    mandate_path: Path = DEFAULT_BASE_PATH,
+    mandate_local_path: Path | None = DEFAULT_LOCAL_PATH,
+    tracer: Tracer | None = None,
 ) -> AgentResult:
     """
     Run the agent over a batch of signals.
@@ -421,11 +513,20 @@ def run_agent(
         llm: Injected LLM with .complete(prompt, tier, system, max_tokens) -> str
         search: Injected search with .search(query, limit) -> list[dict]
         max_signals: Cost ceiling — process at most this many signals
+        mandate_path: Required base TOML; unreadable/invalid means deny all skills
+        mandate_local_path: Optional overlay; None explicitly disables the overlay
+        tracer: Caller-owned local tracer, or a per-run default Tracer
 
     Returns:
-        AgentResult with actions, errors, and stats.
+        AgentResult with actions, errors, stats, and per-signal decisions. A hold
+        never resumes automatically; the user must change the policy and rerun.
+        Search restrictions do not prohibit triage or non-search skill LLM calls.
+
+    Raises:
+        OSError: A required local mandate audit record could not be written.
     """
-    graph = build_graph(llm=llm, search=search)
+    graph = build_graph(llm=llm, search=search, mandate_path=mandate_path,
+                        mandate_local_path=mandate_local_path, tracer=tracer)
 
     initial_state: AgentState = {
         "signals": signals,
@@ -443,4 +544,5 @@ def run_agent(
         actions=final_state.get("actions", []),
         errors=final_state.get("errors", []),
         stats=final_state.get("stats", {"acted": 0, "skipped": 0, "errors": 0}),
+        decisions=final_state["decisions"],
     )

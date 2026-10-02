@@ -1,0 +1,7 @@
+# Copy to mandate.local.toml (git-ignored). This overlay is OPTIONAL.
+# Omitted fields inherit public defaults; lists replace, rather than extend.
+# An empty allowed_skills list denies every skill. Invalid TOML denies everything.
+# Personal provider restrictions belong here, not in the public defaults.
+allow_search = false
+require_confirmation = ["followup_nudge"]
+# allowed_skills = ["new_entry", "recurring", "dropped"]
