@@ -29,3 +29,9 @@ test('closed shadow isolates card, details use safe links, collapse and destroy 
  c.setState({view:'same',quote:quote(),local:null}); const link=all(c.root.testShadow).find(n=>n.tagName==='a');assert.equal(link.rel,'noopener noreferrer');assert.equal(link.target,'_blank');
  await findText(c.root.testShadow,'Collapse').fire(); assert.ok(findText(c.root.testShadow,'beforehand'));c.destroy();assert.equal(doc.body.children.length,0);
 });
+
+test('changed quote asks for an explicit re-check',async()=>{
+ let checks=0;const c=mount(documentFake(),{onCheck:()=>checks++});c.setState({view:'changed'});
+ assert.match(c.root.testShadow.textContent,/Price changed — check again/);
+ await findText(c.root.testShadow,'Check Korea price').fire();assert.equal(checks,1);c.destroy();
+});

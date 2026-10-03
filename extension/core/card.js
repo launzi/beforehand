@@ -53,7 +53,7 @@
     form.addEventListener('submit',async e=>{e.preventDefault();if(submit.disabled)return;submit.disabled=true;const choice=current.choice,mail=email.value.trim(),buyer=name.value.trim();email.value='';name.value='';setState({view:'opening'});try{await onBuy(choice,mail,buyer);}catch{setState({view:'busy'});}});
     body.append(form,el('p','Sent to Korea Concierge to create your order. Not stored by beforehand.','muted'));email.focus();
    } else {
-    const messages={loading:'Checking Korea…',cant_ship:`Can't ship to ${current.destination ?? 'this country'}`,busy:'Busy — try again',paused:'Auto-check paused for today',opening:'Opening payment…',changed:'The quote changed. Check Korea price again.',opened:'Payment opened in a new tab.'};
+    const messages={loading:'Checking Korea…',cant_ship:`Can't ship to ${current.destination ?? 'this country'}`,busy:'Busy — try again',paused:'Auto-check paused for today',opening:'Opening payment…',changed:'Price changed — check again',opened:'Payment opened in a new tab.'};
     body.append(el('p',messages[current.view] ?? messages.busy));if(['busy','changed'].includes(current.view))body.append(button('Check Korea price',onCheck));
    }
   }

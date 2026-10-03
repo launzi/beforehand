@@ -26,3 +26,10 @@ test('no card without consent and transport errors become retryable busy',async(
  const a=setup(async()=>({...status,onboarded:false}));await a.app.tick();assert.equal(a.cards.length,0);a.app.destroy();
  const b=setup(async m=>{if(m.type==='status')return status;throw Error('gone');});await b.app.tick();assert.equal(b.cards[0].states.at(-1).view,'busy');b.app.destroy();
 });
+
+test('Buy sends the displayed handle and choice without reselecting by product',async()=>{
+ const a=setup(async m=>m.type==='status'?status:m.type==='match'?{kind:'same',handle:'display-a'}:{error:'changed'});
+ await a.app.tick();await a.cards[0].opts.onBuy('same','buyer@example.com','Buyer');
+ assert.deepEqual(a.messages.at(-1),{type:'buy',handle:'display-a',choice:'same',email:'buyer@example.com',name:'Buyer'});
+ assert.equal(a.cards[0].states.at(-1).view,'changed');a.app.destroy();
+});

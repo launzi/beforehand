@@ -4,9 +4,11 @@ import {sendRequest} from './core/sink.js';
 import {getSettings,requireConsent,hasConsent,appendTrace,RESULT_CACHE_MS,DAILY_AUTO_LIMIT,withStorageLock} from './core/storage.js';
 const selected=(r,c)=>c==='same'?(r?.kind==='same'?r.quote:null):([0,1].includes(c)&&r?.kind==='alternatives'?r.items[c]?.quote:null);
 const stripTokens=result=>JSON.parse(JSON.stringify(result,(key,value)=>['quoteToken','quoteExpiresAt'].includes(key)?undefined:value));
-const sameQuote=(a,b)=>a && b && a.item.title===b.item.title && a.item.link===b.item.link && a.currency===b.currency && a.totalCost===b.totalCost;
+const quoteSnapshot=q=>q && ({title:q.item.title,link:q.item.link,currency:q.currency,totalCost:q.totalCost,payNow:{total:q.payNow.total},dutyOnDelivery:{estimate:q.dutyOnDelivery.estimate}});
+const sameQuote=(a,b)=>a && b && a.title===b.item.title && a.link===b.item.link && a.currency===b.currency && a.totalCost===b.totalCost && a.payNow.total===b.payNow.total && a.dutyOnDelivery.estimate===b.dutyOnDelivery.estimate;
 export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
- const storage=chrome.storage.local,memory=new Map(); let queue=Promise.resolve();
+ const storage=chrome.storage.local,session=chrome.storage.session,memory=new Map(); let queue=Promise.resolve();
+ const ready=session.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});
  chrome.storage.onChanged?.addListener((changes,area)=>{if(area==='local' && (changes.consent || changes.destination)) memory.clear();});
  const send=req=>sendRequest(req,{storage,fetchImpl});
  async function status(sender) {
@@ -22,14 +24,22 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
   try {return parseMatchRPC({result:{structuredContent:entry.result}});} catch {return null;}
  }
  async function run(msg,sender) {
+  await ready;
   const state=await status(sender);
   if(msg?.type==='status') return {onboarded:state.onboarded,autoCheck:state.autoCheck,shopEnabled:state.shopEnabled,destination:state.destination};
   if(!state.onboarded || !state.shopEnabled || (sender.frameId!=null && sender.frameId!==0)) throw new MatchError('unavailable');
   if(!['match','buy'].includes(msg?.type)) throw new MatchError('malformed');
-  const input={name:msg.product?.name,brand:msg.product?.brand,destination:state.destination};
+  let record;
+  if(msg.type==='buy') {
+   const {snapshots={}}=await session.get('snapshots');
+   record=typeof msg.handle==='string' && Object.hasOwn(snapshots,msg.handle)?snapshots[msg.handle]:null;
+   if(!record || record.tabId!==sender.tab?.id || (record.documentId && record.documentId!==sender.documentId)) return {error:'changed'};
+  }
+  const input=record?record.snapshot:{name:msg.product?.name,brand:msg.product?.brand,destination:state.destination};
   const req=matchRequest(input),args=JSON.parse(req.body).params.arguments;
   const key=JSON.stringify([args.name,args.brand ?? '',args.destination]);
   const consent=await requireConsent(storage);
+  if(record && (record.revision!==consent.revision || record.snapshot.destination!==state.destination)) throw new MatchError('unavailable');
   async function stillAllowed() {
    const current=await requireConsent(storage),s=await status(sender);
    if(current.revision!==consent.revision || !s.shopEnabled || s.destination!==state.destination || (msg.type==='match' && msg.manual!==true && !s.autoCheck)) throw new MatchError('unavailable');
@@ -55,23 +65,37 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
     const entries=(Array.isArray(resultCache)?resultCache:[]).filter(e=>e.key!==key && now()-e.at<RESULT_CACHE_MS);
     entries.push({key,at:now(),result:stripTokens(result)}); await storage.set({resultCache:entries.slice(-200)});
    });
-   memory.set(key,{at:now(),result}); if(memory.size>200) memory.delete(memory.keys().next().value);
    // A deleted log stays deleted even when an earlier request completes.
    await appendTrace(storage,{kind:'match_result',shop:state.shop.host,result:result.kind},now(),epoch);
    return result;
   }
   if(msg.type==='match') {
    if(msg.manual!==true && !state.autoCheck) throw new MatchError('unavailable');
-   return lookup();
+   const result=await lookup(),publicResult=stripTokens(result);
+   if(!['same','alternatives'].includes(result.kind)) return publicResult;
+   if(!Number.isInteger(sender.tab?.id)) throw new MatchError('unavailable');
+   const handle=crypto.randomUUID(),choices={};
+   for(const choice of ['same',0,1]) {const q=selected(result,choice);if(q)choices[choice]=quoteSnapshot(q);}
+   const {snapshots={}}=await session.get('snapshots');
+   snapshots[handle]={tabId:sender.tab.id,documentId:sender.documentId ?? null,shop:state.shop.host,revision:consent.revision,
+    snapshot:{name:args.name,brand:args.brand ?? '',destination:args.destination,choices}};
+   const handles=Object.keys(snapshots);
+   for(const old of handles.slice(0,Math.max(0,handles.length-200))) {delete snapshots[old];memory.delete(old);}
+   await session.set({snapshots});
+   memory.set(handle,result);
+   return {...publicResult,handle};
   }
   // Validate identity before spending a refresh; never persist it.
   checkoutRequest({quoteToken:'VALIDATION_ONLY_TOKEN',email:msg.email,name:msg.name});
-  const mem=memory.get(key),prior=mem && now()-mem.at<RESULT_CACHE_MS?mem.result:await cacheRead(key);
-  let q=selected(prior,msg.choice); if(!q) return {error:'changed'};
-  if(!q.quoteToken || Date.parse(q.quoteExpiresAt)-60000<=now() || !Number.isFinite(Date.parse(q.quoteExpiresAt))) {
+  const prior=record.snapshot.choices[msg.choice];
+  if(!['same',0,1].includes(msg.choice) || !prior) return {error:'changed'};
+  let q=selected(memory.get(msg.handle),msg.choice);
+  if(!q?.quoteToken || !(Date.parse(q.quoteExpiresAt)-60000>now())) {
    const fresh=await lookup(true),next=selected(fresh,msg.choice);
-   if(!sameQuote(q,next)) return {error:'changed'}; q=next;
+   if(!sameQuote(prior,next)) return {error:'changed'};
+   memory.set(msg.handle,fresh);q=next;
   }
+  if(!sameQuote(prior,q)) return {error:'changed'};
   if(!q.quoteToken || !(Date.parse(q.quoteExpiresAt)-60000>now())) throw new MatchError('unavailable');
   await stillAllowed();
   const {checkoutUrl}=await send(checkoutRequest({quoteToken:q.quoteToken,email:msg.email,name:msg.name}));
