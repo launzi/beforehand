@@ -1,6 +1,6 @@
 # beforehand
 
-Chrome MV3 extension showing the Korea delivered price or Korean alternatives for the current product on 25 supported shops. Plain JavaScript modules; no AI keys or build dependencies.
+Chrome MV3 extension showing the Korea delivered price or Korean alternatives for the current product on 22 supported shops. Plain JavaScript modules; no AI keys or build dependencies.
 
 ```sh
 cd extension

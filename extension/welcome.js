@@ -23,7 +23,7 @@ export async function initWelcome({doc,chrome}) {
    id('complete').hidden=false;id('complete').textContent="You're set. Visit a product page on a supported shop.";
    id('shops').replaceChildren();
    for(const [code,country] of Object.entries(COUNTRIES)) {
-    const heading=doc.createElement('h3');heading.textContent=country;const p=doc.createElement('p');p.textContent=SHOPS.filter(s=>s.country===code).map(s=>s.host).join(' · ');id('shops').append(heading,p);
+    const hosts=SHOPS.filter(s=>s.country===code).map(s=>s.host);if(!hosts.length) continue;const heading=doc.createElement('h3');heading.textContent=country;const p=doc.createElement('p');p.textContent=hosts.join(' · ');id('shops').append(heading,p);
    }
   }catch {id('complete').hidden=false;id('complete').textContent='Could not save your choice. Please try again.';id('enable').disabled=false;id('notNow').disabled=false;}
  }

@@ -42,12 +42,11 @@ The toolbar popup lets you turn auto-check off for the current shop or everywher
 
 Supported shop origins (HTTPS, including subdomains):
 
-- United States: amazon.com, walmart.com, ebay.com, target.com, bestbuy.com, sephora.com, ulta.com.
+- United States: amazon.com, walmart.com, ebay.com, target.com, sephora.com, ulta.com.
 - United Kingdom: amazon.co.uk, ebay.co.uk, argos.co.uk, boots.com, lookfantastic.com, next.co.uk.
 - Japan: amazon.co.jp, rakuten.co.jp, shopping.yahoo.co.jp, zozo.jp, cosme.com.
-- Taiwan: shopee.tw, momoshop.com.tw, pchome.com.tw.
+- Taiwan: momoshop.com.tw, pchome.com.tw.
 - Hong Kong: hktvmall.com, watsons.com.hk, sasa.com.hk.
-- China: jd.com.
 
 ## Limited Use
 

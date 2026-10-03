@@ -15,7 +15,7 @@ Korea amounts come from the quote engine. The card's local price comes from the 
 
 Buy from Korea opens an extension page. Your email and name go to Korea Concierge to create an order when you click Continue to payment; they are not stored by the extension. Quote tokens stay in service-worker memory and are sent only to Korea Concierge to start checkout. A Buy refresh re-checks the same product name, brand and delivery country. If the selected quote changed, check again. That checkout tab then opens Stripe. Seller: Munteok. Duty and tax are estimated and paid on delivery.
 
-Supports 25 shops in the US, UK, Japan, China, Taiwan and Hong Kong. Disable checks per shop or globally. Export or delete the local log, or turn off and delete everything in Settings.
+Supports 22 shops in the US, UK, Japan, Taiwan and Hong Kong, with delivery to those countries and China. Disable checks per shop or globally. Export or delete the local log, or turn off and delete everything in Settings.
 
 ## Single purpose
 Show the Korea delivered price, or Korean alternatives, for the product on the shopping page you are viewing.
