@@ -1,0 +1,25 @@
+:root { color-scheme: light; font: 15px/1.5 system-ui, sans-serif; color: #183329; background: #f5f4ed; }
+body { margin: 0; min-width: 390px; }
+body.popup { width: 540px; }
+main { max-width: 780px; margin: auto; padding: 22px; }
+h1 { font-size: 25px; margin: 4px 0; letter-spacing: -.6px; } h2 { font-size: 18px; margin: 0 0 10px; }
+p { margin: 8px 0 14px; } small, .muted { color: #51675e; }
+header { border-bottom: 1px solid #c8d0c7; padding-bottom: 14px; margin-bottom: 18px; }
+section, article { background: white; border: 1px solid #ccd5cb; border-radius: 10px; padding: 16px; margin: 14px 0; }
+.disclosure { border-left: 5px solid #47705e; background: #edf4ed; }
+button, .button { cursor: pointer; border: 1px solid #365845; border-radius: 6px; padding: 9px 13px; background: #244b39; color: white; font: inherit; }
+button.secondary { background: white; color: #244b39; }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid #bc651a; outline-offset: 3px; }
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+label { display: block; margin-top: 16px; font-weight: 600; }
+input, select, textarea { display: block; box-sizing: border-box; width: 100%; font: inherit; padding: 9px; margin-top: 5px; border: 1px solid #80988a; border-radius: 4px; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.5 ui-monospace, monospace; background: #f3f6f3; padding: 12px; max-height: 340px; overflow-y: auto; }
+code, .digest { overflow-wrap: anywhere; font-size: 11px; }
+.badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 12px; text-transform: uppercase; background: #e1eee3; }
+.badge.deny { background: #f9ddd9; } .badge.hold { background: #ffedc7; }
+#error { color: #941e20; white-space: pre-wrap; } #status { color: #365845; }
+[hidden] { display: none !important; }
+a { color: #244b39; } footer { font-size: 12px; margin-top: 24px; }
+@media (min-width: 700px) { body.popup { width: auto; } }
+.result { white-space: pre-wrap; }

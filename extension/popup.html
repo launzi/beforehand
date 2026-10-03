@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Before You Ask</title><link rel="stylesheet" href="style.css"></head>
+<body class="popup"><main>
+<header><small>MUNTEOK · PERSONAL AI</small><h1>Before You Ask</h1><p>Useful next steps from patterns on your device.</p>
+<div class="controls"><button id="settings" class="secondary">Settings</button><button id="workspace" class="secondary">Open in a tab</button></div></header>
+<section id="onboarding" class="disclosure" hidden>
+<h2>Your history stays here</h2>
+<p>This feature reads the last 90 days of Chrome history on this device when you press Scan. It uses website addresses and visit times to find repeated searches, new setup activity, repeated visits, and activity that went quiet. It does not read page content, cookies, downloads, or other profiles.</p>
+<p>Raw history is processed in memory and is not uploaded or saved by this extension. After you review a request and press Run, a minimal signal (website hostname or scrubbed search term, day-level dates, and counts) goes to Nebius Token Factory for an AI suggestion. Optional research sends a scrubbed query to Tavily and selected search results to Nebius.</p>
+<p>Scrubbing cannot detect every personal detail. Read every request before sending. Your API keys stay in local extension storage and are sent only to their respective provider for authentication. No sale, ads, or analytics.</p>
+<p>A local audit log retains up to 500 records for 30 days, including the scrubbed requests you approved. You can export or delete it in Settings. The free extension uses your own provider accounts; provider charges may apply.</p>
+<button id="accept">I understand — enable local scans</button>
+</section>
+<section id="mainControls" hidden><h2>Find a useful next step</h2><p>Scan locally first. Nothing is sent until you press Run for an individual request.</p><button id="scan">Scan local history</button><p class="muted">Signals use a 30-day window. Quiet activity uses up to 90 days. Keep this page open while a request runs.</p></section>
+<p id="status" role="status" aria-live="polite"></p><p id="error" role="alert"></p>
+<div id="signals"></div>
+<section id="preview" hidden aria-labelledby="previewTitle"><h2 id="previewTitle">What leaves your device</h2>
+<p id="stage"></p><p id="destination"></p><p class="muted">This is the exact request body. Authentication uses your provider key in a separate Authorization header, hidden here and excluded from the audit log. The provider also receives your network IP address.</p>
+<pre id="body"></pre><p class="digest" id="previewDigest"></p>
+<div class="controls"><button id="run">Run this request</button><button id="cancel" class="secondary">Cancel</button></div>
+<p>No next stage runs automatically. Research results need another preview before being sent to the model.</p></section>
+<section id="resultSection" hidden><h2>Suggested next step</h2><p id="result" class="result"></p></section>
+<footer><button id="export" class="secondary">Export local trace (JSON)</button><p>Munteok · Apache-2.0 · <a href="privacy.html" target="_blank" rel="noopener">Privacy</a></p></footer>
+</main><script type="module" src="popup.js"></script></body></html>
