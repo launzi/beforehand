@@ -1,6 +1,6 @@
 import {BUILD} from './build-config.js';
 import {DEFAULT_MANDATE,normalizeMandate} from './mandate.js';
-export const DISCLOSURE_VERSION = 2;
+export const DISCLOSURE_VERSION = 3;
 export const hasConsent = value => value?.consent?.accepted === true && value.consent.version === DISCLOSURE_VERSION;
 export async function requireConsent(storage) {
   if (!storage || !hasConsent(await storage.get('consent'))) throw new Error('Read and agree to the current disclosure first.');
