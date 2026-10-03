@@ -38,7 +38,7 @@ async function loadTrace(storage,now) {
 export const readTrace=(storage,now=Date.now())=>withStorageLock(storage,()=>loadTrace(storage,now));
 export const appendTrace=(storage,event,now=Date.now(),epoch)=>withStorageLock(storage,async()=>{
  await requireConsent(storage);
- if(epoch!==undefined && (await storage.get('traceEpoch')).traceEpoch!==epoch) return;
+ if(epoch!==undefined && ((await storage.get('traceEpoch')).traceEpoch ?? null)!==epoch) return;
  const fields=traceFields[event.kind]; if(!fields) throw new Error('Unknown local log event');
  const safe={kind:event.kind,ts:new Date(now).toISOString()};
  for(const field of fields) if(typeof event[field]==='string') safe[field]=event[field].slice(0,200);

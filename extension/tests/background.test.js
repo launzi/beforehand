@@ -71,3 +71,13 @@ test('status chooses shop country and explicit destination override',async()=>{
  const a=env(); assert.equal((await a.bg.onMessage({type:'status'},{url:'https://www.boots.com/p'})).destination,'GB');
  await a.storage.set({destination:'JP'}); assert.equal((await a.bg.onMessage({type:'status'},sender)).destination,'JP');
 });
+test('switching off while preparing the trace prevents the outgoing request',async()=>{
+ const a=env();const set=a.storage.set.bind(a.storage);
+ a.storage.set=async value=>{await set(value);if(value.trace?.at(-1)?.kind==='match_sent')await set({autoCheck:false});};
+ assert.equal((await a.bg.onMessage(match,sender)).kind,'unavailable');assert.equal(a.calls.length,0);
+});
+test('trace generation permits the current request and refuses a deleted generation',async()=>{
+ const {deleteTrace}=await import('../core/storage.js');const s=new Store(consent());
+ await appendTrace(s,{kind:'match_result',shop:'amazon.com',result:'same'},Date.now(),null);assert.equal((await readTrace(s)).length,1);
+ await deleteTrace(s);await appendTrace(s,{kind:'match_result',shop:'amazon.com',result:'same'},Date.now(),null);assert.equal((await readTrace(s)).length,0);
+});

@@ -46,7 +46,8 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
     }
    }
    const epoch=(await storage.get('traceEpoch')).traceEpoch ?? null;
-   await appendTrace(storage,{kind:'match_sent',shop:state.shop.host,name:args.name,brand:args.brand,destination:args.destination},now());
+   await appendTrace(storage,{kind:'match_sent',shop:state.shop.host,name:args.name,brand:args.brand,destination:args.destination},now(),epoch);
+   await stillAllowed();
    const result=await send(fresh?matchRequest({...args,fresh:true}):req);
    await stillAllowed();
    await withStorageLock(storage,async()=>{
@@ -56,7 +57,7 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
    });
    memory.set(key,{at:now(),result}); if(memory.size>200) memory.delete(memory.keys().next().value);
    // A deleted log stays deleted even when an earlier request completes.
-   if(((await storage.get('traceEpoch')).traceEpoch ?? null)===epoch) await appendTrace(storage,{kind:'match_result',shop:state.shop.host,result:result.kind},now());
+   await appendTrace(storage,{kind:'match_result',shop:state.shop.host,result:result.kind},now(),epoch);
    return result;
   }
   if(msg.type==='match') {
