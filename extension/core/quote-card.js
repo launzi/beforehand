@@ -1,32 +1,38 @@
+// extension/core/quote-card.js
 import {DISCLOSURE,safeLink} from './korea-quote.js';
-// No innerHTML: service titles, verdicts, warnings and source strings are untrusted.
-export function renderQuoteCard(container,quote,doc=document) {
-  container.replaceChildren();
-  const element=(tag,text)=>{const node=doc.createElement(tag);node.textContent=text;return node;};
-  const card=element('article','');card.className='card quote-card';
-  card.append(element('h3',quote.item.title));
-  const badge=element('strong',quote.verdict);badge.className='badge';card.append(badge);
-  if(quote.verdict==='buy_local') card.append(element('p',"It's cheaper to buy locally"));
-  else card.append(element('p','Service verdict shown verbatim; no recommendation inferred.'));
-  const money=n=>`${quote.currency} ${n}`;
-  const table=element('table','');
-  for (const [label,value] of [
-    ['Destination',quote.destination],['Item',`KRW ${quote.payNow.itemKrw}`],['Shipping',`KRW ${quote.payNow.shippingKrw}`],
-    ['Service fee',`KRW ${quote.payNow.serviceFeeKrw}`],['Payment fee',`KRW ${quote.payNow.paymentFeeKrw}`],
-    ['Pay now (quote only)',`${money(quote.payNow.total)} / KRW ${quote.payNow.totalKrw}`],['FX rate',`${quote.payNow.fxRate} KRW / ${quote.currency}`],
-    ['Estimated duty on delivery',money(quote.dutyOnDelivery.estimate)],['Estimated total cost',money(quote.totalCost)],
-    ['Local price',quote.localPrice ? money(quote.localPrice.price) : 'Not available']]) {
-    const row=element('tr','');row.append(element('th',label),element('td',value));table.append(row);
+const money=(v,c)=>new Intl.NumberFormat('en-US',{style:'currency',currency:c}).format(v);
+const krw=v=>'₩'+new Intl.NumberFormat('en-US').format(v);
+export function renderQuoteCard(root,q,doc=document) {
+  const el=(tag,cls,text)=>{const e=doc.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
+  const card=el('div','quote-card');
+  const head=el('div','quote-heading');head.append(el('span','',`🇰🇷 ${q.item.title}`),el('span','status-pill','Quote only'));
+  const rail=el('ol','cost-rail');
+  for (const [op,label,value] of [['·','Item',krw(q.payNow.itemKrw)],['+','Shipping',krw(q.payNow.shippingKrw)],['+','Service fee',krw(q.payNow.serviceFeeKrw)],
+    ['+','Payment fee',krw(q.payNow.paymentFeeKrw)],['+','Duty on delivery (est.)',money(q.dutyOnDelivery.estimate,q.currency)]]) {
+    const li=el('li');li.dataset.op=op;li.append(el('span','',label),el('span','cost-value',value));rail.append(li);
   }
-  card.append(table,element('h4','Duty on delivery'));
-  for(const line of quote.dutyOnDelivery.lines) card.append(element('p',`${line.label}: ${line.rate} · ${money(line.amount)} — Source: ${line.source}`));
-  card.append(element('p',quote.dutyOnDelivery.note));
-  const warnings=element('details','');warnings.append(element('summary',`Warnings (${quote.warnings.length})`));
-  for(const warning of quote.warnings) warnings.append(element('p',warning));
-  card.append(warnings,element('p',DISCLOSURE),element('p','Quotes only. No orders or payments are created.'));
-  for(const [label,url] of [['Korean item reference',quote.item.link],['Local price reference',quote.localPrice?.url]]) {
-    if(!safeLink(url)) continue;
-    const link=element('a',label);link.href=url;link.target='_blank';link.rel='noopener noreferrer';card.append(link,element('br',''));
+  const total=el('div','quote-total');total.append(el('span','',`${{US:'🇺🇸',GB:'🇬🇧',JP:'🇯🇵',CN:'🇨🇳',TW:'🇹🇼',HK:'🇭🇰'}[q.destination]} ${q.destination} · Total`),el('strong','total-amount',money(q.totalCost,q.currency)));
+  card.append(head,rail,total);
+  if (q.verdict==='buy_local') card.append(el('p','quote-verdict',"It's cheaper to buy locally"));
+  if (q.localPrice) {
+    const max=Math.max(q.totalCost,q.localPrice.price);
+    const bars=el('div','price-comparison');
+    for (const [cls,label,v] of [['kr','Korea',q.totalCost],['local','Local',q.localPrice.price]]) {
+      const row=el('div','comparison-row'), track=el('div','comparison-track');
+      const bar=el('div','comparison-fill '+cls);bar.style.setProperty('--fraction',`${max>0 ? Math.round(v/max*100) : 0}%`);
+      track.append(bar);row.append(track,el('span','comparison-label',`${label} ${money(v,q.currency)}`));bars.append(row);
+    }
+    card.append(bars);
   }
-  container.append(card);
+  const details=el('details');details.append(el('summary','','Details'),el('p','',`Pay now ${money(q.payNow.total,q.currency)} (₩${q.payNow.totalKrw}) · FX ${q.payNow.fxRate} KRW/${q.currency}`));
+  details.append(el('p','',`Service verdict: ${q.verdict}`));
+  for (const line of q.dutyOnDelivery.lines) details.append(el('p','',`${line.label}: ${line.rate} · ${q.currency} ${line.amount} — ${line.source}`));
+  details.append(el('p','',q.dutyOnDelivery.note));
+  for (const w of q.warnings) details.append(el('p','',w));
+  for (const [label,url] of [['Korean item',q.item.link],['Local price',q.localPrice?.url]]) {
+    const href=safeLink(url); if (!href) continue;
+    const a=el('a','',label);a.href=href;a.target='_blank';a.rel='noopener noreferrer';details.append(a);
+  }
+  card.append(details,el('p','disclosure','ⓘ '+DISCLOSURE));
+  root.replaceChildren(card);
 }

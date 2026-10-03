@@ -4,10 +4,11 @@ import {DISCLOSURE_VERSION} from '../core/storage.js';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 class Element {
-  constructor(tag,owner) { this.tagName=tag.toLowerCase();this.owner=owner;this.children=[];this.dataset={};this.listeners={};this.hidden=false;this.disabled=false;this.textContent='';this.value=''; }
+  constructor(tag,owner) { this.tagName=tag.toLowerCase();this.owner=owner;this.children=[];this.dataset={};this.listeners={};this.hidden=false;this.disabled=false;this.textContent='';this.value='';this.style={setProperty(){}}; }
   append(...children) { this.children.push(...children); }
   replaceChildren(...children) { this.children=children; }
   remove() { this.removed=true; }
+  setAttribute(name,value) { this[name]=value; }
   scrollIntoView() {}
   addEventListener(type,fn) { this.listeners[type]=fn; }
   async fire(type='click') { if (!this.disabled) return this.listeners[type]?.({preventDefault(){}}); }
@@ -16,7 +17,7 @@ class Element {
 async function environment(stem,initial={}) {
   const html=await readFile(new URL(`../${stem}.html`,import.meta.url),'utf8');
   const ids=new Map(),all=[];
-  const document={createElement(tag){const e=new Element(tag,document);all.push(e);return e;},getElementById:id=>ids.get(id),
+  const document={createElement(tag){const e=new Element(tag,document);all.push(e);return e;},createElementNS(ns,tag){return document.createElement(tag);},getElementById:id=>ids.get(id),
     querySelectorAll:tag=>all.filter(e=>e.tagName===tag&&!e.removed)};
   document.body=document.createElement('body');
   for (const m of html.matchAll(/<([\w]+)\b([^>]*\bid="([^"]+)"[^>]*)>/g)) {
@@ -52,6 +53,8 @@ test('Popup first-use, local Scan, policy cards and exact pre-Run request previe
     assert.equal(env.ids.get('signals').children.length,1);assert.equal(env.data.trace[0].kind,'mandate_decision');
     const button=env.all.find(e=>e.textContent==='Preview request');assert.ok(button);await button.fire();
     assert.equal(env.network,0);assert.equal(env.ids.get('preview').hidden,false);assert.equal(env.ids.get('body').textContent,'(No request body)');
+    assert.ok(env.ids.get('sends').children.some(e=>e.tagName==='dt'));
+    assert.ok(env.ids.get('never').children.some(e=>e.tagName==='li'));assert.equal(env.ids.get('run').disabled,false);
     await env.ids.get('run').fire();assert.equal(env.network,1);
     const body=env.ids.get('body').textContent;assert.equal(JSON.parse(body).max_completion_tokens,8192);
     assert.ok(!body.includes('private-ID'));assert.ok(!body.includes('PRIVATE TITLE'));assert.ok(!body.includes('OPENAI_TEST_SECRET'));
