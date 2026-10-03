@@ -1,0 +1,7 @@
+{
+  "jsonLd": [
+    "{\"@graph\": [{\"@type\": \"WebPage\"}, {\"@type\": [\"Thing\", \"Product\"], \"name\": \"Heartleaf 77% Soothing Toner\", \"brand\": {\"name\": \"Anua\"}, \"offers\": {\"price\": \"29\", \"priceCurrency\": \"USD\"}}]}"
+  ],
+  "meta": {},
+  "selectors": {}
+}
