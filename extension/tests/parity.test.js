@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import {detectAll} from '../core/signals.js';
 import {scrubURL} from '../core/scrub.js';
-import {evaluateMandate,canonicalMandate} from '../core/mandate.js';
+import {evaluateMandate,canonicalMandate,searchPolicy,mandateDigest} from '../core/mandate.js';
 import * as prompts from '../core/prompts.js';
 import {formatEvidence} from '../core/agent.js';
 const directory = new URL('./vectors/',import.meta.url);
@@ -27,4 +27,19 @@ test('Prompt and token budget literals match Python oracle',()=>{
 for (const [i,c] of vector.formatting.entries()) test(`Python triage/skill evidence formatting: ${i}`,()=>{
   assert.equal(formatEvidence(c.evidence),c.triage);
   assert.equal(formatEvidence(c.evidence,true),c.skill);
+});
+
+for (const c of vector.korea.cases) test(`Python Korea product boundary parity: ${c.name}`,async()=>{
+  assert.deepEqual(await detectAll(vector.korea.data,c.options),c.expected);
+});
+test('Korea host config and scrubbed product names match Python',async()=>{
+  const {KOREA_PRODUCT_HOSTS}=await import('../core/domains.js');
+  const {productName}=await import('../core/korea-quote.js');
+  assert.deepEqual(KOREA_PRODUCT_HOSTS,vector.korea.hosts);
+  for(const c of vector.korea.products) assert.equal(productName(c.input),c.expected);
+});
+
+test('Public, no-search and confirm profile digests match Python TOML files',async()=>{
+  for(const [profile,mode] of [['public','allow'],['no-search','deny'],['confirm-research','hold']])
+    assert.equal(await mandateDigest(searchPolicy(mode)),vector.korea.profiles[profile].digest);
 });

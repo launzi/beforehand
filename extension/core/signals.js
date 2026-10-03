@@ -1,5 +1,6 @@
 // Deterministic port of browsing/signals.py. All *_us fields are decimal strings.
 import {DAY, HALF_HOUR, dateFromUs, isoToUs, sha256, codepointCompare} from './util.js';
+import {koreaProductTitle} from './korea-quote.js';
 export const ONBOARDING = ['/signup', '/sign-up', '/register', '/login', '/auth', '/onboarding', '/welcome', '/users/register'];
 export async function detectAll(data, {since_us, until_us, now_us, profile = null, include_restricted = false}) {
   const since = BigInt(since_us), until = BigInt(until_us), now = BigInt(now_us);
@@ -8,7 +9,7 @@ export async function detectAll(data, {since_us, until_us, now_us, profile = nul
   const joined = data.visits.flatMap(v => {
     const u = urls.get(v.url_key);
     return u && u.host && (include_restricted || domains.get(u.host)?.sensitivity !== 'restricted')
-      ? [{...v, host: u.host, path: u.path, us: BigInt(v.visit_time_us)}] : [];
+      ? [{...v, host: u.host, path: u.path, product:koreaProductTitle(u.host,u.path,u.product ?? u.title), us: BigInt(v.visit_time_us)}] : [];
   });
   const scoped = joined.filter(v => profile === null || v.profile === profile);
   const window = scoped.filter(v => v.us >= since && v.us < until);
@@ -48,6 +49,12 @@ export async function detectAll(data, {since_us, until_us, now_us, profile = nul
     const last = rows.reduce((n,v) => v.us > n ? v.us : n, rows[0].us);
     if (days.size >= 3 && last < now - 7n * DAY) await add('dropped', host, host, null, rows, {
       active_days: days.size, last_visit_us: last.toString(), days_quiet: Number((now-last)/DAY)});
+  }
+  for (const [key,rows] of group(window.filter(v=>v.product),v=>v.url_key)) {
+    const first=rows.reduce((n,v)=>v.us<n?v.us:n,rows[0].us), host=rows[0].host;
+    const transaction=window.some(v=>v.host===host && v.us>=first && /\/(?:checkout|orders?|payment|purchase)(?:\/|$|[.?])/i.test(v.path || ''));
+    if(rows.length>=2 && !transaction) await add('korea_product',key,host,rows[0].product,rows,
+      {product:rows[0].product,visit_count:rows.length,purchase_page_observed:false});
   }
   return signals.sort((a,b) => codepointCompare(a.kind,b.kind) || codepointCompare(a.key,b.key));
 }

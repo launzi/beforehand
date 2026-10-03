@@ -20,7 +20,7 @@ The extension is free; provider account charges may apply. There are no develope
 
 Search can be **Allow**, **Hold — require confirmation**, or **Deny**. A missing Tavily key denies research. Hold never resumes automatically: change to Allow, save, scan again, then review and Run. Every detected signal displays the rule verdict, reason and Python-compatible SHA-256 mandate digest.
 
-No network call occurs on load, scan, settings save, preview or export. Each Run performs one request to one of the two manifest-approved hosts. Provider keys are included only in Authorization headers; preview and trace omit them. Audit-write failures block sending. Response and network failures are surfaced without echoing remote error bodies or keys.
+No network call occurs on load, scan, settings save, preview or export. Each Run performs one request to one of the three manifest-approved hosts. Provider keys are included only in Authorization headers; preview and trace omit them. Audit-write failures block sending. Response and network failures are surfaced without echoing remote error bodies or keys.
 
 Local raw records are not saved. The extension sends only a minimized signal, with recognizable sensitive patterns scrubbed, generic onboarding markers and day-level times. This is **not anonymization**: a search term or hostname can still be personal. Read every preview. Optional excluded hosts also exclude subdomains. See [PRIVACY.md](PRIVACY.md) and [STORE_LISTING.md](STORE_LISTING.md).
 
@@ -58,4 +58,11 @@ Trace export uses a Blob and an ordinary download link. Its JSON `records` array
 
 ## Release checks still needed
 
-Load unpacked in a clean Chrome profile and validate onboarding, real history API coverage, settings, Run previews and JSON export. Verify actual provider connectivity and model availability only in a separately authorized live smoke check. Replace the privacy contact TODO, publish the policy URL and add store artwork before submission. This MVP does not itself publish to the Web Store.
+Load unpacked in a clean Chrome profile and validate onboarding, real history API coverage, settings, Run previews and JSON export. Verify actual provider connectivity and model availability only in a separately authorized live smoke check. Publish the privacy policy URL (contact: privacy@munteok.com) and add store artwork before submission. This MVP does not itself publish to the Web Store.
+
+
+## Korea product quotes (quote-only build)
+
+Repeated product pages on configured Korean shopping hosts produce `korea_product` candidates for the `korea_quote` skill. Host configuration is `browsing/persona/scenarios/korea-domains.toml`, mirrored in `core/domains.js` and parity-checked. Only scrubbed product names and destination (Settings; default US) go to Korea Concierge. The quote card renders service-provided costs, duty source text, local comparison, literal verdict and warnings. A separate Nemotron request interprets selected quote facts. Unknown verdicts are not translated into recommendations; `buy_local` is surfaced first. No checkout, order or payment code exists; response tokens and next-step instructions are discarded before use.
+
+Disclosure version 2 requires **I agree** before the history and network sinks can run. Legacy `onboarded` flags do not grant consent. Withdrawing consent clears all extension storage; an in-flight response cannot recreate the deleted trace. The quote service is operated by Munteok, as disclosed in the first-use page, card and privacy policy.

@@ -1,5 +1,7 @@
 import {sha256, usFromMs} from './util.js';
 import {scrubURL} from './scrub.js';
+import {requireConsent} from './storage.js';
+import {koreaProductTitle} from './korea-quote.js';
 const CAP = 1000;
 export function classifyHost(rules, host) {
   if (!host) return ['unknown','none'];
@@ -19,12 +21,14 @@ export function searchTerm(url) {
   if (['youtube.com','www.youtube.com'].includes(host) && path === '/results') return url.searchParams.get('search_query');
   return null;
 }
-export async function readHistory(history, {now = Date.now(), lookbackDays = 90, excludedHosts = [], onProgress = () => {}} = {}) {
+export async function readHistory(history, {storage, now = Date.now(), lookbackDays = 90, excludedHosts = [], onProgress = () => {}} = {}) {
+  await requireConsent(storage);
   const start = now - lookbackDays * 86400000;
   const byURL = new Map();
   let calls = 0;
   async function collect(lo, hi) {
     if (++calls > 4096) throw new Error('History is too large to scan completely. No partial signals were used.');
+    await requireConsent(storage);
     const page = await history.search({text:'', startTime:lo, endTime:hi, maxResults:CAP});
     if (page.length >= CAP) {
       if (hi-lo <= 1) throw new Error('History result limit reached at one timestamp. No partial signals were used.');
@@ -48,10 +52,12 @@ export async function readHistory(history, {now = Date.now(), lookbackDays = 90,
     const host = url.hostname.toLowerCase();
     const restricted = excludedHosts.some(h => host === h || host.endsWith('.'+h));
     domains.set(host,{host,sensitivity:restricted ? 'restricted' : 'none'});
+    await requireConsent(storage);
     const visits = (await history.getVisits({url:raw})).filter(v => Number.isFinite(v.visitTime) && v.visitTime >= start && v.visitTime < now);
     if (!visits.length) continue;
     const url_key = await sha256(scrubbed);
-    urls.set(url_key,{url_key,host,path:url.pathname || '/'}); // No full URL or page title retained.
+    const product = restricted ? null : koreaProductTitle(host,url.pathname,byURL.get(raw).title);
+    urls.set(url_key,{url_key,host,path:url.pathname || '/',...(product ? {product} : {})}); // Only scrubbed product names, no raw titles.
     for (const v of visits) {
       // Python ingestion deduplicates by profile + scrubbed URL key + time.
       const visit_time_us=usFromMs(v.visitTime), id = `${url_key}|${visit_time_us}`;
@@ -72,6 +78,7 @@ export async function readHistory(history, {now = Date.now(), lookbackDays = 90,
   }
   data.domains = [...domains.values()];
   data.urls = [...urls.values()]; data.searches = [...searches.values()];
+  await requireConsent(storage);
   return {data, coverage:{lookbackDays, urls:processed, visits:data.visits.length, skipped, complete:true},
     options:{since_us:usFromMs(now-30*86400000),until_us:usFromMs(now),now_us:usFromMs(now)}};
 }

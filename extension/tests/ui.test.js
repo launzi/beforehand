@@ -1,5 +1,6 @@
 // Dependency-free DOM harness: exercises shipped event handlers, not a real Chrome load.
 import test from 'node:test';
+import {DISCLOSURE_VERSION} from '../core/storage.js';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 class Element {
@@ -46,7 +47,7 @@ test('Popup first-use, local Scan, policy cards and exact pre-Run request previe
   try {
     await import('../popup.js?ui-smoke');
     assert.equal(env.ids.get('onboarding').hidden,false);assert.equal(env.historyReads,0);assert.equal(env.network,0);
-    await env.ids.get('accept').fire();assert.equal(env.data.onboarded,true);assert.equal(env.ids.get('mainControls').hidden,false);
+    await env.ids.get('accept').fire();assert.deepEqual(env.data.consent,{accepted:true,version:DISCLOSURE_VERSION});assert.equal(env.ids.get('mainControls').hidden,false);
     await env.ids.get('scan').fire();assert.equal(env.historyReads,1);assert.equal(env.network,0);
     assert.equal(env.ids.get('signals').children.length,1);assert.equal(env.data.trace[0].kind,'mandate_decision');
     const button=env.all.find(e=>e.textContent==='Preview request');assert.ok(button);await button.fire();
@@ -55,6 +56,8 @@ test('Popup first-use, local Scan, policy cards and exact pre-Run request previe
     const body=env.ids.get('body').textContent;assert.equal(JSON.parse(body).max_tokens,8192);
     assert.ok(!body.includes('private-ID'));assert.ok(!body.includes('PRIVATE TITLE'));assert.ok(!body.includes('test-nebius-secret'));
     await env.ids.get('cancel').fire();assert.equal(env.ids.get('preview').hidden,true);assert.equal(env.network,1);
+    await env.ids.get('revoke').fire();assert.deepEqual(env.data,{});assert.equal(env.ids.get('onboarding').hidden,false);
+    const reads=env.historyReads;await env.ids.get('scan').fire();assert.equal(env.historyReads,reads);assert.equal(env.network,1);
   } finally {env.restore();}
 });
 test('Options save, search hold, excluded hosts and deletion use local storage only',async()=>{
@@ -65,7 +68,7 @@ test('Options save, search hold, excluded hosts and deletion use local storage o
     await env.ids.get('form').fire('submit');
     // Form submission starts an async local save; drain microtasks before observing it.
     await new Promise(resolve=>setTimeout(resolve,0));
-    assert.equal(env.data.nebiusKey,'MY_PRIVATE_TEST_KEY');assert.deepEqual(env.data.mandate.require_confirmation,['research_briefing']);
+    assert.equal(env.data.nebiusKey,'MY_PRIVATE_TEST_KEY');assert.deepEqual(env.data.mandate.require_confirmation,['research_briefing','commerce.quote']);
     assert.deepEqual(env.data.excludedHosts,['example.com']);assert.equal(env.network,0);assert.equal(env.historyReads,0);
     assert.ok(!env.ids.get('status').textContent.includes('MY_PRIVATE_TEST_KEY'));
     await env.storage.set({trace:[{kind:'test',ts:new Date().toISOString()}]});await env.ids.get('clearTrace').fire();assert.equal(env.data.trace,undefined);

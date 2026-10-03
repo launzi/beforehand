@@ -7,7 +7,7 @@ test('MV3 manifest has only requested permissions and explicit provider hosts',a
   const m=JSON.parse(await read('manifest.json'));
   assert.equal(m.manifest_version,3);assert.equal(m.name,'Before You Ask');assert.equal(m.version,'0.1.0');
   assert.deepEqual(m.permissions,['history','storage']);
-  assert.deepEqual(m.host_permissions,['https://api.tokenfactory.nebius.com/*','https://api.tavily.com/*']);
+  assert.deepEqual(m.host_permissions,['https://api.tokenfactory.nebius.com/*','https://api.tavily.com/*','https://concierge.youngji.kim/*']);
   assert.equal(m.background,undefined);assert.equal(m.content_scripts,undefined);
   for (const file of [m.action.default_popup,m.options_page]) assert.ok((await stat(new URL(file,root))).isFile());
   assert.ok(m.content_security_policy.extension_pages.includes("script-src 'self'"));
@@ -37,7 +37,7 @@ test('Popup controls referenced in JavaScript exist in shipped HTML',async()=>{
 test('Required privacy language and publisher are present; listing description meets 132-character ceiling',async()=>{
   const privacy=await read('PRIVACY.md'), listing=await read('STORE_LISTING.md');
   assert.ok(privacy.includes('The use of information received from Google APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements.'));
-  assert.ok(privacy.includes('Munteok'));assert.ok(privacy.includes('TODO'));
+  assert.ok(privacy.includes('Munteok'));assert.ok(privacy.includes('privacy@munteok.com'));assert.ok(!privacy.includes('TODO'));
   const short=listing.split('## Short description\n\n')[1].split('\n')[0];assert.ok(short.length<=132,short.length);
   assert.ok((await read('LICENSE')).includes('Apache License'));
   const p=JSON.parse(await read('package.json'));assert.equal(p.dependencies,undefined);assert.equal(p.devDependencies,undefined);

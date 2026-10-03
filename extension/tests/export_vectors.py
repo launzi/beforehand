@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from browsing.signals import detect_all, Signal, _chrome_us_from_iso
 from browsing.scrub import scrub_url
-from browsing.mandate import Mandate, PlannedAction, evaluate_mandate
+from browsing.mandate import Mandate, PlannedAction, evaluate_mandate, load_mandate
 from browsing.ingest import init_db, ingest_records
 
 DB = ROOT / 'browsing/demo-assets/maker-20261003-075151.db'
@@ -70,6 +70,37 @@ def edge_vectors():
     return dict(data=data,cases=cases)
 
 
+def korea_vectors():
+    from browsing.persona.generate import DEFAULT_SCENARIO, load_scenario, populate, detector_window
+    from browsing.web.regenerate import scripted_visits
+    from browsing.web.korea_quote import product_name
+    conn = sqlite3.connect(':memory:')
+    conn.row_factory = sqlite3.Row
+    scenario = load_scenario(DEFAULT_SCENARIO)
+    populate(conn, scripted_visits(scenario), scenario)
+    # Add an observed transaction, an excluded host and a separate profile.
+    ingest_records(conn, [{"kind":"visit", "profile":"synthetic", "url":"https://www.musinsa.com/orders/complete",
+                           "title":"Complete", "visit_time_us":_chrome_us_from_iso('2026-09-30T22:00:00Z')}])
+    conn.execute("INSERT INTO domains(host,sensitivity) VALUES ('smartstore.naver.com','restricted')")
+    data = {name:[dict(row) for row in conn.execute(f'SELECT * FROM {name}')]
+            for name in ('urls','visits','searches','domains')}
+    cases=[]
+    for profile in (None,'synthetic','missing'):
+        for restricted in (False,True):
+            options={**detector_window(scenario),'profile':profile,'include_restricted':restricted}
+            cases.append({'name':f'korea/{profile}/{restricted}','options':options,
+                          'expected':[asdict(s) for s in detect_all(conn,**options)]})
+    conn.close()
+    with (ROOT/'browsing/persona/scenarios/korea-domains.toml').open('rb') as stream:
+        hosts=tomllib.load(stream)['korea_product']['hosts']
+    names=['Anua Heartleaf 77% Soothing Toner 250ml | OLIVE YOUNG Global',
+           'MUSINSA STANDARD Relaxed T-Shirt | MUSINSA', 'Vase - 네이버 스마트스토어',
+           'Toner demo@example.com token=SECRET https://private.test | OLIVE YOUNG Global']
+    from browsing.web.app import PROFILES
+    profiles={key:{'digest':load_mandate(path,None).digest} for key,path in PROFILES.items()}
+    return {'data':data,'cases':cases,'hosts':hosts,'profiles':profiles,'products':[{'input':n,'expected':product_name(n)} for n in names]}
+
+
 def wire(value, key=''):
     if isinstance(value, dict):
         return {k: wire(v, k) for k, v in value.items()}
@@ -111,10 +142,12 @@ def main():
     plans = {k: PlannedAction(k,k,a,s,True) for k,a,s in [
         ('unresolved','research_briefing',True),('new_entry','setup_check',False),
         ('recurring','theme_summary',False),('dropped','followup_nudge',False)]}
+    plans['korea_product'] = PlannedAction('korea_quote','korea_product','commerce.quote',False,True)
+    plans['checkout'] = PlannedAction('checkout','checkout','commerce.checkout',False,False)
     mandates = []
-    for allowed in [[], list(plans), ['unresolved'], ['스킬','😀','\ue000']]:
+    for allowed in [[], [p.skill for p in plans.values()], ['unresolved'], ['스킬','😀','\ue000']]:
         for allow_search in [False,True]:
-            for confirm in [[],['research_briefing'],['setup_check','followup_nudge','theme_summary']]:
+            for confirm in [[],['research_briefing','commerce.quote'],['setup_check','followup_nudge','theme_summary']]:
                 mandates.append(Mandate(frozenset(allowed),allow_search,frozenset(confirm)))
     mandates.append(Mandate(frozenset(),False,frozenset(),error='base: required mandate file missing'))
     mandate_cases = []
@@ -150,7 +183,7 @@ def main():
                        skill=namespace['_format_skill_evidence'](item)) for item in evidence]
     stamp = datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')
     result = wire(dict(source=str(DB.relative_to(ROOT)),source_sha256=hashlib.sha256(DB.read_bytes()).hexdigest(),
-        data=data,cases=cases,edge=edge_vectors(),scrub=[{'input':u,'expected':scrub_url(u)} for u in urls],
+        data=data,cases=cases,edge=edge_vectors(),korea=korea_vectors(),scrub=[{'input':u,'expected':scrub_url(u)} for u in urls],
         mandate=mandate_cases,constants=constants,formatting=formatting))
     OUT.mkdir(exist_ok=True)
     dest = OUT/f'parity-{stamp}.json'

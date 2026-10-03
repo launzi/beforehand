@@ -4,7 +4,7 @@ import {Controller,decisionFor} from '../core/controller.js';
 import {searchPolicy,normalizeMandate,mandateDigest} from '../core/mandate.js';
 import {minimizeSignal,triageVerdict,formatEvidence} from '../core/agent.js';
 import {modelRequest,completionText,resolveModel,sendRequest,TOKEN_FACTORY,MODEL_LIST,TAVILY} from '../core/providers.js';
-import {getSettings,appendTrace,readTrace,TRACE_LIMIT} from '../core/storage.js';
+import {getSettings,appendTrace,readTrace,TRACE_LIMIT,DISCLOSURE_VERSION} from '../core/storage.js';
 import {readHistory,searchTerm,classifyHost} from '../core/history.js';
 import {detectAll} from '../core/signals.js';
 import {usFromMs,isoToUs,dateFromUs} from '../core/util.js';
@@ -20,7 +20,7 @@ export class MemoryStorage {
   async clear() { this.value={}; }
 }
 const models=[{id:'nvidia/nemotron-ultra-long-latest'},{id:'nvidia/nemotron-ultra'},{id:'nvidia/nemotron-nano'}];
-const settings=()=>({onboarded:true,nebiusKey:'NEBIUS_TEST_SECRET',tavilyKey:'TAVILY_TEST_SECRET',mandate:searchPolicy('allow'),excludedHosts:[]});
+const settings=()=>({consent:{accepted:true,version:DISCLOSURE_VERSION},nebiusKey:'NEBIUS_TEST_SECRET',tavilyKey:'TAVILY_TEST_SECRET',mandate:searchPolicy('allow'),excludedHosts:[]});
 const signal=(kind='new_entry')=>({kind,key:'local-signal-hash',host:kind==='unresolved'?null:'example.com',term:kind==='unresolved'?'portable synthesizer comparison':null,
   first_us:usFromMs(Date.UTC(2026,8,1,10)),last_us:usFromMs(Date.UTC(2026,8,3,11)),
   evidence:kind==='unresolved'?{term:'portable synthesizer comparison',search_count:2,follow_through_counts:[0,1],distinct_days:2,low_follow_through:true,repeat_across_days:true}
@@ -74,12 +74,12 @@ test('Missing Tavily key overrides hold with deny, while non-search skill is all
   assert.equal((await decisionFor(signal('unresolved'),values)).verdict,'deny');
   assert.equal((await decisionFor(signal(),values)).verdict,'allow');
 });
-for (const change of [{onboarded:false},{nebiusKey:'new-key'},{tavilyKey:''},{excludedHosts:['example.com']}]) test(`Changing settings invalidates prepared request: ${Object.keys(change)[0]}`,async()=>{
+for (const change of [{consent:null},{nebiusKey:'new-key'},{tavilyKey:''},{excludedHosts:['example.com']}]) test(`Changing settings invalidates prepared request: ${Object.keys(change)[0]}`,async()=>{
   const calls=[],storage=new MemoryStorage(settings()),c=new Controller(storage,fakeFetch([],calls));
   await c.prepare(signal()); await storage.set(change); await assert.rejects(c.run(),/Settings changed/); assert.equal(calls.length,0);
 });
 test('No consent or Nebius key fails before any network call',async()=>{
-  for (const change of [{onboarded:false},{nebiusKey:''}]) {
+  for (const change of [{consent:null},{nebiusKey:''}]) {
     const calls=[],c=new Controller(new MemoryStorage({...settings(),...change}),fakeFetch([],calls));
     await assert.rejects(c.prepare(signal())); assert.equal(calls.length,0);
   }
@@ -102,7 +102,7 @@ test('Provider failures are explicit, single-use, and never leak keys or provide
   const calls=[],storage=new MemoryStorage(settings()),c=new Controller(storage,fakeFetch([new Error('NEBIUS_TEST_SECRET')],calls));
   await c.prepare(signal()); await assert.rejects(c.run(),/Provider network request failed/);
   assert.equal(c.pending,null); assert.equal(calls.length,1); assert.ok(!JSON.stringify(storage.value.trace).includes('NEBIUS_TEST_SECRET'));
-  await assert.rejects(sendRequest(modelRequest(),'secret',{fetchImpl:async()=>({ok:false,status:401,json:()=>{throw Error('must not read body')}})}),/HTTP 401/);
+  await assert.rejects(sendRequest(modelRequest(),'secret',{storage:new MemoryStorage(settings()),fetchImpl:async()=>({ok:false,status:401,json:()=>{throw Error('must not read body')}})}),/HTTP 401/);
 });
 test('Failed audit write blocks fetch',async()=>{
   const calls=[],storage=new MemoryStorage(settings()),c=new Controller(storage,fakeFetch([],calls));
@@ -116,8 +116,8 @@ test('No duplicate request during concurrent Run clicks',async()=>{
   await assert.rejects(c.run(),/Prepare/); resolve(); await first; assert.equal(calls.length,1);
 });
 test('Network destination and redirects are restricted; timeout errors do not echo credentials',async()=>{
-  await assert.rejects(sendRequest({...modelRequest(),url:'https://evil.example'},'key',{fetchImpl:()=>{throw Error('must not run')}}),/not permitted/);
-  await assert.rejects(sendRequest(modelRequest(),'key',{timeoutMs:1,fetchImpl:(_,init)=>new Promise((_,reject)=>init.signal.addEventListener('abort',()=>reject(Error('key'))))}),/timed out/);
+  await assert.rejects(sendRequest({...modelRequest(),url:'https://evil.example'},'key',{storage:new MemoryStorage(settings()),fetchImpl:()=>{throw Error('must not run')}}),/not permitted/);
+  await assert.rejects(sendRequest(modelRequest(),'key',{storage:new MemoryStorage(settings()),timeoutMs:1,fetchImpl:(_,init)=>new Promise((_,reject)=>init.signal.addEventListener('abort',()=>reject(Error('key'))))}),/timed out/);
 });
 test('Shortest matching model selection mirrors Python; missing model has no fallback',()=>{
   assert.equal(resolveModel(models,'ultra'),'nvidia/nemotron-ultra'); assert.throws(()=>resolveModel([], 'ultra'),/No model/);
@@ -129,7 +129,7 @@ test('Mandate storage validation fails closed',async()=>{
   assert.ok((await getSettings(new MemoryStorage({mandate:null}))).mandate.error);
 });
 test('Trace retains at most 500 records for 30 days and removes expired entries',async()=>{
-  const now=Date.UTC(2026,9,3),storage=new MemoryStorage({trace:[{ts:'2020-01-01T00:00:00Z',kind:'old'},...Array.from({length:505},()=>({ts:new Date(now).toISOString(),kind:'kept'}))]});
+  const now=Date.UTC(2026,9,3),storage=new MemoryStorage({...settings(),trace:[{ts:'2020-01-01T00:00:00Z',kind:'old'},...Array.from({length:505},()=>({ts:new Date(now).toISOString(),kind:'kept'}))]});
   await appendTrace(storage,{kind:'latest'},now); assert.equal(storage.value.trace.length,TRACE_LIMIT); assert.equal(storage.value.trace.at(-1).kind,'latest');
   assert.equal((await readTrace(storage,now+31*86400000)).length,0);
 });
@@ -157,19 +157,19 @@ test('History adapter uses only history search/getVisits, no titles/raw URL rete
   const calls=[];
   const fake={search:async o=>{calls.push(o);return [{url,title:'PRIVATE TITLE'}]},getVisits:async()=>[
     {visitId:'1',visitTime:now-86400000},{visitId:'2',visitTime:now-2*86400000},{visitId:'old',visitTime:now-100*86400000}]};
-  const result=await readHistory(fake,{now});assert.equal(result.data.visits.length,2);assert.equal(result.data.searches.length,1);
+  const result=await readHistory(fake,{storage:new MemoryStorage(settings()),now});assert.equal(result.data.visits.length,2);assert.equal(result.data.searches.length,1);
   assert.equal(result.data.searches[0].term,'portable synth'); assert.equal(result.data.searches[0].first_seen_utc,'2026-10-01T00:00:00Z');
   assert.ok(!JSON.stringify(result.data).includes('PRIVATE TITLE'));assert.ok(!JSON.stringify(result.data).includes('token=SECRET'));
   const signals=await detectAll(result.data,result.options);assert.equal(signals.filter(s=>s.kind==='unresolved').length,1);
-  const excluded=await readHistory(fake,{now,excludedHosts:['google.com']});assert.equal(excluded.data.searches.length,0);
+  const excluded=await readHistory(fake,{storage:new MemoryStorage(settings()),now,excludedHosts:['google.com']});assert.equal(excluded.data.searches.length,0);
   assert.deepEqual(await detectAll(excluded.data,excluded.options),[]);
 });
 test('History search saturation splits time windows and fails explicitly if still saturated',async()=>{
   let calls=0;
   const fake={search:async()=>++calls===1 ? Array.from({length:1000},()=>({url:'https://example.com'})) : [], getVisits:async()=>[]};
-  await readHistory(fake,{now:Date.UTC(2026,9,3)});assert.equal(calls,3);
+  await readHistory(fake,{storage:new MemoryStorage(settings()),now:Date.UTC(2026,9,3)});assert.equal(calls,3);
   const saturated={...fake,search:async()=>Array.from({length:1000},()=>({url:'https://example.com'}))};
-  await assert.rejects(readHistory(saturated,{now:Date.UTC(2026,9,3),lookbackDays:1/86400000}),/limit reached/);
+  await assert.rejects(readHistory(saturated,{storage:new MemoryStorage(settings()),now:Date.UTC(2026,9,3),lookbackDays:1/86400000}),/limit reached/);
 });
 test('Unsupported URL parsing and search engines are explicit; domain suffix matching respects labels',()=>{
   assert.equal(searchTerm(new URL('https://evilgoogle.com/search?q=private')),null);
@@ -194,7 +194,7 @@ test('History records colliding after URL scrub match Python URL/time and search
     {url:'https://www.google.com/search?q=hello&token=first'},
     {url:'https://www.google.com/search?q=hello&token=other'}],
     getVisits:async({url})=>[{visitId:url.includes('first')?'1':'2',visitTime:now-10000}]};
-  const result=await readHistory(fake,{now});assert.equal(result.data.urls.length,1);assert.equal(result.data.visits.length,1);assert.equal(result.data.searches.length,1);
+  const result=await readHistory(fake,{storage:new MemoryStorage(settings()),now});assert.equal(result.data.urls.length,1);assert.equal(result.data.visits.length,1);assert.equal(result.data.searches.length,1);
 });
 test('Audit boundary redacts known keys even in an invalid policy reason',async()=>{
   const storage=new MemoryStorage(settings());
@@ -208,5 +208,5 @@ for (const deletion of ['trace','all']) test(`Deleting ${deletion} while a reque
   await c.prepare(signal());const running=c.run();
   while (!respond) await new Promise(resolve=>setTimeout(resolve,0));
   if (deletion==='all') await storage.clear(); else await storage.remove('trace');
-  respond();await assert.rejects(running,/audit record was cleared/);assert.equal(c.pending,null);assert.equal(storage.value.trace,undefined);
+  respond();await assert.rejects(running,/audit record was cleared|current disclosure/);assert.equal(c.pending,null);assert.equal(storage.value.trace,undefined);
 });

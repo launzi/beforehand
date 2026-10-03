@@ -1,7 +1,8 @@
+import {quoteRequest,validateSummary} from './korea-quote.js';
 import {evaluateMandate,PLANS} from './mandate.js';
 import {getSettings,appendTrace} from './storage.js';
 import {modelRequest,sendRequest,completionText,searchResults,resolveModel} from './providers.js';
-import {minimizeSignal,triageRequest,skillRequest,researchRequest,triageVerdict,redactKnownKeys} from './agent.js';
+import {minimizeSignal,triageRequest,skillRequest,researchRequest,triageVerdict,redactKnownKeys,koreaQuoteSummaryRequest} from './agent.js';
 export async function decisionFor(signal,settings) {
   const decision = await evaluateMandate(settings.mandate,signal);
   if (decision.verdict !== 'deny' && PLANS[signal.kind]?.uses_search && !settings.tavilyKey)
@@ -12,6 +13,7 @@ export class Controller {
   #storage; #fetch; #models = null; #pending = null; #context = null; #busy = false;
   constructor(storage,fetchImpl=globalThis.fetch) { this.#storage=storage; this.#fetch=fetchImpl; }
   get pending() { return this.#pending; }
+  discard() { this.#pending=null; this.#context=null; this.#models=null; }
   cancel() { if (this.#busy) throw new Error('Wait for the current request to finish.'); this.#pending=null; this.#context=null; }
   async prepare(signal, expectedExcludedHosts = null) {
     if (this.#busy) throw new Error('A request is already running.');
@@ -28,7 +30,8 @@ export class Controller {
   #set(stage,hits=[]) {
     const c = this.#context;
     const request = stage === 'models' ? modelRequest() : stage === 'triage' ? triageRequest(c.signal,this.#models)
-      : stage === 'search' ? researchRequest(c.signal) : skillRequest(c.signal,this.#models,hits);
+      : stage === 'quote' ? quoteRequest(c.signal.term,c.settings.destination)
+      : stage === 'search' ? researchRequest(c.signal) : c.signal.kind === 'korea_product' ? koreaQuoteSummaryRequest(c.quote,this.#models) : skillRequest(c.signal,this.#models,hits);
     this.#pending=Object.freeze({stage,request:redactKnownKeys(request,c.settings),mandate_digest:c.decision.mandate_digest});
     return this.#pending;
   }
@@ -41,6 +44,7 @@ export class Controller {
     try {
       const latest=await getSettings(this.#storage), decision=await decisionFor(c.signal,latest);
       if (!latest.onboarded || decision.verdict !== 'allow' || decision.mandate_digest !== pending.mandate_digest
+        || latest.destination !== c.settings.destination
         || latest.nebiusKey !== c.settings.nebiusKey || latest.tavilyKey !== c.settings.tavilyKey
         || JSON.stringify(latest.excludedHosts) !== JSON.stringify(c.settings.excludedHosts))
         throw new Error('Settings changed. Scan and prepare again before running.');
@@ -48,7 +52,7 @@ export class Controller {
         verdict:decision.verdict,reason:decision.reason,planned_action:PLANS[c.signal.kind]};
       await appendTrace(this.#storage,{kind:'request_prepared',...meta,request:pending.request,status:'sending'});
       auditStarted=true;
-      const raw=await sendRequest(pending.request,pending.request.provider === 'tavily' ? latest.tavilyKey : latest.nebiusKey,{fetchImpl:this.#fetch});
+      const raw=await sendRequest(pending.request,pending.request.provider === 'tavily' ? latest.tavilyKey : latest.nebiusKey,{storage:this.#storage,fetchImpl:this.#fetch});
       let result;
       if (pending.stage === 'models') {
         const models=Array.isArray(raw) ? raw : raw?.data;
@@ -59,17 +63,21 @@ export class Controller {
       } else if (pending.stage === 'triage') {
         const body=JSON.parse(pending.request.body);
         const act=triageVerdict(completionText(raw,'ultra',body.model));
-        result=act ? {status:'ACT',next:c.signal.kind === 'unresolved' ? 'search' : 'skill'} : {status:'SKIP',next:null};
+        result=act ? {status:'ACT',next:c.signal.kind === 'korea_product' ? 'quote' : c.signal.kind === 'unresolved' ? 'search' : 'skill'} : {status:'SKIP',next:null};
+      } else if (pending.stage === 'quote') {
+        c.quote=raw;
+        result={status:'quoted',next:'skill',quote:c.quote};
       } else if (pending.stage === 'search') {
         result={status:'ready',next:'skill',hits:searchResults(raw)};
       } else {
         const body=JSON.parse(pending.request.body);
-        result={status:'complete',next:null,text:completionText(raw,'nano',body.model)};
+        const text=completionText(raw,'nano',body.model);
+        result={status:'complete',next:null,text:c.quote ? validateSummary(text,c.quote) : text,quote:c.quote};
       }
       const recorded=await appendTrace(this.#storage,{kind:'request_completed',...meta,status:result.status},Date.now(),meta.request_id);
       if (!recorded) throw new Error('Local request audit record was cleared or expired. Response discarded. Prepare again.');
       if (result.next) this.#set(result.next,result.hits);
-      return {status:result.status,text:result.text,pending:this.#pending};
+      return {status:result.status,text:result.text,quote:result.quote,pending:this.#pending};
     } catch (error) {
       this.#pending=null;
       if (auditStarted) await appendTrace(this.#storage,{kind:'request_failed',...meta,status:'error',

@@ -23,3 +23,5 @@ code, .digest { overflow-wrap: anywhere; font-size: 11px; }
 a { color: #244b39; } footer { font-size: 12px; margin-top: 24px; }
 @media (min-width: 700px) { body.popup { width: auto; } }
 .result { white-space: pre-wrap; }
+
+.quote-card table{width:100%;border-collapse:collapse}.quote-card th,.quote-card td{text-align:left;padding:6px;border-bottom:1px solid #526371}.quote-card p{overflow-wrap:anywhere}

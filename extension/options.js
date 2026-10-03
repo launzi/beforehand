@@ -7,6 +7,7 @@ async function act(fn) {
 }
 async function load() {
   const settings=await getSettings(storage); await readTrace(storage);
+  $('country').value=settings.destination;
   $('nebius').value=settings.nebiusKey; $('tavily').value=settings.tavilyKey;
   $('policy').value=!settings.mandate.allow_search ? 'deny' : settings.mandate.require_confirmation.includes('research_briefing') ? 'hold' : 'allow';
   $('excluded').value=settings.excludedHosts.join('\n');
@@ -19,7 +20,7 @@ $('form').addEventListener('submit',event=>{
     const excludedHosts=[...new Set($('excluded').value.split('\n').map(s=>s.trim().toLowerCase()).filter(Boolean))];
     if (excludedHosts.some(s=>! /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(s))) throw new Error('Invalid hostname');
     const mandate=searchPolicy($('policy').value);
-    await storage.set({nebiusKey:$('nebius').value.trim(),tavilyKey:$('tavily').value.trim(),mandate,excludedHosts});
+    await storage.set({nebiusKey:$('nebius').value.trim(),tavilyKey:$('tavily').value.trim(),mandate,excludedHosts,destination:$('country').value});
     $('digest').textContent=`Mandate SHA-256: ${await mandateDigest(mandate)}`;
     $('status').textContent='Saved locally. Scan again to use the new settings. No provider was contacted.';
   });

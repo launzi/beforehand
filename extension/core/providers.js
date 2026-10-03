@@ -1,3 +1,5 @@
+import {requireConsent} from './storage.js';
+import {validQuoteRequest,parseQuoteRPC,QuoteError} from './korea-quote.js';
 export const TOKEN_FACTORY = 'https://api.tokenfactory.nebius.com/v1/chat/completions';
 export const MODEL_LIST = 'https://api.tokenfactory.nebius.com/v1/models';
 export const TAVILY = 'https://api.tavily.com/search';
@@ -41,24 +43,42 @@ export function searchResults(raw) {
     return fields;
   });
 }
-export async function sendRequest(request,key,{fetchImpl = globalThis.fetch, timeoutMs = 60000} = {}) {
+export async function sendRequest(request,key,{storage, fetchImpl = globalThis.fetch, timeoutMs = 60000} = {}) {
+  await requireConsent(storage);
   // The only network sink. No discovery, retries, telemetry, or calls on page load.
   const permitted = (request.provider === 'nebius' && ((request.url === MODEL_LIST && request.method === 'GET' && request.body === null)
     || (request.url === TOKEN_FACTORY && request.method === 'POST' && typeof request.body === 'string')))
-    || (request.provider === 'tavily' && request.url === TAVILY && request.method === 'POST' && typeof request.body === 'string');
+    || (request.provider === 'tavily' && request.url === TAVILY && request.method === 'POST' && typeof request.body === 'string') || validQuoteRequest(request);
   if (!permitted) throw new ProviderError('Request destination is not permitted');
-  if (typeof key !== 'string' || !key.trim()) throw new ProviderError('Missing provider API key');
+  if (request.provider !== 'kc' && (typeof key !== 'string' || !key.trim())) throw new ProviderError('Missing provider API key');
   const abort = new AbortController(), timer = setTimeout(()=>abort.abort(),timeoutMs);
   try {
     let response;
     try {
       response = await fetchImpl(request.url,{method:request.method,
-        headers:{Authorization:`Bearer ${key}`,Accept:'application/json',...(request.body === null ? {} : {'Content-Type':'application/json'})},
+        headers:{...(request.provider === 'kc' ? {Accept:'application/json, text/event-stream'} : {Authorization:`Bearer ${key}`,Accept:'application/json'}),...(request.body === null ? {} : {'Content-Type':'application/json'})},
         ...(request.body === null ? {} : {body:request.body}),signal:abort.signal,
         credentials:'omit',redirect:'error',cache:'no-store',referrerPolicy:'no-referrer'});
     } catch { throw new ProviderError(abort.signal.aborted ? 'Provider request timed out' : 'Provider network request failed'); }
+    await requireConsent(storage);
+    if (request.provider === 'kc' && response.status === 429) throw new QuoteError('Rate limit exceeded');
     if (!response.ok) throw new ProviderError(`${request.provider} HTTP ${response.status}`);
-    try { return await response.json(); }
-    catch { throw new ProviderError('Provider returned invalid JSON'); }
+    let raw;
+    try {
+      if (request.provider === 'kc' && response.headers?.get('content-type')?.includes('text/event-stream')) {
+        const events=(await response.text()).replaceAll('\r\n','\n').split('\n\n').filter(block=>block.split('\n').some(line=>line.startsWith('data:')))
+          .map(block=>JSON.parse(block.split('\n').filter(line=>line.startsWith('data:')).map(line=>line.slice(5).trimStart()).join('\n')));
+        const replies=events.filter(e=>e?.id===1);
+        if(replies.length!==1) throw new Error('Malformed quote stream');
+        raw=replies[0];
+      } else raw=await response.json();
+    } catch { throw new ProviderError('Provider returned invalid JSON'); }
+    await requireConsent(storage);
+    if (request.provider === 'kc') {
+      const quote=parseQuoteRPC(raw);
+      if(quote.destination!==JSON.parse(request.body).params.arguments.destination) throw new QuoteError('Quote destination mismatch');
+      return quote;
+    }
+    return raw;
   } finally { clearTimeout(timer); }
 }

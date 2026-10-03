@@ -36,27 +36,28 @@ Help the user turn locally detected browsing patterns into optional, evidence-gr
 
 | Permission | Why it is necessary |
 | --- | --- |
-| `history` | On an explicit local scan, read website addresses and visit times to detect the four user-visible browsing patterns. No history mutation is performed. |
-| `storage` | Store user-entered provider keys, the search mandate, excluded hosts, first-use acknowledgement and a bounded local audit log. Only `chrome.storage.local` is used. |
+| `history` | On an explicit local scan, read website addresses, visit times and product-page titles to detect the four existing browsing patterns and repeated Korean product views. No history mutation is performed. |
+| `storage` | Store user-entered provider keys, the search mandate, excluded hosts, versioned first-use consent and quote destination and a bounded local audit log. Only `chrome.storage.local` is used. |
 | `https://api.tokenfactory.nebius.com/*` | After Run, discover available Nemotron models and send the exact reviewed, minimized triage or suggestion request to the user's Nebius account. |
+| `https://concierge.youngji.kim/*` | After Run and quote mandate approval, send only the scrubbed product name and destination for a free cost estimate. No order or payment is created. |
 | `https://api.tavily.com/*` | After Run and only when the mandate allows research and a key exists, send the reviewed scrubbed query for a research briefing. |
 
 No `alarms`, `tabs`, `downloads`, content-script, browsing-page host access or wildcard-host permission is required. A local Blob download exports traces without the downloads API.
 
 ## Data usage answers — draft for publisher review
 
-The extension has no Munteok collection server, but **user-approved third-party processing still counts as data handling**. Do not select “no data collected” merely because processing begins locally. Confirm the current dashboard's field wording before submitting.
+Korea Concierge is a Munteok-operated service receiving approved quote requests. **User-approved provider processing counts as data handling**. Do not select “no data collected” merely because processing begins locally. Confirm the current dashboard's field wording before submitting.
 
 | Data category | Draft answer and scope |
 | --- | --- |
-| Web history | **Yes.** History addresses/times are processed locally; only reviewed derived signals may be sent to the two named providers. |
+| Web history | **Yes.** History addresses/times are processed locally; only reviewed derived signals may be sent to the three named services. |
 | Authentication information | **Yes.** User-entered API keys are stored locally and sent only to their respective provider for authentication. No Chrome passwords or cookies are read. |
 | Personally identifiable information | **Potentially yes.** Terms and hostnames may retain names or other identifying text even after scrubbing. Review with the publisher; do not claim guaranteed anonymization. |
 | Health / financial information | Not deliberately requested or inferred, but user-approved query text can contain these subjects. Final disclosure must account for this possibility; redaction is not a semantic sensitivity classifier. |
-| Location | No location permission or precise-location collection. Providers receive network IP information; an approved query may include a location. |
+| Location | No location permission or precise-location collection. The selected destination country is sent for a quote. Providers receive network IP information; an approved query may include a location. |
 | Personal communications | No email/chat content access. No content scripts or page-body reading. |
 | User activity | Visits are used as browsing signals. No keystroke, click, mouse or screen monitoring. |
-| Website content | No visited-page bodies, images or titles are sent. Optional third-party search snippets are processed for the requested research feature. |
+| Website content | No visited-page bodies or images are sent. Scrubbed product names derived from history titles are sent only for the requested quote feature. Optional third-party search snippets are processed for the requested research feature. |
 
 Required certifications, if the released package continues to match this implementation:
 
@@ -67,4 +68,13 @@ Required certifications, if the released package continues to match this impleme
 
 ## Before publication
 
-Replace the privacy contact TODO; host a public privacy-policy URL; provide support and source-code URLs; add store icons, screenshots and promotional assets; confirm data-category answers against the live dashboard; perform unpacked Chrome and provider-account smoke checks; review provider terms. This draft is not a store submission or a guarantee of review approval.
+Privacy contact: privacy@munteok.com. Host a public privacy-policy URL; provide support and source-code URLs; add store icons, screenshots and promotional assets; confirm data-category answers against the live dashboard; perform unpacked Chrome and provider-account smoke checks; review provider terms. This draft is not a store submission or a guarantee of review approval.
+
+
+## Korea quote permission and disclosure
+
+`https://concierge.youngji.kim/*`: access to the quote-only MCP endpoint. Sends only the scrubbed product name and selected destination in tool arguments, never browsing URLs or visit times. No authentication, checkout, order or payment action. Quote tokens are discarded. The exact JSON-RPC request is previewed before Run. Estimated cost cards include fees, duty source text, local price comparison, warnings and service verdict; buy_local is honestly surfaced first.
+
+Korea Concierge is operated by the developer of this extension (Munteok). Quotes are free; a service fee is included only if you choose to buy through it.
+
+First-use prominent disclosure requires **I agree** before history reads or any provider calls. Accepted disclosure version 2 is stored locally; a version increase prompts again. **Withdraw consent and delete all local data** clears keys, trace, settings and consent. No pre-consent network traffic. Contact: privacy@munteok.com.

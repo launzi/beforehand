@@ -1,3 +1,4 @@
+import {productName,SUMMARY_SYSTEM,summaryFacts} from './korea-quote.js';
 import * as P from './prompts.js';
 import {ONBOARDING} from './signals.js';
 import {dateFromUs, EPOCH, DAY, floorDiv} from './util.js';
@@ -16,8 +17,10 @@ export function formatEvidence(evidence, skill = false) {
   }).join('\n');
 }
 // A deliberately smaller outbound contract than the local detector result.
-// Never send URL, title, path IDs, profile, visit IDs, or stable signal hashes.
+// Never send raw URLs/titles, path IDs, profile, visit IDs or stable signal hashes.
+// Korea candidates use only a scrubbed product name, without host or timestamps.
 export function minimizeSignal(signal) {
+  if(signal.kind === "korea_product") return {kind:signal.kind,term:productName(signal.term),evidence:{}};
   const allowed = {
     unresolved:['search_count','follow_through_counts','distinct_days','low_follow_through','repeat_across_days'],
     new_entry:['visit_count'], recurring:['distinct_days','total_visits','first_day','last_day'],
@@ -38,6 +41,8 @@ export function minimizeSignal(signal) {
     first_us:coarse(signal.first_us),last_us:coarse(signal.last_us)};
 }
 export function triageRequest(signal,models) {
+  if(signal.kind === 'korea_product') return completionRequest({model:resolveModel(models,P.TRIAGE_TIER),tier:P.TRIAGE_TIER,
+    prompt:'Repeated Korean product visits; a quote may help, purchase intent is unknown. Product: '+productName(signal.term),system:P.TRIAGE_SYSTEM,max_tokens:P.TRIAGE_MAX_TOKENS});
   const prompt = substitute(P.TRIAGE_TEMPLATE,{...signal,host:signal.host ?? '(none)',term:signal.term ?? '(none)',
     evidence:formatEvidence(signal.evidence),rubric:P.TRIAGE_RUBRICS[signal.kind]});
   return completionRequest({model:resolveModel(models,P.TRIAGE_TIER),tier:P.TRIAGE_TIER,prompt,system:P.TRIAGE_SYSTEM,max_tokens:P.TRIAGE_MAX_TOKENS});
@@ -63,4 +68,9 @@ export function redactKnownKeys(request,settings) {
     body = JSON.stringify(clean(JSON.parse(body)));
   }
   return Object.freeze({...request,body});
+}
+
+export function koreaQuoteSummaryRequest(quote,models) {
+  return completionRequest({model:resolveModel(models,'nano'),tier:'nano',prompt:'Korea quote facts: '+JSON.stringify(summaryFacts(quote)),
+    system:SUMMARY_SYSTEM,max_tokens:2348});
 }
