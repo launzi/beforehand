@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {Controller,decisionFor} from '../core/controller.js';
-import {sendRequest,modelRequest,searchRequest} from '../core/providers.js';
+import {sendRequest} from '../core/providers.js';
+import {modelsRequest} from '../core/llm.js';
+import {researchRequest} from '../core/research.js';
 import {searchPolicy,PLANS,evaluateMandate} from '../core/mandate.js';
 import {DISCLOSURE_VERSION,acceptConsent,getSettings,deleteAllData,appendTrace} from '../core/storage.js';
 import {readHistory} from '../core/history.js';
@@ -18,11 +20,11 @@ class Store {
   async clear() {this.value={};}
   async remove(key) {delete this.value[key];}
 }
-const settings=()=>({consent:{accepted:true,version:DISCLOSURE_VERSION},nebiusKey:'PRIVATE_NEBIUS',tavilyKey:'PRIVATE_TAVILY',mandate:searchPolicy('allow'),destination:'US'});
+const settings=()=>({consent:{accepted:true,version:DISCLOSURE_VERSION},provider:'openai',providerKey:'FAKE_OPENAI_KEY',mandate:searchPolicy('allow'),destination:'US'});
 const signal=()=>({kind:'korea_product',key:'PRIVATE_LOCAL_HASH',host:'global.oliveyoung.com',term:'Anua Heartleaf 77% Soothing Toner 250ml | OLIVE YOUNG Global',
   first_us:usFromMs(Date.UTC(2026,8,1)),last_us:usFromMs(Date.UTC(2026,8,2)),evidence:{visit_count:2,product:'Anua',url:'https://private.example/path'}});
 const answer=content=>({choices:[{message:{content},finish_reason:'stop'}]});
-const models={data:[{id:'nvidia/nemotron-ultra'},{id:'nvidia/nemotron-nano'}]};
+const models={data:[{id:'gpt-5'},{id:'gpt-5-mini'}]};
 const rpc=raw=>({jsonrpc:'2.0',id:1,result:{structuredContent:raw}});
 const reply=value=>({ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>value});
 
@@ -30,8 +32,8 @@ for(const consent of [undefined,{accepted:false,version:DISCLOSURE_VERSION},{acc
   test(`Consent missing/stale/withdrawn blocks every network and history sink: ${JSON.stringify(consent)}`,async()=>{
     const storage=new Store({...settings(),onboarded:true,consent});let network=0,reads=0;
     const fetchImpl=async()=>{network++;return reply({});};
-    for(const request of [modelRequest(),searchRequest('synthetic'),quoteRequest('Anua toner')])
-      await assert.rejects(sendRequest(request,'key',{storage,fetchImpl}),/current disclosure/);
+    for(const request of [modelsRequest('openai'),researchRequest('synthetic'),quoteRequest('Anua toner')])
+      await assert.rejects(sendRequest(request,'FAKE_KEY',{storage,fetchImpl}),/current disclosure/);
     await assert.rejects(readHistory({search:async()=>{reads++;return[];}},{storage}),/current disclosure/);
     await assert.rejects(new Controller(storage,fetchImpl).prepare(signal()),/disclosure/);
     assert.equal(network,0);assert.equal(reads,0);
@@ -39,7 +41,7 @@ for(const consent of [undefined,{accepted:false,version:DISCLOSURE_VERSION},{acc
   });
 }
 test('I agree records the exact version; withdrawal empties all local storage',async()=>{
-  const storage=new Store({nebiusKey:'key',trace:[{kind:'old'}]});await acceptConsent(storage);
+  const storage=new Store({providerKey:'FAKE_KEY',trace:[{kind:'old'}]});await acceptConsent(storage);
   assert.deepEqual(storage.value.consent,{accepted:true,version:DISCLOSURE_VERSION});
   await deleteAllData(storage);assert.deepEqual(storage.value,{});
   await assert.rejects(appendTrace(storage,{kind:'late'}),/current disclosure/);assert.deepEqual(storage.value,{});

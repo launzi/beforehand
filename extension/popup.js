@@ -1,7 +1,7 @@
 import {renderQuoteCard} from './core/quote-card.js';
 import {readHistory} from './core/history.js';
 import {detectAll} from './core/signals.js';
-import {getSettings,readTrace,appendTraces,acceptConsent,deleteAllData} from './core/storage.js';
+import {getSettings,migrateSettings,secretValues,readTrace,appendTraces,acceptConsent,deleteAllData} from './core/storage.js';
 import {PLANS} from './core/mandate.js';
 import {Controller,decisionFor} from './core/controller.js';
 import {scrubText} from './core/scrub.js';
@@ -15,7 +15,7 @@ async function showError(error) {
   let text=error instanceof Error ? error.message : 'The operation failed.';
   try {
     const settings=await getSettings(storage);
-    for (const key of [settings.nebiusKey,settings.tavilyKey]) if (key) text=text.replaceAll(key,'[API key removed]');
+    for (const key of await secretValues(storage)) if (key) text=text.replaceAll(key,'[API key removed]');
   } catch { text='The operation failed and local storage could not be read.'; }
   $('error').textContent=scrubText(text,600);
 }
@@ -107,7 +107,7 @@ $('export').addEventListener('click',task(async()=>{
   message('Trace exported locally. It contains the scrubbed requests you approved; share it carefully.');
 }));
 await task(async()=>{
-  await storage.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});
+  await storage.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});await migrateSettings(storage);
   const settings=await getSettings(storage); await readTrace(storage);
   $('onboarding').hidden=settings.onboarded; $('mainControls').hidden=!settings.onboarded;
 })();

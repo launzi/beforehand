@@ -37,13 +37,13 @@ async function environment(stem,initial={}) {
   }};
   globalThis.fetch=async(url,request)=>{
     network++;
-    assert.equal(url,'https://api.tokenfactory.nebius.com/v1/models');assert.equal(request.method,'GET');
-    return {ok:true,json:async()=>({data:[{id:'nvidia/nemotron-ultra'},{id:'nvidia/nemotron-nano'}]})};
+    assert.equal(url,'https://api.openai.com/v1/models');assert.equal(request.method,'GET');
+    return {ok:true,json:async()=>({data:[{id:'gpt-5'},{id:'gpt-5-mini'}]})};
   };
   return {ids,all,data,storage,document,get network(){return network;},get historyReads(){return historyReads;},restore(){Object.assign(globalThis,saved);}};
 }
 test('Popup first-use, local Scan, policy cards and exact pre-Run request preview work without network',async()=>{
-  const env=await environment('popup',{nebiusKey:'test-nebius-secret'});
+  const env=await environment('popup',{provider:'openai',providerKey:'OPENAI_TEST_SECRET'});
   try {
     await import('../popup.js?ui-smoke');
     assert.equal(env.ids.get('onboarding').hidden,false);assert.equal(env.historyReads,0);assert.equal(env.network,0);
@@ -53,8 +53,8 @@ test('Popup first-use, local Scan, policy cards and exact pre-Run request previe
     const button=env.all.find(e=>e.textContent==='Preview request');assert.ok(button);await button.fire();
     assert.equal(env.network,0);assert.equal(env.ids.get('preview').hidden,false);assert.equal(env.ids.get('body').textContent,'(No request body)');
     await env.ids.get('run').fire();assert.equal(env.network,1);
-    const body=env.ids.get('body').textContent;assert.equal(JSON.parse(body).max_tokens,8192);
-    assert.ok(!body.includes('private-ID'));assert.ok(!body.includes('PRIVATE TITLE'));assert.ok(!body.includes('test-nebius-secret'));
+    const body=env.ids.get('body').textContent;assert.equal(JSON.parse(body).max_completion_tokens,8192);
+    assert.ok(!body.includes('private-ID'));assert.ok(!body.includes('PRIVATE TITLE'));assert.ok(!body.includes('OPENAI_TEST_SECRET'));
     await env.ids.get('cancel').fire();assert.equal(env.ids.get('preview').hidden,true);assert.equal(env.network,1);
     await env.ids.get('revoke').fire();assert.deepEqual(env.data,{});assert.equal(env.ids.get('onboarding').hidden,false);
     const reads=env.historyReads;await env.ids.get('scan').fire();assert.equal(env.historyReads,reads);assert.equal(env.network,1);
@@ -68,10 +68,10 @@ test('Options save, search hold, excluded hosts and deletion use local storage o
     await env.ids.get('form').fire('submit');
     // Form submission starts an async local save; drain microtasks before observing it.
     await new Promise(resolve=>setTimeout(resolve,0));
-    assert.equal(env.data.nebiusKey,'MY_PRIVATE_TEST_KEY');assert.deepEqual(env.data.mandate.require_confirmation,['research_briefing','commerce.quote']);
+    assert.equal(env.data.providerKey,'MY_PRIVATE_TEST_KEY');assert.deepEqual(env.data.mandate.require_confirmation,['research_briefing','commerce.quote']);
     assert.deepEqual(env.data.excludedHosts,['example.com']);assert.equal(env.network,0);assert.equal(env.historyReads,0);
     assert.ok(!env.ids.get('status').textContent.includes('MY_PRIVATE_TEST_KEY'));
     await env.storage.set({trace:[{kind:'test',ts:new Date().toISOString()}]});await env.ids.get('clearTrace').fire();assert.equal(env.data.trace,undefined);
-    await env.ids.get('clearAll').fire();assert.equal(env.data.nebiusKey,undefined);assert.equal(env.ids.get('nebius').value,'');assert.equal(env.network,0);
+    await env.ids.get('clearAll').fire();assert.equal(env.data.providerKey,undefined);assert.equal(env.ids.get('nebius').value,'');assert.equal(env.network,0);
   } finally {env.restore();}
 });

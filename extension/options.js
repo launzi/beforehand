@@ -1,4 +1,4 @@
-import {getSettings,readTrace,deleteTrace,deleteAllData} from './core/storage.js';
+import {getSettings,migrateSettings,secretValues,readTrace,deleteTrace,deleteAllData} from './core/storage.js';
 import {searchPolicy,mandateDigest} from './core/mandate.js';
 const $=id=>document.getElementById(id), storage=chrome.storage.local;
 async function act(fn) {
@@ -8,7 +8,7 @@ async function act(fn) {
 async function load() {
   const settings=await getSettings(storage); await readTrace(storage);
   $('country').value=settings.destination;
-  $('nebius').value=settings.nebiusKey; $('tavily').value=settings.tavilyKey;
+  $('nebius').value=settings.providerKey; $('tavily').value='';
   $('policy').value=!settings.mandate.allow_search ? 'deny' : settings.mandate.require_confirmation.includes('research_briefing') ? 'hold' : 'allow';
   $('excluded').value=settings.excludedHosts.join('\n');
   $('digest').textContent=`Mandate SHA-256: ${await mandateDigest(settings.mandate)}`;
@@ -20,7 +20,7 @@ $('form').addEventListener('submit',event=>{
     const excludedHosts=[...new Set($('excluded').value.split('\n').map(s=>s.trim().toLowerCase()).filter(Boolean))];
     if (excludedHosts.some(s=>! /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(s))) throw new Error('Invalid hostname');
     const mandate=searchPolicy($('policy').value);
-    await storage.set({nebiusKey:$('nebius').value.trim(),tavilyKey:$('tavily').value.trim(),mandate,excludedHosts,destination:$('country').value});
+    await storage.set({provider:(await getSettings(storage)).provider,providerKey:$('nebius').value.trim(),mandate,excludedHosts,destination:$('country').value});
     $('digest').textContent=`Mandate SHA-256: ${await mandateDigest(mandate)}`;
     $('status').textContent='Saved locally. Scan again to use the new settings. No provider was contacted.';
   });
@@ -30,4 +30,4 @@ $('clearAll').addEventListener('click',()=>act(async()=>{
   if (!window.confirm('Delete all extension keys, settings, onboarding consent and local trace?')) return;
   await deleteAllData(storage); await load(); $('status').textContent='All extension data deleted. Local scans require the disclosure again.';
 }));
-await act(async()=>{await storage.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});await load();});
+await act(async()=>{await storage.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});await migrateSettings(storage);await load();});

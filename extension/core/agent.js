@@ -3,7 +3,8 @@ import * as P from './prompts.js';
 import {ONBOARDING} from './signals.js';
 import {dateFromUs, EPOCH, DAY, floorDiv} from './util.js';
 import {scrubText} from './scrub.js';
-import {completionRequest,resolveModel,searchRequest} from './providers.js';
+import {chatRequest,resolveRole} from './llm.js';
+import {researchRequest} from './research.js';
 const py = x => x === true ? 'True' : x === false ? 'False' : x === null ? 'None' : String(x);
 const substitute = (template,fields) => template.replace(/\{(\w+)\}/g,(_,k)=>fields[k]);
 export const triageVerdict = reply => /^ACT(?:\s*:[^\r\n]+)?$/.test((reply || '').trim().toUpperCase());
@@ -40,37 +41,35 @@ export function minimizeSignal(signal) {
   return {kind:signal.kind, key:'(local identifier withheld)', host, term, evidence,
     first_us:coarse(signal.first_us),last_us:coarse(signal.last_us)};
 }
-export function triageRequest(signal,models) {
-  if(signal.kind === 'korea_product') return completionRequest({model:resolveModel(models,P.TRIAGE_TIER),tier:P.TRIAGE_TIER,
-    prompt:'Repeated Korean product visits; a quote may help, purchase intent is unknown. Product: '+productName(signal.term),system:P.TRIAGE_SYSTEM,max_tokens:P.TRIAGE_MAX_TOKENS});
-  const prompt = substitute(P.TRIAGE_TEMPLATE,{...signal,host:signal.host ?? '(none)',term:signal.term ?? '(none)',
-    evidence:formatEvidence(signal.evidence),rubric:P.TRIAGE_RUBRICS[signal.kind]});
-  return completionRequest({model:resolveModel(models,P.TRIAGE_TIER),tier:P.TRIAGE_TIER,prompt,system:P.TRIAGE_SYSTEM,max_tokens:P.TRIAGE_MAX_TOKENS});
+export function triageRequest(provider,signal,ids) {
+  const model=resolveRole(provider,ids,'triage');
+  if (signal.kind==='korea_product') return chatRequest(provider,{model,role:'triage',
+    prompt:'Repeated Korean product visits; a quote may help, purchase intent is unknown. Product: '+productName(signal.term),system:P.TRIAGE_SYSTEM,maxTokens:P.TRIAGE_MAX_TOKENS});
+  const prompt=substitute(P.TRIAGE_TEMPLATE,{...signal,host:signal.host ?? '(none)',term:signal.term ?? '(none)',evidence:formatEvidence(signal.evidence),rubric:P.TRIAGE_RUBRICS[signal.kind]});
+  return chatRequest(provider,{model,role:'triage',prompt,system:P.TRIAGE_SYSTEM,maxTokens:P.TRIAGE_MAX_TOKENS});
 }
-export function skillRequest(signal,models,hits=[]) {
-  const templates = {unresolved:P.UNRESOLVED_PROMPT,new_entry:P.NEW_ENTRY_PROMPT,recurring:P.RECURRING_PROMPT,dropped:P.DROPPED_PROMPT};
-  const safeHits = hits.map(h=>({title:scrubText(h.title),url:safeHitURL(h.url),snippet:scrubText(h.snippet,700)}));
-  const hitsText = safeHits.length ? safeHits.map((h,i)=>`${i+1}. ${h.title}\n   ${h.url}\n   ${h.snippet}`).join('\n') : '(no hits)';
-  const prompt = substitute(templates[signal.kind],{...signal,evidence:formatEvidence(signal.evidence,true),hits:hitsText});
-  return completionRequest({model:resolveModel(models,'nano'),tier:'nano',prompt,system:P.SKILL_SYSTEM,max_tokens:P.SKILL_MAX_TOKENS[signal.kind]});
+export function skillRequest(provider,signal,ids,hits=[]) {
+  const templates={unresolved:P.UNRESOLVED_PROMPT,new_entry:P.NEW_ENTRY_PROMPT,recurring:P.RECURRING_PROMPT,dropped:P.DROPPED_PROMPT};
+  const safeHits=hits.map(h=>({title:scrubText(h.title),url:safeHitURL(h.url),snippet:scrubText(h.snippet,700)}));
+  const hitsText=safeHits.length ? safeHits.map((h,i)=>`${i+1}. ${h.title}\n   ${h.url}\n   ${h.snippet}`).join('\n') : '(no hits)';
+  const prompt=substitute(templates[signal.kind],{...signal,evidence:formatEvidence(signal.evidence,true),hits:hitsText});
+  return chatRequest(provider,{model:resolveRole(provider,ids,'skill'),role:'skill',prompt,system:P.SKILL_SYSTEM,maxTokens:P.SKILL_MAX_TOKENS[signal.kind]});
 }
-function safeHitURL(value) {
-  try { const u = new URL(value); return ['http:','https:'].includes(u.protocol) ? u.origin + scrubText(u.pathname,200) : '[URL removed]'; }
-  catch { return '[invalid URL removed]'; }
-}
-export const researchRequest = signal => searchRequest(signal.term);
-export function redactKnownKeys(request,settings) {
-  let body = request.body;
-  if (body !== null) {
-    // Work on strings recursively, not serialized JSON, so quotes/backslashes in a key cannot break JSON.
-    const clean = value => typeof value === 'string' ? [settings.nebiusKey,settings.tavilyKey].filter(Boolean).reduce((s,k)=>s.replaceAll(k,'[API key removed]'),value)
-      : Array.isArray(value) ? value.map(clean) : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([k,v])=>[k,clean(v)])) : value;
-    body = JSON.stringify(clean(JSON.parse(body)));
+export const researchRequestFor = signal => researchRequest(signal.term);
+export function redactKnownKeys(request,secrets) {
+  let body=request.body;
+  if (body!==null) {
+    const clean=value=>typeof value==='string' ? secrets.filter(Boolean).reduce((s,k)=>s.replaceAll(k,'[API key removed]'),value)
+      : Array.isArray(value) ? value.map(clean) : value && typeof value==='object' ? Object.fromEntries(Object.entries(value).map(([k,v])=>[k,clean(v)])) : value;
+    body=JSON.stringify(clean(JSON.parse(body)));
   }
   return Object.freeze({...request,body});
 }
+export function koreaQuoteSummaryRequest(provider,quote,ids) {
+  return chatRequest(provider,{model:resolveRole(provider,ids,'skill'),role:'skill',prompt:'Korea quote facts: '+JSON.stringify(summaryFacts(quote)),system:SUMMARY_SYSTEM,maxTokens:2348});
+}
 
-export function koreaQuoteSummaryRequest(quote,models) {
-  return completionRequest({model:resolveModel(models,'nano'),tier:'nano',prompt:'Korea quote facts: '+JSON.stringify(summaryFacts(quote)),
-    system:SUMMARY_SYSTEM,max_tokens:2348});
+function safeHitURL(value) {
+  try { const u = new URL(value); return ['http:','https:'].includes(u.protocol) ? u.origin + scrubText(u.pathname,200) : '[URL removed]'; }
+  catch { return '[invalid URL removed]'; }
 }
