@@ -3,15 +3,25 @@ import assert from 'node:assert/strict';
 import {readFile,readdir,stat} from 'node:fs/promises';
 const root=new URL('../',import.meta.url);
 const read=path=>readFile(new URL(path,root),'utf8');
-test('MV3 manifest has only requested permissions and explicit provider hosts',async()=>{
-  const m=JSON.parse(await read('manifest.json'));
-  assert.equal(m.manifest_version,3);assert.equal(m.name,'Before You Ask');assert.equal(m.version,'0.1.0');
-  assert.deepEqual(m.permissions,['history','storage']);
-  assert.deepEqual(m.host_permissions,['https://api.tokenfactory.nebius.com/*','https://api.tavily.com/*','https://concierge.youngji.kim/*']);
-  assert.equal(m.background,undefined);assert.equal(m.content_scripts,undefined);
-  for (const file of [m.action.default_popup,m.options_page]) assert.ok((await stat(new URL(file,root))).isFile());
-  assert.ok(m.content_security_policy.extension_pages.includes("script-src 'self'"));
+import {manifestFor} from '../scripts/build.mjs';
+test('manifest per build lists only that build\'s destinations',()=>{
+  const s=manifestFor('store'), h=manifestFor('hackathon');
+  assert.deepEqual(s.permissions,['history','storage']);
+  assert.deepEqual(s.host_permissions,['https://api.openai.com/*','https://api.anthropic.com/*','https://concierge.youngji.kim/*']);
+  assert.deepEqual(h.host_permissions,['https://api.tokenfactory.nebius.com/*','https://concierge.youngji.kim/*']);
+  for (const m of [s,h]) {
+    assert.equal(m.manifest_version,3);assert.equal(m.name,'Before You Ask');assert.equal(m.version,'0.2.0');
+    assert.equal(m.background,undefined);assert.equal(m.content_scripts,undefined);
+    assert.ok(!JSON.stringify(m).includes('tavily'));
+    assert.match(m.content_security_policy.extension_pages,/script-src 'self'; object-src 'none'; connect-src /);
+  }
+  assert.ok(!s.content_security_policy.extension_pages.includes('tokenfactory'));
+  assert.ok(!h.content_security_policy.extension_pages.includes('openai'));
 });
+test('checked-in manifest.json equals the store build',async()=>{
+  assert.deepEqual(JSON.parse(await read('manifest.json')),manifestFor('store'));
+});
+
 test('UI assets and module imports resolve locally, with no inline or remote scripts',async()=>{
   for (const file of ['popup.html','options.html','privacy.html']) {
     const html=await read(file);assert.match(html,/<html lang="en">/);

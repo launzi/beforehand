@@ -1,12 +1,24 @@
 {
   "manifest_version": 3,
   "name": "Before You Ask",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "minimum_chrome_version": "102",
   "description": "Turn local browsing patterns into useful next steps. Review every outgoing request before you run it.",
-  "permissions": ["history", "storage"],
-  "host_permissions": ["https://api.tokenfactory.nebius.com/*", "https://api.tavily.com/*", "https://concierge.youngji.kim/*"],
-  "action": {"default_popup": "popup.html", "default_title": "Before You Ask"},
+  "permissions": [
+    "history",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*",
+    "https://concierge.youngji.kim/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Before You Ask"
+  },
   "options_page": "options.html",
-  "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'none'; connect-src https://api.tokenfactory.nebius.com https://api.tavily.com https://concierge.youngji.kim"}
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; connect-src https://api.openai.com https://api.anthropic.com https://concierge.youngji.kim"
+  }
 }
