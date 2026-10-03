@@ -11,14 +11,14 @@ const origin=u=>new URL(u).origin;
 export function manifestFor(target) {
   const t=TARGETS[target]; if (!t) throw new Error('Unknown target');
   const hosts=[...new Set([...t.providers.flatMap(p=>[origin(PRESETS[p].chat.url),origin(PRESETS[p].models.url)]),origin(KC_ENDPOINT)])];
-  return {manifest_version:3,name:'Before You Ask',version:'0.2.0',minimum_chrome_version:'102',
+  return {manifest_version:3,name:'Beforehand',version:'0.2.0',minimum_chrome_version:'102',
     description:'Turn local browsing patterns into useful next steps. Review every outgoing request before you run it.',
     permissions:['history','storage'],host_permissions:hosts.map(h=>h+'/*'),
-    action:{default_popup:'popup.html',default_title:'Before You Ask'},options_page:'options.html',
+    action:{default_popup:'popup.html',default_title:'Beforehand'},options_page:'options.html',
     content_security_policy:{extension_pages:`script-src 'self'; object-src 'none'; connect-src ${hosts.join(' ')}`}};
 }
 const SHIP=['popup.html','popup.js','options.html','options.js','privacy.html','style.css','core','LICENSE','NOTICE','PRIVACY.md'];
-async function build(target) {
+export async function build(target) {
   const manifest=manifestFor(target);
   const out=new URL(`dist/${target}/`,root);
   await rm(out,{recursive:true,force:true}); await mkdir(out,{recursive:true});

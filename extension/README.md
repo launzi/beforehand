@@ -1,4 +1,4 @@
-# Before You Ask — Chrome MV3 MVP
+# Beforehand — Chrome MV3 MVP
 
 Munteok · 0.1.0 · Apache-2.0. A dependency-free, readable ES-module port of the local browsing signal pipeline. No build, package installation, bundler, minification, service worker or remote scripts.
 
@@ -7,7 +7,7 @@ Munteok · 0.1.0 · Apache-2.0. A dependency-free, readable ES-module port of th
 1. Open `chrome://extensions` in Chrome.
 2. Enable **Developer mode**.
 3. Choose **Load unpacked** and select this `extension/` directory.
-4. Open **Before You Ask** from the extensions menu. Read and accept the first-use disclosure.
+4. Open **Beforehand** from the extensions menu. Read and accept the first-use disclosure.
 5. Open **Settings** and save a Nebius Token Factory API key. Optionally add a Tavily key for research. Saving does not contact providers.
 6. Press **Scan local history**. Choose an allowed signal and inspect **What leaves your device**.
 7. Press **Run this request** to execute only that request. Model discovery, Ultra triage, optional Tavily research and Nano suggestions each need their own review and Run click.

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Before You Ask",
+  "name": "Beforehand",
   "version": "0.2.0",
   "minimum_chrome_version": "102",
   "description": "Turn local browsing patterns into useful next steps. Review every outgoing request before you run it.",
@@ -15,7 +15,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Before You Ask"
+    "default_title": "Beforehand"
   },
   "options_page": "options.html",
   "content_security_policy": {

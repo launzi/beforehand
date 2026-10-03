@@ -129,7 +129,7 @@ $('export').addEventListener('click',task(async()=>{
   const records=await readTrace(storage);
   const blob=new Blob([JSON.stringify({format:'before-you-ask-trace-v1',records},null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob), a=document.createElement('a');
-  a.href=url; a.download=`before-you-ask-trace-${new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+Z$/,'Z')}.json`;
+  a.href=url; a.download=`beforehand-trace-${new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+Z$/,'Z')}.json`;
   document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),30000);
   message('Trace exported locally. It contains the scrubbed requests you approved; share it carefully.');
 }));

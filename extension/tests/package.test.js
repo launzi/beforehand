@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import {readFile,readdir,stat} from 'node:fs/promises';
 const root=new URL('../',import.meta.url);
 const read=path=>readFile(new URL(path,root),'utf8');
-import {manifestFor} from '../scripts/build.mjs';
+import {manifestFor,build} from '../scripts/build.mjs';
 test('manifest per build lists only that build\'s destinations',()=>{
   const s=manifestFor('store'), h=manifestFor('hackathon');
   assert.deepEqual(s.permissions,['history','storage']);
   assert.deepEqual(s.host_permissions,['https://api.openai.com/*','https://api.anthropic.com/*','https://concierge.youngji.kim/*']);
   assert.deepEqual(h.host_permissions,['https://api.tokenfactory.nebius.com/*','https://concierge.youngji.kim/*']);
   for (const m of [s,h]) {
-    assert.equal(m.manifest_version,3);assert.equal(m.name,'Before You Ask');assert.equal(m.version,'0.2.0');
+    assert.equal(m.manifest_version,3);assert.equal(m.name,'Beforehand');assert.equal(m.version,'0.2.0');
     assert.equal(m.background,undefined);assert.equal(m.content_scripts,undefined);
     assert.ok(!JSON.stringify(m).includes('tavily'));
     assert.match(m.content_security_policy.extension_pages,/script-src 'self'; object-src 'none'; connect-src /);
@@ -51,4 +51,17 @@ test('Required privacy language and publisher are present; listing description m
   const short=listing.split('## Short description\n\n')[1].split('\n')[0];assert.ok(short.length<=132,short.length);
   assert.ok((await read('LICENSE')).includes('Apache License'));
   const p=JSON.parse(await read('package.json'));assert.equal(p.dependencies,undefined);assert.equal(p.devDependencies,undefined);
+});
+
+test('built manifests and UI titles use Beforehand for both targets',async()=>{
+  for (const target of ['store','hackathon']) {
+    await build(target);
+    const manifest=JSON.parse(await read(`dist/${target}/manifest.json`));
+    assert.deepEqual(manifest,manifestFor(target));
+    assert.equal(manifest.name,'Beforehand');
+    assert.equal(manifest.action.default_title,manifest.name);
+    for (const file of ['popup.html','options.html']) {
+      assert.ok((await read(`dist/${target}/${file}`)).includes(`<title>${manifest.name}`));
+    }
+  }
 });
