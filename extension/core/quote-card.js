@@ -1,17 +1,18 @@
 // extension/core/quote-card.js
+import {icon} from './icons.js';
 import {DISCLOSURE,safeLink} from './korea-quote.js';
 const money=(v,c)=>new Intl.NumberFormat('en-US',{style:'currency',currency:c}).format(v);
 const krw=v=>'₩'+new Intl.NumberFormat('en-US').format(v);
 export function renderQuoteCard(root,q,doc=document) {
   const el=(tag,cls,text)=>{const e=doc.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
   const card=el('div','quote-card');
-  const head=el('div','quote-heading');head.append(el('span','',`🇰🇷 ${q.item.title}`),el('span','status-pill','Quote only'));
+  const head=el('div','quote-heading'),item=el('span');item.append(icon('globe',doc),el('span','',` Korea · ${q.item.title}`));head.append(item,el('span','status-pill','Quote only'));
   const rail=el('ol','cost-rail');
   for (const [op,label,value] of [['·','Item',krw(q.payNow.itemKrw)],['+','Shipping',krw(q.payNow.shippingKrw)],['+','Service fee',krw(q.payNow.serviceFeeKrw)],
     ['+','Payment fee',krw(q.payNow.paymentFeeKrw)],['+','Duty on delivery (est.)',money(q.dutyOnDelivery.estimate,q.currency)]]) {
     const li=el('li');li.dataset.op=op;li.append(el('span','',label),el('span','cost-value',value));rail.append(li);
   }
-  const total=el('div','quote-total');total.append(el('span','',`${{US:'🇺🇸',GB:'🇬🇧',JP:'🇯🇵',CN:'🇨🇳',TW:'🇹🇼',HK:'🇭🇰'}[q.destination]} ${q.destination} · Total`),el('strong','total-amount',money(q.totalCost,q.currency)));
+  const total=el('div','quote-total'),destination=el('span');destination.append(icon('globe',doc),el('span','',` ${q.destination} · Total`));total.append(destination,el('strong','total-amount',money(q.totalCost,q.currency)));
   card.append(head,rail,total);
   if (q.verdict==='buy_local') card.append(el('p','quote-verdict',"It's cheaper to buy locally"));
   if (q.localPrice) {
@@ -33,6 +34,7 @@ export function renderQuoteCard(root,q,doc=document) {
     const href=safeLink(url); if (!href) continue;
     const a=el('a','',label);a.href=href;a.target='_blank';a.rel='noopener noreferrer';details.append(a);
   }
-  card.append(details,el('p','disclosure','ⓘ '+DISCLOSURE));
+  const disclosure=el('p','disclosure');disclosure.append(icon('info',doc),el('span','',DISCLOSURE));
+  card.append(details,disclosure);
   root.replaceChildren(card);
 }

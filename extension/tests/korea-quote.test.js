@@ -120,13 +120,14 @@ test('Real history adapter retains only scrubbed product title and detects repea
 });
 class Node {
   constructor(tag) {this.tag=tag;this.children=[];this.textContent='';this.dataset={};this.style={setProperty(){}};}
+  setAttribute(name,value) {this[name]=value;}
   append(...nodes) {this.children.push(...nodes);}
   replaceChildren(...nodes) {this.children=nodes;}
 }
 const flatten=node=>node.textContent+'\n'+node.children.map(flatten).join('\n');
 test('Quote card renders exact amounts, duty sources, unknown verdict, warnings and conflict disclosure with no token',()=>{
   const raw=structuredClone(sample);raw.verdict='future_unknown_verdict';
-  const quote=sanitizeQuote(raw),root=new Node('main');renderQuoteCard(root,quote,{createElement:tag=>new Node(tag)});
+  const quote=sanitizeQuote(raw),root=new Node('main');renderQuoteCard(root,quote,{createElement:tag=>new Node(tag),createElementNS:(ns,tag)=>new Node(tag)});
   const rendered=flatten(root);
   for(const value of ['future_unknown_verdict','$65.27','₩16,127','2.089235915388495','91 FR 47318',DISCLOSURE])assert.ok(rendered.includes(value),value);
   assert.ok(!rendered.includes('quoteToken'));assert.ok(!rendered.includes('REDACTED'));assert.ok(!rendered.includes('start checkout'));

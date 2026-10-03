@@ -51,7 +51,8 @@ function preview() {
   try { description=describeRequest(pending.request); }
   catch (error) { controller.cancel();$('preview').hidden=true;$('run').disabled=true;throw error; }
   const {destination,sends,never}=description;
-  $('flowDest').textContent={ai:'🤖',research:'🔎',quote:'🇰🇷'}[destination.kind];
+  const destinationLabel=document.createElement('span');destinationLabel.textContent={ai:'AI',research:'Research',quote:'Quote'}[destination.kind];
+  $('flowDest').replaceChildren(icon({ai:'ai',research:'research',quote:'globe'}[destination.kind]),destinationLabel);
   $('flowDest').title=destination.label;
   $('flowDest').setAttribute('aria-label',destination.label);
   $('stage').textContent=pending.stage==='models' ? 'Find available models'
@@ -88,7 +89,8 @@ async function scan() {
     const label={new_entry:'New',unresolved:'Unfinished',recurring:'Repeat',dropped:'Quiet',korea_product:'Korea'}[signal.kind];
     title.textContent=`${label} · ${signal.host ?? scrubText(signal.term)}`;
     const badge=document.createElement('span'); badge.className=`status-pill ${decision.verdict}`;
-    badge.textContent=`${{allow:'✓',hold:'⏸',deny:'✕'}[decision.verdict]} ${decision.verdict}`;
+    const verdictLabel=document.createElement('span');verdictLabel.textContent=decision.verdict;
+    badge.append(icon(decision.verdict),verdictLabel);
     const reason=document.createElement('p'); reason.textContent=decision.reason;
     const digest=document.createElement('p'); digest.className='digest'; digest.textContent=`Mandate SHA-256: ${decision.mandate_digest}`;
     const details=document.createElement('details');
@@ -103,7 +105,7 @@ async function scan() {
   }
 }
 function signalIcon(kind) {
-  if (kind==='korea_product') { const flag=document.createElement('span');flag.className='signal-symbol';flag.textContent='🇰🇷';return flag; }
+  if (kind==='korea_product') return icon('globe');
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('class','signal-symbol');svg.setAttribute('aria-hidden','true');
   const path=document.createElementNS('http://www.w3.org/2000/svg','path');

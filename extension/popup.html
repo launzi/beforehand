@@ -1,15 +1,15 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Beforehand</title><link rel="stylesheet" href="style.css"></head>
 <body class="popup"><main>
-<header class="toolbar"><strong>Beforehand</strong><span class="status-pill local-status">● local</span>
-  <span class="toolbar-space"></span><button id="settings" class="icon-button" aria-label="Settings">⚙</button><button id="workspace" class="icon-button" aria-label="Open in a tab">⤢</button></header>
+<header class="toolbar"><strong>Beforehand</strong><span class="status-pill local-status"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 4h16v12H4zM2 20h20M9 16v4M15 16v4"/></svg> local</span>
+  <span class="toolbar-space"></span><button id="settings" class="icon-button" aria-label="Settings"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6l1 4 4 1v8l-4 1-1 4H9l-1-4-4-1V8l4-1zM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/></svg></button><button id="workspace" class="icon-button" aria-label="Open in a tab"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3H3v6M15 21h6v-6M3 3l7 7M21 21l-7-7"/></svg></button></header>
 <section id="onboarding" class="panel" hidden>
   <svg class="consent-diagram" viewBox="0 0 260 120" role="img" aria-label="Your history stays inside your device; only a request you review leaves.">
     <rect x="8" y="12" width="150" height="96" rx="14" class="device-boundary"/>
     <g class="local-events"><circle cx="34" cy="44" r="4"/><circle cx="58" cy="58" r="4"/><circle cx="40" cy="82" r="4"/><circle cx="76" cy="40" r="4"/><circle cx="92" cy="76" r="4"/><circle cx="118" cy="54" r="4"/></g>
     <rect x="146" y="44" width="24" height="32" rx="7" class="outgoing-packet"/><path d="M172 60h40" class="request-path"/><rect x="214" y="50" width="20" height="20" rx="4" class="remote-device"/>
   </svg>
-  <ul class="consent-steps"><li>💻 Stays</li><li>👁 You review</li><li>▶ You run</li></ul>
+  <ul class="consent-steps"><li><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 4h16v12H4zM2 20h20M9 16v4M15 16v4"/></svg> Stays</li><li><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/></svg> You review</li><li><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m7 4 13 8-13 8z"/></svg> You run</li></ul>
   <button id="accept" class="primary-action">I agree</button>
   <details id="consentDetails"><summary>Details</summary>
     <h2>Your history stays here</h2>
@@ -28,7 +28,7 @@
 <details id="scanDetails" hidden><summary>Scan details</summary><p id="scanCoverage"></p></details>
 <div id="signals" class="signal-list"></div>
 <section id="preview" class="panel" hidden aria-labelledby="stage">
-  <div class="request-route"><span class="route-endpoint">💻</span><span class="request-path"><span class="outgoing-packet"></span></span><span id="flowDest" class="route-endpoint"></span></div>
+  <div class="request-route"><span class="route-endpoint"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 4h16v12H4zM2 20h20M9 16v4M15 16v4"/></svg> Device</span><span class="request-path"><span class="outgoing-packet"></span></span><span id="flowDest" class="route-endpoint"></span></div>
   <h2 id="previewTitle" class="visually-hidden">What leaves your device</h2>
   <p id="stage" class="detail-caption"></p>
   <div class="request-box"><p class="detail-caption">Sends</p><dl id="sends" class="request-text"></dl></div>

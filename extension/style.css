@@ -50,10 +50,12 @@ summary{cursor:pointer;font-size:12px;color:var(--mute);padding:8px 0}details{mi
 .ui-icon{width:16px;height:16px;flex:none;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 footer{font-size:11px;margin-top:20px}footer button{margin:5px 0}
 label{display:block;margin:12px 0 5px}input,select,textarea{width:100%;min-width:0;padding:9px;border:1px solid var(--mute);border-radius:7px;background:var(--bg);color:var(--ink)}
-textarea{resize:vertical}.provider-segments,.policy-segments{display:flex;border:1px solid var(--ink);border-radius:9px;overflow:hidden;margin-bottom:14px}
-.provider-segments label,.policy-segments label{flex:1;position:relative;text-align:center;margin:0;padding:8px 3px;cursor:pointer;font-size:12px}
-.provider-segments input,.policy-segments input{width:auto;margin:0 4px 0 0;accent-color:var(--ink)}
-.provider-segments label:has(input:checked),.policy-segments label:has(input:checked){background:var(--ink);color:var(--bg)}
+textarea{resize:vertical}.provider-segments,.policy-segments{display:flex;border:1px solid var(--ink);border-radius:9px;margin-bottom:14px}
+.provider-segments label,.policy-segments label{flex:1;position:relative;text-align:center;margin:0;padding:0;cursor:pointer;font-size:12px;border-radius:8px}
+.provider-segments input,.policy-segments input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;border:0;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap}
+.provider-segments label>span,.policy-segments label>span{display:block;padding:8px 3px;border-radius:8px}
+.provider-segments label:focus-within,.policy-segments label:focus-within{outline:3px solid var(--ink);outline-offset:2px}
+.provider-segments input:checked+span,.policy-segments input:checked+span{background:var(--ink);color:var(--bg)}
 .key-entry{display:flex;gap:8px}.key-entry input{flex:1}.danger-zone{border-color:var(--deny)}.danger-zone button{display:block;margin-top:8px}
 .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 [hidden]{display:none!important}

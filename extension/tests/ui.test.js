@@ -127,3 +127,37 @@ test('Popup displays a monochrome icon and Try later for a research rate limit',
     assert.equal(env.id('run').disabled,true);
   } finally {Controller.prototype.run=run;env.restore();}
 });
+test('Settings keep native radio semantics with clipped inputs, a segment focus ring and closed digest details',async()=>{
+  const env=await environment('options');
+  try {
+    await import('../options.js?accessible-segments');
+    for (const name of ['provider','policy']) for (const input of env.byName(name)) {
+      assert.equal(input.type,'radio');assert.equal(input.hidden,false);
+      assert.notEqual(input.tabindex,'-1');assert.notEqual(input['aria-hidden'],'true');
+    }
+    const html=await readFile(new URL('../options.html',import.meta.url),'utf8');
+    assert.match(html,/<details><summary>Details<\/summary><p id="digest"/);
+    const css=await readFile(new URL('../style.css',import.meta.url),'utf8');
+    assert.match(css,/\.provider-segments input,\.policy-segments input\{[^}]*clip-path:inset\(50%\)/);
+    assert.match(css,/label:focus-within[^}]*outline:3px solid var\(--ink\)/);
+    assert.match(css,/input:checked\+span[^}]*background:var\(--ink\)/);
+    assert.doesNotMatch(css,/\.provider-segments input[^}]*display:none/);
+  } finally {env.restore();}
+});
+test('UI icons use monochrome SVG with words',async()=>{
+  for (const file of ['popup.html','options.html','popup.js','core/quote-card.js']) {
+    const source=await readFile(new URL('../'+file,import.meta.url),'utf8');
+    assert.doesNotMatch(source,/[💻👁▶⏸✓✕×⚙🤖🔎🇰🇷🇺🇸]/u);
+  }
+  const css=await readFile(new URL('../style.css',import.meta.url),'utf8');
+  assert.match(css,/\.ui-icon\{[^}]*stroke:currentColor/);
+  const popup=await readFile(new URL('../popup.html',import.meta.url),'utf8');
+  for (const label of ['Stays','You review','You run']) assert.ok(popup.includes('</svg> '+label));
+  const env=await environment('popup',{provider:'openai',providerKey:'FAKE_KEY',consent:{accepted:true,version:DISCLOSURE_VERSION}});
+  try {
+    await import('../popup.js?svg-status');await env.id('scan').fire();
+    const badge=env.all.find(e=>e.className==='status-pill allow');
+    assert.equal(badge.children[0].tagName,'svg');assert.equal(badge.children[1].textContent,'allow');
+    assert.equal(env.network,0);
+  } finally {env.restore();}
+});
