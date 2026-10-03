@@ -10,7 +10,7 @@ test('welcome renders the exact approved text with safe nodes and both choices a
  const doc=documentFake(),root=doc.createElement('div');renderDisclosure(root,doc);assert.equal(root.textContent,DISCLOSURE_V4);
  for(const auto of [true,false]) {
   const e=ui(['disclosure','enable','notNow','welcomeActions','complete','shops']);await initWelcome({doc:e.doc,chrome:e.chrome});await e.id(auto?'enable':'notNow').fire();
-  assert.equal(e.storage.data.consent.version,4);assert.equal(e.storage.data.autoCheck,auto);assert.match(e.id('complete').textContent,/You're set/);assert.equal(all(e.id('shops')).filter(n=>n.tagName==='h3').length,6);
+  assert.equal(e.storage.data.consent.version,4);assert.equal(e.storage.data.autoCheck,auto);assert.match(e.id('complete').textContent,/You're set/);assert.equal(all(e.id('shops')).filter(n=>n.tagName==='h3').length,5); // China ships but has no supported shop
  }
 });
 test('popup tolerates unavailable tab URL and persists global/destination controls',async()=>{
