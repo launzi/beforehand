@@ -12,11 +12,11 @@ beforehand shows the Korea delivered price, or Korean alternatives, for the prod
 
 Before any request, you choose whether to turn on auto-check or use manual checks. Only when auto-check is on, or you click **Check Korea price**, the product name, brand and delivery country go to **https://concierge.youngji.kim/api/mcp**. The extension contacts no other server directly. A repeated check may use an on-device cached result. Automatic requests are limited to 200 per local day.
 
-If you choose **Buy from Korea**, the extension asks for your email and name and sends them with a quote token to Korea Concierge to create an order. It may first refresh an expired quote using the same product name, brand and delivery country. It then opens **https://checkout.stripe.com** in a new tab. beforehand does not store your email or name and never sees your card details. Buying is optional.
+If you choose **Buy from Korea**, a new tab opens an extension page showing the selected quote and seller Munteok. Your email and name are entered on that extension page and sent to Korea Concierge to create an order when you click **Continue to payment**. They are not stored by the extension or included in its log. Quote tokens stay in service-worker memory and are sent only to Korea Concierge to start checkout; they are never sent to the shop page or saved in extension storage. If a token is missing or expires within 60 seconds, a Buy refresh re-checks the same product name, brand and delivery country. Checkout proceeds only when title, link, currency, total, pay-now total and estimated duty still match what you saw. Otherwise, check again to see the changed price. On success, that extension checkout tab navigates to **https://checkout.stripe.com**. beforehand never sees your card details. Buying is optional.
 
 ## What never leaves your device
 
-Your browsing history, the shopping page address, the price on the page and other tabs are never sent. Your identity is not sent during a product check; email and name are sent only when you choose to buy. beforehand does not have permission to read browsing history. The page price and currency are used only for an on-device comparison. No advertising or analytics SDK is included, and no remote code runs.
+Your browsing history, the shopping page address, the price on the page and other tabs are never sent. Your identity is not sent during a product check; email and name are sent only when you choose to buy. beforehand does not have permission to read browsing history. The card's local price comes from the shop page; savings are computed on your device using that price and the Korea total, only when their currencies match. Korea amounts come from the quote engine. Page price and currency are never sent for this comparison. No advertising or analytics SDK is included, and no remote code runs.
 
 ## Korea Concierge processing and retention
 
@@ -26,14 +26,15 @@ Korea Concierge keeps a demand record containing a normalized product name, cate
 
 ## What is stored on your device
 
-Only Chrome local extension storage is used, not Chrome sync:
+Chrome local and session extension storage are used, not Chrome sync. Content scripts cannot access either storage area:
 
 - Consent version, auto-check settings, disabled shops and delivery country: until you delete them or uninstall.
 - Product result cache: valid for 24 hours, at most 200 entries, without quote tokens or expiry fields. Expired entries are ignored and pruned when writing the cache.
+- Token-free displayed-quote snapshots in session storage: at most 200 random handles, bound to their source tab and document, with product name, brand, country and each choice's title, link, currency, total, pay-now total and estimated duty. Session records also bind extension checkout tabs to their choices. They last for the browser session or until evicted; removing consent invalidates access.
 - A daily automatic-check counter and date.
 - Local log: up to 500 records, kept for 30 days and pruned when read or updated. Records contain product name and brand, shop host, delivery country, time, result type or checkout-opened status. They contain no page address, quote token, buyer email or buyer name.
 
-Quote tokens are held only in service-worker memory for buying. The quote may be refreshed if that memory is lost or the token expires. Exported JSON logs remain wherever you save them until you delete the file.
+Exported JSON logs remain wherever you save them until you delete the file.
 
 ## Your controls
 

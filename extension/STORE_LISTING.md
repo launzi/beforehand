@@ -7,26 +7,26 @@ beforehand
 See what the product you're viewing costs from Korea, delivered. Sends only the product name, brand and your country.
 
 ## Detailed description
-beforehand checks the product you are viewing on a supported shop and shows what the same item costs from Korea, delivered. If there is no same-item match, it can show up to two Korean alternatives.
+beforehand shows the same item's Korea delivered price or up to two Korean alternatives on supported shops.
 
-Choose auto-check at setup, or click Check Korea price when you want a check. Only the product name, brand and delivery country go to Korea Concierge, operated by Munteok. Your browsing history, page address, page price and other tabs are not sent. No AI account or key is needed.
+Choose auto-check or Only when I click at setup. Checks send product name, brand and delivery country to Korea Concierge, operated by Munteok. Your history, page address, page price and other tabs are not sent. No AI key is needed.
 
-See the delivered total and the item, shipping, service fee, payment fee and estimated duty details. When the same item is cheaper locally, the card tells you. Amounts come from the quote engine.
+Korea amounts come from the quote engine. The card's local price comes from the shop page; savings are computed on your device when currencies match.
 
-If you choose Buy from Korea, enter your email and name to create an order with Korea Concierge, then pay on Stripe in a new tab. beforehand does not store those details or see your card. The seller is Munteok; import duty and tax are estimated and paid on delivery.
+Buy from Korea opens an extension page. Your email and name go to Korea Concierge to create an order when you click Continue to payment; they are not stored by the extension. Quote tokens stay in service-worker memory and are sent only to Korea Concierge to start checkout. A Buy refresh re-checks the same product name, brand and delivery country. If the selected quote changed, check again. That checkout tab then opens Stripe. Seller: Munteok. Duty and tax are estimated and paid on delivery.
 
-Works on 25 supported shops in the US, UK, Japan, China, Taiwan and Hong Kong. Turn checks off for one shop or everywhere. Export or delete your local log, or turn off and delete everything in Settings.
+Supports 25 shops in the US, UK, Japan, China, Taiwan and Hong Kong. Disable checks per shop or globally. Export or delete the local log, or turn off and delete everything in Settings.
 
 ## Single purpose
 Show the Korea delivered price, or Korean alternatives, for the product on the shopping page you are viewing.
 
 ## Permission justifications
-- storage: settings, consent, local log, result cache and automatic-check counter.
+- storage: settings, consent, local log, result cache, automatic-check counter and token-free session snapshots bound to source and checkout tabs.
 - Host permissions: read the product name on supported shop pages; contact Korea Concierge for matches and checkout. Page price and currency remain local.
 
 ## Data usage answers
 - Website content: product name and brand from supported shop pages — sent to Korea Concierge.
-- Personally identifiable information: email and name only when you choose to buy.
+- Personally identifiable information: email and name entered on an extension page and sent to Korea Concierge only to create an order; not stored by the extension.
 - Browsing history: not collected; no history permission.
 - Payment details: handled by Stripe; the extension never sees your card.
 - Purpose: the single purpose above, including disclosed Korea Concierge processing and demand records.

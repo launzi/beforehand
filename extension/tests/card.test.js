@@ -1,9 +1,11 @@
 import test from 'node:test'; import assert from 'node:assert/strict'; import {quote} from './helpers.js'; import {documentFake,all,findText} from './dom.js';
 await import('../core/card.js'); const {mount,savings}=globalThis.BeforehandCard;
-test('currency mismatch never computes page savings; engine local comparison is allowed',()=>{
+test('local price and savings use only same-currency shop-page prices',()=>{
  const q=quote(),local={price:2980,currency:'JPY'}; assert.equal(savings(q,local),null);
  const c=mount(documentFake()); c.setState({view:'same',quote:q,local}); assert.doesNotMatch(c.root.testShadow.textContent,/you save/i);
- c.setState({view:'same',quote:quote({localPrice:{price:50,url:null}}),local}); assert.match(c.root.testShadow.textContent,/You save/); c.destroy();
+ c.setState({view:'same',quote:quote({localPrice:{price:50,url:null}}),local}); assert.doesNotMatch(c.root.testShadow.textContent,/You save|Local price/);
+ c.setState({view:'same',quote:quote({localPrice:{price:99,url:null}}),local:{price:40,currency:'USD'}});
+ assert.match(c.root.testShadow.textContent,/Local price: \$40\.00/);assert.match(c.root.testShadow.textContent,/You save \$8\.00/);c.destroy();
 });
 test('Cheaper here hides Buy for either local savings or engine verdict',()=>{
  const c=mount(documentFake());

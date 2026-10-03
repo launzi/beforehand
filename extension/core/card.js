@@ -34,7 +34,7 @@
    body.className='card';const header=el('div',null,'header'),brand=el('span','beforehand','brand');brand.append(mark());
    header.append(brand,button('Collapse',()=>{collapsed=true;render();onClose();},'compact'));body.append(header);
    if(current.view==='same') {
-    const q=current.quote;const local=current.local?.currency===q.currency && Number.isFinite(current.local.price) && current.local.price>0?current.local:q.localPrice?{price:q.localPrice.price,currency:q.currency}:null;
+    const q=current.quote;const local=current.local?.currency===q.currency && Number.isFinite(current.local.price) && current.local.price>0?current.local:null;
     const saved=savings(q,local),cheaper=q.verdict==='buy_local' || (saved!==null && saved<=0);
     body.append(el('h2','Same item from Korea'),el('p',q.item.title),el('p',money(q.totalCost,q.currency),'total'));
     if(local) body.append(el('p',`Local price: ${money(local.price,q.currency)}`,'muted'));
