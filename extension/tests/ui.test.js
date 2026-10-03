@@ -5,6 +5,8 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 class Element {
   constructor(tag,owner) { this.tagName=tag.toLowerCase();this.owner=owner;this.children=[];this.dataset={};this.listeners={};this.hidden=false;this.disabled=false;this.textContent='';this.value='';this.style={setProperty(){}}; }
+  get checked() {return this._checked ?? false;}
+  set checked(value) {if(value && this.name) for(const el of this.owner.getElementsByName(this.name)) el._checked=false;this._checked=value;}
   append(...children) { this.children.push(...children); }
   replaceChildren(...children) { this.children=children; }
   remove() { this.removed=true; }
@@ -18,10 +20,14 @@ async function environment(stem,initial={}) {
   const html=await readFile(new URL(`../${stem}.html`,import.meta.url),'utf8');
   const ids=new Map(),all=[];
   const document={createElement(tag){const e=new Element(tag,document);all.push(e);return e;},createElementNS(ns,tag){return document.createElement(tag);},getElementById:id=>ids.get(id),
+    getElementsByName:name=>all.filter(e=>e.name===name&&!e.removed),
     querySelectorAll:tag=>all.filter(e=>e.tagName===tag&&!e.removed)};
   document.body=document.createElement('body');
-  for (const m of html.matchAll(/<([\w]+)\b([^>]*\bid="([^"]+)"[^>]*)>/g)) {
-    const e=document.createElement(m[1]);e.hidden=/\bhidden\b/.test(m[2]);ids.set(m[3],e);
+  for (const m of html.matchAll(/<([\w]+)\b([^>]*)>/g)) {
+    const attrs=Object.fromEntries([...m[2].matchAll(/([\w-]+)="([^"]*)"/g)].map(x=>[x[1],x[2]]));
+    if (!attrs.id && !attrs.name) continue;
+    const e=document.createElement(m[1]);Object.assign(e,attrs);e.hidden=/\bhidden\b/.test(m[2]);
+    if(attrs.id) ids.set(attrs.id,e);
   }
   const data=structuredClone(initial),storage={
     async get(keys){return Object.fromEntries((typeof keys==='string'?[keys]:keys).filter(k=>Object.hasOwn(data,k)).map(k=>[k,structuredClone(data[k])]));},
@@ -41,7 +47,7 @@ async function environment(stem,initial={}) {
     assert.equal(url,'https://api.openai.com/v1/models');assert.equal(request.method,'GET');
     return {ok:true,json:async()=>({data:[{id:'gpt-5'},{id:'gpt-5-mini'}]})};
   };
-  return {ids,all,data,storage,document,get network(){return network;},get historyReads(){return historyReads;},restore(){Object.assign(globalThis,saved);}};
+  return {ids,all,data,storage,document,id:x=>ids.get(x),byName:name=>document.getElementsByName(name),get network(){return network;},get historyReads(){return historyReads;},restore(){Object.assign(globalThis,saved);}};
 }
 test('Popup first-use, local Scan, policy cards and exact pre-Run request preview work without network',async()=>{
   const env=await environment('popup',{provider:'openai',providerKey:'OPENAI_TEST_SECRET'});
@@ -67,7 +73,7 @@ test('Options save, search hold, excluded hosts and deletion use local storage o
   const env=await environment('options');
   try {
     await import('../options.js?ui-smoke');
-    env.ids.get('nebius').value='MY_PRIVATE_TEST_KEY';env.ids.get('policy').value='hold';env.ids.get('excluded').value='example.com\nexample.com';
+    env.ids.get('providerKey').value='MY_PRIVATE_TEST_KEY';env.byName('policy').find(r=>r.value==='hold').checked=true;env.ids.get('excluded').value='example.com\nexample.com';
     await env.ids.get('form').fire('submit');
     // Form submission starts an async local save; drain microtasks before observing it.
     await new Promise(resolve=>setTimeout(resolve,0));
@@ -75,6 +81,33 @@ test('Options save, search hold, excluded hosts and deletion use local storage o
     assert.deepEqual(env.data.excludedHosts,['example.com']);assert.equal(env.network,0);assert.equal(env.historyReads,0);
     assert.ok(!env.ids.get('status').textContent.includes('MY_PRIVATE_TEST_KEY'));
     await env.storage.set({trace:[{kind:'test',ts:new Date().toISOString()}]});await env.ids.get('clearTrace').fire();assert.equal(env.data.trace,undefined);
-    await env.ids.get('clearAll').fire();assert.equal(env.data.providerKey,undefined);assert.equal(env.ids.get('nebius').value,'');assert.equal(env.network,0);
+    await env.ids.get('clearAll').fire();assert.equal(env.data.providerKey,undefined);assert.equal(env.ids.get('providerKey').value,'');assert.equal(env.network,0);
+  } finally {env.restore();}
+});
+
+test('settings exposes only build providers and saves provider/key without a Tavily field',async()=>{
+  const env=await environment('options',{consent:{accepted:true,version:DISCLOSURE_VERSION},provider:'openai',providerKey:'FAKE_OLD'});
+  try {
+    await import('../options.js?provider-settings');
+    const html=await readFile(new URL('../options.html',import.meta.url),'utf8');assert.ok(!/tavily/i.test(html));
+    const radios=env.byName('provider');assert.deepEqual(radios.map(r=>r.value),['openai','anthropic']);
+    radios[1].checked=true;await radios[1].fire('change');assert.equal(env.id('providerKey').value,'');
+    assert.match(env.id('keyHelp').textContent,/Anthropic/);
+    env.id('providerKey').value=' FAKE_ANTHROPIC ';await env.id('form').fire('submit');
+    assert.equal(env.data.provider,'anthropic');assert.equal(env.data.providerKey,'FAKE_ANTHROPIC');assert.equal(env.data.tavilyKey,undefined);
+    await env.id('toggleKey').fire();assert.equal(env.id('providerKey').type,'text');
+    await env.id('toggleKey').fire();assert.equal(env.id('providerKey').type,'password');
+    assert.equal(env.network,0);assert.equal(env.historyReads,0);
+  } finally {env.restore();}
+});
+test('settings deletion needs confirmation and cancelled deletion preserves all data',async()=>{
+  const env=await environment('options',{provider:'openai',providerKey:'FAKE_KEY',trace:[{kind:'test',ts:new Date().toISOString()}]});
+  try {
+    await import('../options.js?delete-settings');let confirmations=0;
+    globalThis.window.confirm=message=>{assert.match(message,/cannot be undone/);confirmations++;return false;};
+    const before=structuredClone(env.data);await env.id('clearTrace').fire();await env.id('clearAll').fire();
+    assert.equal(confirmations,2);assert.deepEqual(env.data,before);
+    globalThis.window.confirm=()=>true;await env.id('clearTrace').fire();assert.equal(env.data.trace,undefined);
+    await env.id('clearAll').fire();assert.deepEqual(env.data,{});assert.equal(env.id('providerKey').value,'');
   } finally {env.restore();}
 });

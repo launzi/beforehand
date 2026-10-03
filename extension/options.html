@@ -1,14 +1,20 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Before You Ask — Settings</title><link rel="stylesheet" href="style.css"></head>
-<body><main><header><small>MUNTEOK</small><h1>Settings</h1><p>Keys and policy are stored only in chrome.storage.local on this device.</p></header>
-<form id="form"><section><h2>Provider keys</h2><p>Saving does not contact either provider. Keys are not encrypted by this extension. They are never included in traces.</p>
-<label for="nebius">Nebius Token Factory API key</label><input id="nebius" type="password" autocomplete="off" spellcheck="false">
-<label for="tavily">Tavily API key (optional)</label><input id="tavily" type="password" autocomplete="off" spellcheck="false"><p>Without a Tavily key, research briefings are denied. Other skills can still run.</p></section>
-<section><h2>Search and quote mandate</h2><label for="policy">External research and Korea quotes</label><select id="policy"><option value="allow">Allow search after request preview</option><option value="hold">Hold — require confirmation</option><option value="deny">Deny search</option></select>
-<p>Hold blocks research and Korea quotes. Deny blocks both. To confirm, change this setting to Allow, save, scan again, then review and Run. A Run click cannot override a held or denied mandate.</p><p id="digest" class="digest"></p>
-<label for="country">Quote destination</label><select id="country"><option value="US">US</option><option value="GB">GB</option><option value="JP">JP</option><option value="CN">CN</option><option value="TW">TW</option><option value="HK">HK</option></select>
-<label for="excluded">Exclude websites (one hostname per line)</label><textarea id="excluded" rows="5" spellcheck="false" placeholder="example.com"></textarea><p>Each hostname also excludes its subdomains from signals and search-term extraction. Existing prepared requests are invalidated when settings change.</p></section>
-<button type="submit">Save settings locally</button></form>
+<body><main><header><h1>Settings</h1></header>
+<form id="form">
+<section class="panel"><h2>AI provider</h2>
+  <div id="providers" class="provider-segments" role="radiogroup" aria-label="AI provider"></div>
+  <label for="providerKey">API key</label>
+  <div class="key-entry"><input id="providerKey" type="password" autocomplete="off" spellcheck="false"><button type="button" id="toggleKey" class="secondary-action" aria-label="Show key">👁</button></div>
+  <p id="keyHelp" class="detail-caption"></p>
+  <p class="detail-caption">Stored only on this device. Never written to the local log.</p></section>
+<section class="panel"><h2>Research &amp; quotes</h2>
+  <div id="policy" class="policy-segments" role="radiogroup" aria-label="Research and quotes">
+    <label><input type="radio" name="policy" value="allow">✓ Allow</label><label><input type="radio" name="policy" value="hold">⏸ Hold</label><label><input type="radio" name="policy" value="deny">✕ Deny</label></div>
+  <p id="digest" class="digest"></p>
+  <label for="country">Ship to</label><select id="country"><option value="US">🇺🇸 US</option><option value="GB">🇬🇧 GB</option><option value="JP">🇯🇵 JP</option><option value="CN">🇨🇳 CN</option><option value="TW">🇹🇼 TW</option><option value="HK">🇭🇰 HK</option></select>
+  <label for="excluded">Exclude websites</label><textarea id="excluded" rows="4" spellcheck="false" placeholder="example.com"></textarea></section>
+<button type="submit" class="primary-action">Save</button></form>
 <p id="status" role="status" aria-live="polite"></p><p id="error" role="alert"></p>
-<section><h2>Local data</h2><p>History records are not saved. The audit log keeps at most 500 records for 30 days; expired records are removed when the extension is next opened or used. Deletion here does not delete Chrome history or provider-side records.</p>
-<div class="controls"><button id="clearTrace" class="secondary">Delete local trace</button><button id="clearAll" class="secondary">Withdraw consent and delete all local data</button></div></section>
+<section class="panel danger-zone"><h2>Delete</h2>
+  <button id="clearTrace" class="destructive-action">Delete local log</button><button id="clearAll" class="destructive-action">Withdraw consent and delete everything</button></section>
 <footer><a href="privacy.html">Privacy</a> · Munteok · Apache-2.0</footer></main><script type="module" src="options.js"></script></body></html>
