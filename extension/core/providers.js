@@ -1,7 +1,7 @@
 // extension/core/providers.js
 import {requireConsent} from './storage.js';
 import {validQuoteRequest,parseQuoteRPC,QuoteError} from './korea-quote.js';
-import {validResearchRequest,parseResearchRPC,ResearchError} from './research.js';
+import {validResearchRequest,parseResearchRPC,ResearchRateLimitError} from './research.js';
 import {PRESETS} from './presets.js';
 import {authHeaders} from './llm.js';
 import {BUILD} from './build-config.js';
@@ -40,7 +40,7 @@ export async function sendRequest(request,key,{storage,fetchImpl=globalThis.fetc
     } catch { throw new ProviderError(abort.signal.aborted ? 'Provider request timed out' : 'Provider network request failed'); }
     await requireConsent(storage);
     const research=kc && validResearchRequest(request);
-    if (kc && response.status===429) throw research ? new ResearchError('Rate limit exceeded') : new QuoteError('Rate limit exceeded');
+    if (kc && response.status===429) throw research ? new ResearchRateLimitError() : new QuoteError('Rate limit exceeded');
     if (!response.ok) throw new ProviderError(`${request.provider} HTTP ${response.status}`);
     let raw;
     try { raw=kc ? await readKC(response) : await response.json(); }

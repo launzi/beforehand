@@ -250,3 +250,14 @@ test('a missing role model fails the audited request without a follow-up request
   await c.prepare(signal());await assert.rejects(c.run(),/No model for role triage/);
   assert.equal(c.pending,null);assert.equal(calls.length,1);assert.equal(storage.value.trace.at(-1).kind,'request_failed');
 });
+for (const code of ['rate_limited','research_unavailable','unknown']) test(`research ${code} fails once without logging the server message or query`,async()=>{
+  const calls=[],storage=new MemoryStorage(settings());
+  const c=new Controller(storage,fakeFetch([{data:models},answer('ACT'),{result:{structuredContent:{error:code,message:'SERVER_MESSAGE_PRIVATE_QUERY',query:'SERVER_QUERY_NOT_APPROVED'}}}],calls),HACK);
+  await c.prepare(signal('unresolved'));await c.run();await c.run();
+  await assert.rejects(c.run());assert.equal(c.pending,null);assert.equal(calls.length,3);
+  await assert.rejects(c.run(),/Prepare/);assert.equal(calls.length,3);
+  const failure=storage.value.trace.at(-1);
+  assert.equal(failure.kind,'request_failed');assert.equal(failure.request,undefined);
+  assert.ok(!JSON.stringify(failure).includes('portable synthesizer comparison'));
+  assert.doesNotMatch(JSON.stringify(storage.value.trace),/SERVER_MESSAGE_PRIVATE_QUERY|SERVER_QUERY_NOT_APPROVED/);
+});

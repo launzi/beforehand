@@ -31,3 +31,10 @@ test('KC requests carry no API key header',async()=>{
   const hits=await sendRequest(researchRequest('a query'),'',{storage:consented,fetchImpl,build:store});
   assert.deepEqual(hits,[]); assert.equal(seen.headers.Authorization,undefined); assert.equal(seen.headers['x-api-key'],undefined);
 });
+test('KC endpoint HTTP 429 becomes the distinct research rate limit without reading its body',async()=>{
+  const {ResearchRateLimitError}=await import('../core/research.js');
+  const raw={jsonrpc:'2.0',id:1,error:{code:-32000,message:'SERVER_PRIVATE_QUERY'}};
+  let reads=0;
+  await assert.rejects(sendRequest(researchRequest('a query'),'',{storage:consented,fetchImpl:async()=>({ok:false,status:429,json:async()=>{reads++;return raw;}})}),ResearchRateLimitError);
+  assert.equal(reads,0);
+});

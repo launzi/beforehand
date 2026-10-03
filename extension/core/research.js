@@ -2,6 +2,9 @@
 import {KC_ENDPOINT} from './korea-quote.js';
 import {scrubText} from './scrub.js';
 export class ResearchError extends Error {}
+export class ResearchRateLimitError extends ResearchError {
+  constructor() { super('Rate limit exceeded'); }
+}
 const URLISH=/(?:https?:\/\/|www\.)/i;
 function cleanQuery(q) {
   if (typeof q!=='string') throw new ResearchError('Research query must be text');
@@ -25,7 +28,7 @@ export function validResearchRequest(r) {
 }
 const httpsOnly=v=>{try{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch{return '';}};
 export function parseResearchRPC(raw) {
-  if (raw?.error) throw new ResearchError(/rate limit/i.test(String(raw.error.message||'')) ? 'Rate limit exceeded' : 'Research unavailable');
+  if (raw?.error) throw new ResearchError('Research unavailable');
   const result=raw?.result;
   if (!result || typeof result!=='object' || result.isError) throw new ResearchError('Research unavailable');
   let data=result.structuredContent;
@@ -33,6 +36,10 @@ export function parseResearchRPC(raw) {
     const texts=(result.content||[]).filter(c=>c?.type==='text').map(c=>c.text);
     if (texts.length!==1) throw new ResearchError('Research unavailable');
     try { data=JSON.parse(texts[0]); } catch { throw new ResearchError('Research unavailable'); }
+  }
+  if (data && Object.hasOwn(data,'error')) {
+    if (data.error==='rate_limited') throw new ResearchRateLimitError();
+    throw new ResearchError('Research unavailable');
   }
   if (!Array.isArray(data?.results)) throw new ResearchError('Research unavailable');
   return data.results.slice(0,5).map(r=>({title:typeof r?.title==='string'?r.title:'',url:httpsOnly(r?.url),snippet:typeof r?.snippet==='string'?r.snippet:''}));

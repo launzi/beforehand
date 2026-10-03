@@ -6,12 +6,21 @@ import {PLANS} from './core/mandate.js';
 import {Controller,decisionFor} from './core/controller.js';
 import {scrubText} from './core/scrub.js';
 import {describeRequest} from './core/preview.js';
+import {ResearchRateLimitError} from './core/research.js';
+import {icon} from './core/icons.js';
 const $ = id => document.getElementById(id);
 const storage = chrome.storage.local;
 const controller = new Controller(storage);
 let busy = false;
 function message(text='') { $('status').textContent=text; }
 async function showError(error) {
+  if (error instanceof ResearchRateLimitError) {
+    message('');
+    const label=document.createElement('span');label.textContent='Try later';
+    $('error').className='hold';
+    $('error').replaceChildren(icon('hold'),label);
+    return;
+  }
   // Never echo network response bodies or arbitrary key-containing errors.
   let text=error instanceof Error ? error.message : 'The operation failed.';
   try {
@@ -22,7 +31,7 @@ async function showError(error) {
 function task(fn) {
   return async()=>{
     if (busy) return;
-    busy=true; $('error').textContent='';
+    busy=true; $('error').replaceChildren(); $('error').textContent=''; $('error').className='';
     for (const b of document.querySelectorAll('button')) if (b !== $('revoke')) b.disabled=true;
     try { await fn(); }
     catch(error) { await showError(error); }

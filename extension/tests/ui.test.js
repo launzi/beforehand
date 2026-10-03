@@ -111,3 +111,19 @@ test('settings deletion needs confirmation and cancelled deletion preserves all 
     await env.id('clearAll').fire();assert.deepEqual(env.data,{});assert.equal(env.id('providerKey').value,'');
   } finally {env.restore();}
 });
+test('Popup displays a monochrome icon and Try later for a research rate limit',async()=>{
+  const {Controller}=await import('../core/controller.js');
+  const {ResearchRateLimitError}=await import('../core/research.js');
+  const env=await environment('popup',{provider:'openai',providerKey:'FAKE_KEY',consent:{accepted:true,version:DISCLOSURE_VERSION}});
+  const run=Controller.prototype.run;
+  try {
+    Controller.prototype.run=async()=>{throw new ResearchRateLimitError();};
+    await import('../popup.js?rate-limit-ui');
+    env.id('run').disabled=false;await env.id('run').fire();
+    const error=env.id('error');assert.equal(error.className,'hold');
+    assert.equal(error.children[0].tagName,'svg');assert.equal(error.children[0]['aria-hidden'],'true');
+    assert.equal(error.children[1].textContent,'Try later');
+    assert.equal(env.id('status').textContent,'');assert.equal(env.network,0);
+    assert.equal(env.id('run').disabled,true);
+  } finally {Controller.prototype.run=run;env.restore();}
+});
