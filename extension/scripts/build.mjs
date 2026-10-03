@@ -1,42 +1,32 @@
-// extension/scripts/build.mjs
-import {readFile,writeFile,mkdir,cp,rm} from 'node:fs/promises';
-import {renderMarkdown} from './md.mjs';
-import {PRESETS} from '../core/presets.js';
-import {KC_ENDPOINT} from '../core/korea-quote.js';
+import {writeFile,mkdir,cp,rm} from 'node:fs/promises';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {matchPatterns} from '../core/shops.js';
 const root=new URL('../',import.meta.url);
-export const TARGETS=Object.freeze({
-  store:{target:'store',providers:['openai','anthropic'],defaultProvider:'openai',effectiveDate:'2026-10-15'},
-  hackathon:{target:'hackathon',providers:['nebius'],defaultProvider:'nebius',effectiveDate:'2026-10-15'},
-});
-const origin=u=>new URL(u).origin;
 export function manifestFor(target) {
-  const t=TARGETS[target]; if (!t) throw new Error('Unknown target');
-  const hosts=[...new Set([...t.providers.flatMap(p=>[origin(PRESETS[p].chat.url),origin(PRESETS[p].models.url)]),origin(KC_ENDPOINT)])];
-  return {manifest_version:3,name:'Beforehand',version:'0.2.0',minimum_chrome_version:'102',
-    description:'Turn local browsing patterns into useful next steps. Review every outgoing request before you run it.',
-    permissions:['history','storage'],host_permissions:hosts.map(h=>h+'/*'),
-    action:{default_popup:'popup.html',default_title:'Beforehand'},options_page:'options.html',
-    content_security_policy:{extension_pages:`script-src 'self'; object-src 'none'; connect-src ${hosts.join(' ')}`}};
+ if(target!=='store') throw new Error('Unknown target');
+ return {manifest_version:3,name:'beforehand',version:'1.0.0',minimum_chrome_version:'116',
+ description:"See what the product you're viewing costs from Korea, delivered. Sends only the product name, brand and your country.",
+ permissions:['storage'],host_permissions:[...matchPatterns(),'https://concierge.youngji.kim/*'],
+ background:{service_worker:'background.js',type:'module'},
+ content_scripts:[{matches:matchPatterns(),js:['core/extract.js','core/card.js','content.js'],run_at:'document_idle'}],
+ action:{default_popup:'popup.html',default_title:'beforehand',default_icon:{16:'icons/16.png',32:'icons/32.png'}},
+ icons:{16:'icons/16.png',32:'icons/32.png',48:'icons/48.png',128:'icons/128.png'},options_page:'options.html',
+ content_security_policy:{extension_pages:"script-src 'self'; object-src 'none'; connect-src https://concierge.youngji.kim"}};
 }
-const SHIP=['popup.html','popup.js','options.html','options.js','style.css','core','LICENSE','NOTICE','PRIVACY.md'];
-async function privacyPage(target) {
-  const md=(await readFile(new URL('PRIVACY.md',root),'utf8')).replaceAll('{{EFFECTIVE_DATE}}',TARGETS[target].effectiveDate);
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Beforehand — Privacy</title><link rel="stylesheet" href="style.css"></head><body><main class="doc">${renderMarkdown(md)}</main></body></html>\n`;
+const SHIP=['background.js','content.js','welcome.html','welcome.js','popup.html','popup.js','options.html','options.js','style.css','core','icons','LICENSE','NOTICE','PRIVACY.md'];
+export async function build(target='store') {
+ const manifest=manifestFor(target);
+ execFileSync('zip',['-v'],{stdio:'ignore'});
+ const out=new URL('dist/store/',root);
+ await rm(out,{recursive:true,force:true}); await mkdir(out,{recursive:true});
+ for(const file of SHIP) await cp(new URL(file,root),new URL(file,out),{recursive:true,filter:src=>!src.endsWith('.md') || src.endsWith('/PRIVACY.md')});
+ await writeFile(new URL('manifest.json',out),JSON.stringify(manifest,null,2)+'\n');
+ const stamp=new Date().toISOString().replace(/[-:]/g,'').replace('T','-').slice(0,15);
+ const zip=new URL(`dist/beforehand-store-${stamp}.zip`,root);
+ execFileSync('zip',['-r','-X',fileURLToPath(zip),'.'],{cwd:fileURLToPath(out),stdio:'ignore'});
+ return {directory:fileURLToPath(out),zip:fileURLToPath(zip)};
 }
-export async function build(target) {
-  const manifest=manifestFor(target);
-  const out=new URL(`dist/${target}/`,root);
-  await rm(out,{recursive:true,force:true}); await mkdir(out,{recursive:true});
-  for (const f of SHIP) await cp(new URL(f,root),new URL(f,out),{recursive:true});
-  await writeFile(new URL('privacy.html',out),await privacyPage(target));
-  await writeFile(new URL('manifest.json',out),JSON.stringify(manifest,null,2)+'\n');
-  const {providers,...config}=TARGETS[target];
-  const source=`export const BUILD = Object.freeze({...${JSON.stringify(config)},providers:Object.freeze(${JSON.stringify(providers)})});\n`;
-  await writeFile(new URL('core/build-config.js',out),source);
-}
-if (import.meta.url===`file://${process.argv[1]}`) {
-  const arg=process.argv[2] ?? 'all';
-  for (const t of arg==='all' ? Object.keys(TARGETS) : [arg]) await build(t);
-  if (arg==='all') await writeFile(new URL('privacy.html',root),await privacyPage('store'));
-  await writeFile(new URL('manifest.json',root),JSON.stringify(manifestFor('store'),null,2)+'\n');
+if(process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {
+ console.log(await build(process.argv[2] ?? 'store'));
 }

@@ -1,24 +1,97 @@
 {
   "manifest_version": 3,
-  "name": "Beforehand",
-  "version": "0.2.0",
-  "minimum_chrome_version": "102",
-  "description": "Turn local browsing patterns into useful next steps. Review every outgoing request before you run it.",
+  "name": "beforehand",
+  "version": "1.0.0",
+  "minimum_chrome_version": "116",
+  "description": "See what the product you're viewing costs from Korea, delivered. Sends only the product name, brand and your country.",
   "permissions": [
-    "history",
     "storage"
   ],
   "host_permissions": [
-    "https://api.openai.com/*",
-    "https://api.anthropic.com/*",
+    "https://*.amazon.com/*",
+    "https://*.walmart.com/*",
+    "https://*.ebay.com/*",
+    "https://*.target.com/*",
+    "https://*.bestbuy.com/*",
+    "https://*.sephora.com/*",
+    "https://*.ulta.com/*",
+    "https://*.amazon.co.uk/*",
+    "https://*.ebay.co.uk/*",
+    "https://*.argos.co.uk/*",
+    "https://*.boots.com/*",
+    "https://*.lookfantastic.com/*",
+    "https://*.next.co.uk/*",
+    "https://*.amazon.co.jp/*",
+    "https://*.rakuten.co.jp/*",
+    "https://*.shopping.yahoo.co.jp/*",
+    "https://*.zozo.jp/*",
+    "https://*.cosme.com/*",
+    "https://*.shopee.tw/*",
+    "https://*.momoshop.com.tw/*",
+    "https://*.pchome.com.tw/*",
+    "https://*.hktvmall.com/*",
+    "https://*.watsons.com.hk/*",
+    "https://*.sasa.com.hk/*",
+    "https://*.jd.com/*",
     "https://concierge.youngji.kim/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.amazon.com/*",
+        "https://*.walmart.com/*",
+        "https://*.ebay.com/*",
+        "https://*.target.com/*",
+        "https://*.bestbuy.com/*",
+        "https://*.sephora.com/*",
+        "https://*.ulta.com/*",
+        "https://*.amazon.co.uk/*",
+        "https://*.ebay.co.uk/*",
+        "https://*.argos.co.uk/*",
+        "https://*.boots.com/*",
+        "https://*.lookfantastic.com/*",
+        "https://*.next.co.uk/*",
+        "https://*.amazon.co.jp/*",
+        "https://*.rakuten.co.jp/*",
+        "https://*.shopping.yahoo.co.jp/*",
+        "https://*.zozo.jp/*",
+        "https://*.cosme.com/*",
+        "https://*.shopee.tw/*",
+        "https://*.momoshop.com.tw/*",
+        "https://*.pchome.com.tw/*",
+        "https://*.hktvmall.com/*",
+        "https://*.watsons.com.hk/*",
+        "https://*.sasa.com.hk/*",
+        "https://*.jd.com/*"
+      ],
+      "js": [
+        "core/extract.js",
+        "core/card.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Beforehand"
+    "default_title": "beforehand",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
   },
   "options_page": "options.html",
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; connect-src https://api.openai.com https://api.anthropic.com https://concierge.youngji.kim"
+    "extension_pages": "script-src 'self'; object-src 'none'; connect-src https://concierge.youngji.kim"
   }
 }
