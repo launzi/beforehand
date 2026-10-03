@@ -70,7 +70,8 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
   }
   async function lookup(fresh=false) {
    if(!fresh) {
-    const cached=await cacheRead(key); if(cached) return cached;
+    const cached=await cacheRead(key);
+    if(cached) {await stillAllowed();return cached;}
     if(msg.manual!==true) {
      const allowed=await withStorageLock(storage,async()=>{
       await stillAllowed(); const d=new Date(now()),day=[d.getFullYear(),d.getMonth()+1,d.getDate()].join('-');

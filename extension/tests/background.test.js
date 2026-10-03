@@ -184,3 +184,12 @@ test('an already opened checkout survives worker restart without persisting buye
  assert.deepEqual(a.updates,[{id:page.tab.id,url:'https://checkout.stripe.com/c/pay/restarted-page'}]);
  assert.doesNotMatch(JSON.stringify([a.storage.data,a.session.data]),/buyer@example|Buyer Identity|quoteToken|quoteExpiresAt/);
 });
+test('cache reads recheck deleted or revised consent and current settings before returning',async()=>{
+ for(const revoke of [s=>deleteAllData(s),s=>acceptConsent(s,{autoCheck:true}),s=>s.set({autoCheck:false}),s=>s.set({disabledShops:['amazon.com']}),s=>s.set({destination:'JP'})]) {
+  const a=env();await a.bg.onMessage(match,sender);
+  const before=structuredClone(a.session.data),get=a.storage.get.bind(a.storage);let intercepted=false;
+  a.storage.get=async keys=>{const value=await get(keys);if(keys==='resultCache' && !intercepted){intercepted=true;await revoke(a.storage);}return value;};
+  assert.equal((await a.bg.onMessage(match,sender)).kind,'unavailable');
+  assert.equal(a.calls.length,1);assert.deepEqual(a.session.data,before);
+ }
+});
