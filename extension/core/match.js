@@ -1,3 +1,4 @@
+import {scrubText} from './scrub.js';
 export const KC_ENDPOINT='https://concierge.youngji.kim/api/mcp';
 export const DESTINATIONS=Object.freeze(['US','GB','JP','CN','TW','HK']);
 export class MatchError extends Error {
@@ -8,9 +9,10 @@ const text=(v,min=0,max=10000)=>typeof v==='string' && v.length>=min && v.length
 const amount=v=>typeof v==='number' && Number.isFinite(v) && v>=0?v:malformed();
 const keys=(v,expected)=>v && typeof v==='object' && !Array.isArray(v) && Object.keys(v).sort().join(',')===[...expected].sort().join(',');
 function matchArgs({name,brand,destination,fresh=false}) {
- name=text(name,2,200).trim(); if(name.length<2 || /http|www\./i.test(name) || !DESTINATIONS.includes(destination) || typeof fresh!=='boolean') malformed();
+ name=text(name,2,200).trim(); if(/\[(?:URL|email|credential|long identifier|number) removed\]/.test(scrubText(name,10000))) malformed();
+ if(name.length<2 || /http|www\./i.test(name) || !DESTINATIONS.includes(destination) || typeof fresh!=='boolean') malformed();
  const args={name};
- if(brand!=null) {brand=text(brand,0,80).trim(); if(brand) args.brand=brand;}
+ if(brand!=null) {brand=text(brand,0,80).trim(); if(/\[(?:URL|email|credential|long identifier|number) removed\]/.test(scrubText(brand,10000))) malformed(); if(brand) args.brand=brand;}
  args.destination=destination; if(fresh) args.fresh=true;
  return args;
 }

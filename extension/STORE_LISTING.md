@@ -1,83 +1,38 @@
-# Chrome Web Store listing draft
+# Chrome Web Store listing
 
-**Name:** Beforehand  
-**Version:** 0.1.0  
-**Publisher:** Munteok  
-**License:** Apache-2.0  
-**Price:** Free extension; bring one API key for your selected AI provider (OpenAI or Anthropic in the store build; Nebius Token Factory in the hackathon build). Provider usage charges may apply.
+## Name
+beforehand
 
 ## Short description
-
-Turn local browsing patterns into useful next steps. Review every outgoing request before you run it.
+See what the product you're viewing costs from Korea, delivered. Sends only the product name, brand and your country.
 
 ## Detailed description
+beforehand checks the product you are viewing on a supported shop and shows what the same item costs from Korea, delivered. If there is no same-item match, it can show up to two Korean alternatives.
 
-Find a useful next step in the browsing you have already done.
+Choose auto-check at setup, or click Check Korea price when you want a check. Only the product name, brand and delivery country go to Korea Concierge, operated by Munteok. Your browsing history, page address, page price and other tabs are not sent. No AI account or key is needed.
 
-Beforehand reads recent Chrome history locally, on demand, to surface four kinds of clues: new setup activity, searches with little follow-through, repeated visits, and activity that has gone quiet. It can suggest a setup check, a focused research briefing, a short synthesis, or a gentle next step to resume something.
+See the delivered total and the item, shipping, service fee, payment fee and estimated duty details. When the same item is cheaper locally, the card tells you. Amounts come from the quote engine.
 
-**Your browsing history is essential to this feature.** The extension reads website addresses and visit times for up to 90 days only after you accept its disclosure and press Scan. It does not read page contents or run background scans. These patterns do not prove that a task is unfinished or that you need to act.
+If you choose Buy from Korea, enter your email and name to create an order with Korea Concierge, then pay on Stripe in a new tab. beforehand does not store those details or see your card. The seller is Munteok; import duty and tax are estimated and paid on delivery.
 
-**Raw history stays on your device.** AI suggestions are optional. “What leaves your device” shows the exact outgoing request body and destination before every Run click. Your selected AI provider (OpenAI or Anthropic in the store build; Nebius Token Factory in the hackathon build) receives a minimized, scrubbed signal: a hostname or search term, aggregate counts, day-level dates and generic setup markers. Full history URLs, titles, identifiers and exact visit times are excluded. Scrubbing is imperfect, so review the request and cancel anything private.
-
-Optional research sends a scrubbed query to Korea Concierge, operated by Munteok. Korea Concierge searches through Tavily and returns result titles, URLs and snippets. Research queries are not logged or stored. For each call, Korea Concierge records only the tool name, success or failure, error code, duration and time. To limit abuse, it also counts requests per 10 minutes under a hashed form of your IP address; these counters are deleted after 24 hours. Search results require another preview before selected titles, URLs and snippets go to your selected AI provider. You do not provide a Tavily key. Every signal shows its allow, hold or deny verdict, reason, and mandate SHA-256 digest. Run never overrides a held or denied action.
-
-Your one AI provider key and settings stay in local extension storage. You can exclude websites, delete local data, and export the local audit log as JSON to see what was sent. No sale, advertising, analytics, automatic external calls, or remote code.
-
-Getting started: accept the disclosure, choose your AI provider and configure its API key in Settings, scan locally, select a signal, and review each request before pressing Run. Keep the extension page open during requests; Open in a tab provides a larger workspace.
-
-AI provider privacy policies: [OpenAI](https://openai.com/policies/privacy-policy/), [Anthropic](https://www.anthropic.com/legal/privacy), [Nebius](https://docs.nebius.com/legal/privacy).
-
-Published by Munteok. Free and open source under Apache-2.0. Own provider accounts are required for AI features and their usage charges may apply. Suggestions may be inaccurate; you decide what to do next.
+Works on 25 supported shops in the US, UK, Japan, China, Taiwan and Hong Kong. Turn checks off for one shop or everywhere. Export or delete your local log, or turn off and delete everything in Settings.
 
 ## Single purpose
-
-Help the user turn locally detected browsing patterns into optional, evidence-grounded next-step suggestions, with explicit review and permission before each external AI or research request.
+Show the Korea delivered price, or Korean alternatives, for the product on the shopping page you are viewing.
 
 ## Permission justifications
+- storage: settings, consent, local log, result cache and automatic-check counter.
+- Host permissions: read the product name on supported shop pages; contact Korea Concierge for matches and checkout. Page price and currency remain local.
 
-| Permission | Why it is necessary |
-| --- | --- |
-| `history` | On an explicit local scan, read website addresses, visit times and product-page titles to detect the four existing browsing patterns and repeated Korean product views. No history mutation is performed. |
-| `storage` | Store user-entered provider keys, the search mandate, excluded hosts, versioned first-use consent and quote destination and a bounded local audit log. Only `chrome.storage.local` is used. |
-| `https://api.openai.com/*` (store build) | After Run, discover available models and send the exact reviewed, minimized triage or suggestion request to the user's selected OpenAI account. |
-| `https://api.anthropic.com/*` (store build) | After Run, discover available models and send the exact reviewed, minimized triage or suggestion request to the user's selected Anthropic account. |
-| `https://api.tokenfactory.nebius.com/*` (hackathon build) | After Run, discover available Nemotron models and send the exact reviewed, minimized triage or suggestion request to the user's Nebius account. |
-| `https://concierge.youngji.kim/*` | After Run and mandate approval, send a scrubbed query for research through Tavily, or only the scrubbed product name and destination for a free cost estimate. No order or payment is created. No Tavily key is required from you. |
+## Data usage answers
+- Website content: product name and brand from supported shop pages — sent to Korea Concierge.
+- Personally identifiable information: email and name only when you choose to buy.
+- Browsing history: not collected; no history permission.
+- Payment details: handled by Stripe; the extension never sees your card.
+- Purpose: the single purpose above, including disclosed Korea Concierge processing and demand records.
 
-No `alarms`, `tabs`, `downloads`, content-script, browsing-page host access or wildcard-host permission is required. A local Blob download exports traces without the downloads API.
+## Limited Use certification
+The use of information received from Google APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements.
 
-## Data usage answers — draft for publisher review
-
-Korea Concierge is a Munteok-operated service receiving only approved research and quote requests (scrubbed search terms, product names and destination countries), not your browsing history itself. **User-approved provider processing counts as data handling**. Do not select “no data collected” merely because processing begins locally. Confirm the current dashboard's field wording before submitting.
-
-| Data category | Draft answer and scope |
-| --- | --- |
-| Web history | **Yes.** History addresses/times are processed locally; only reviewed derived signals may be sent to the selected AI provider and Korea Concierge. |
-| Authentication information | **Yes.** One user-entered AI provider API key is stored locally and sent only to the selected AI provider for authentication. No Chrome passwords or cookies are read. |
-| Personally identifiable information | **Potentially yes.** Terms and hostnames may retain names or other identifying text even after scrubbing. Review with the publisher; do not claim guaranteed anonymization. |
-| Health / financial information | Not deliberately requested or inferred, but user-approved query text can contain these subjects. Final disclosure must account for this possibility; redaction is not a semantic sensitivity classifier. |
-| Location | No location permission or precise-location collection. The selected destination country is sent for a quote. Providers receive network IP information; an approved query may include a location. |
-| Personal communications | No email/chat content access. No content scripts or page-body reading. |
-| User activity | Visits are used as browsing signals. No keystroke, click, mouse or screen monitoring. |
-| Website content | No visited-page bodies or images are sent. Scrubbed product names derived from history titles are sent only for the requested quote feature. Optional third-party search snippets are processed for the requested research feature. |
-
-Required certifications, if the released package continues to match this implementation:
-
-- Data is not sold or transferred outside the allowed user-facing feature, including its necessary third-party processing.
-- Data is not used or transferred for purposes unrelated to the single purpose.
-- Data is not used or transferred to determine creditworthiness or for lending purposes.
-- No remote code: all executable code ships as readable local ES modules, without dependencies, bundling, minification, eval or CDN scripts.
-
-## Before publication
-
-Privacy contact: privacy@munteok.com. Host a public privacy-policy URL; provide support and source-code URLs; add store icons, screenshots and promotional assets; confirm data-category answers against the live dashboard; perform unpacked Chrome and provider-account smoke checks; review provider terms. This draft is not a store submission or a guarantee of review approval.
-
-
-## Korea quote permission and disclosure
-
-`https://concierge.youngji.kim/*`: access to the research and quote MCP endpoint. For research, sends only a scrubbed query to Korea Concierge, which searches through Tavily and returns titles, URLs and snippets. For quotes, sends only the scrubbed product name and selected destination in tool arguments, never browsing URLs or visit times. No authentication, checkout, order or payment action. Quote tokens are discarded. The exact JSON-RPC request is previewed before Run. Estimated cost cards include fees, duty source text, local price comparison, warnings and service verdict; buy_local is honestly surfaced first.
-
-Korea Concierge is operated by the developer of this extension (Munteok). Quotes are free; a service fee is included only if you choose to buy through it.
-
-First-use prominent disclosure requires **I agree** before history reads or any provider calls. Accepted disclosure version 3 is stored locally; a version increase prompts again. **Withdraw consent and delete all local data** clears keys, trace, settings and consent. No pre-consent network traffic. Contact: privacy@munteok.com.
+## Submission notes
+Publisher: Munteok. Privacy contact: privacy@munteok.com. Release owner must verify the deployed privacy page, shop extraction and screenshots before submission.

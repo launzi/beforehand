@@ -34,3 +34,7 @@ test('RPC errors, invalid amounts, malformed results fail closed',()=>{
  for(const kind of ['unavailable','rate_limited']) assert.throws(()=>parseMatchRPC(rpc({kind,message:'private'})),e=>e.code===kind&&!e.message.includes('private'));
  assert.equal(parseMatchRPC({result:{content:[{type:'text',text:JSON.stringify({kind:'none',message:'No listing'})}]}}).kind,'none');
 });
+test('product fields with embedded identity are rejected before they leave the device',()=>{
+ assert.throws(()=>matchRequest({name:'Personal order buyer@example.com',destination:'US'}));
+ assert.throws(()=>matchRequest({name:'Toner',brand:'buyer@example.com',destination:'US'}));
+});

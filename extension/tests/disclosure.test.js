@@ -14,3 +14,20 @@ test('v4 consent defaults to manual and delete-all resets onboarding',async()=>{
  await acceptConsent(s,{autoCheck:false}); assert.equal((await getSettings(s)).onboarded,true);
  await deleteAllData(s); assert.equal((await getSettings(s)).onboarded,false);
 });
+
+import {readFile} from 'node:fs/promises';
+import {manifestFor} from '../scripts/build.mjs';
+test('privacy names every shop host, KC and all processors; Limited Use is preserved',async()=>{
+ const text=await readFile(new URL('../PRIVACY.md',import.meta.url),'utf8');
+ for(const pattern of manifestFor('store').host_permissions) assert.ok(text.includes(pattern.replace('https://','').replace('*.','').replace('/*','')),pattern);
+ for(const name of ['Nebius','Serper','Stripe','Jikgugak']) assert.ok(text.includes(name));
+ assert.ok(text.includes('The use of information received from Google APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements.'));
+ assert.doesNotMatch(text,/\{\{|provider key|no checkout/i);
+});
+test('store listing shares the manifest description and keeps detailed copy short',async()=>{
+ const listing=await readFile(new URL('../STORE_LISTING.md',import.meta.url),'utf8');assert.ok(listing.includes(manifestFor('store').description));
+ const detail=listing.split('## Detailed description\n')[1]?.split('\n## ')[0]?.trim();assert.ok(detail && detail.length<=1500);
+});
+test('approved consent draft and constant remain identical',async()=>{
+ assert.equal((await readFile(new URL('../drafts/consent.v4.md',import.meta.url),'utf8')).trimEnd(),DISCLOSURE_V4);
+});

@@ -1,128 +1,57 @@
-# Beforehand: Privacy Policy
+# beforehand privacy policy
 
-Publisher: **Munteok**, an individual developer in the Republic of Korea · Contact: **privacy@munteok.com**
-Policy version 3 (matches in-extension disclosure version 3) · Effective: {{EFFECTIVE_DATE}}
+Publisher: **Munteok**, an individual developer in the Republic of Korea.
+Contact: **privacy@munteok.com**.
+Policy version 4 · Effective: 2026-10-03.
 
-## Summary
+## What it does
 
-Beforehand reads your Chrome history **on your device** to suggest useful next steps. Only approved research and quote requests (scrubbed search terms, product names and destination countries) pass through Korea Concierge, a server operated by Munteok. Munteok does not receive your browsing history itself.
+beforehand shows the Korea delivered price, or Korean alternatives, for the product on the supported shopping page you are viewing. Korea Concierge is operated by Munteok, the developer of this extension. Quotes are free; a service fee is included if you choose to buy. The seller is Munteok. Import duty and tax are estimated and paid on delivery.
 
-Data leaves your device in one situation only. When you press **Run this request**, a minimized request goes to a service you have chosen. Before that request is sent, the extension shows you its exact body and destination. Nothing runs in the background, and nothing is read until you agree on the first-use screen.
+## What is sent and when
 
-## 1. Single purpose
+Before any request, you choose whether to turn on auto-check or use manual checks. Only when auto-check is on, or you click **Check Korea price**, the product name, brand and delivery country go to **https://concierge.youngji.kim/api/mcp**. The extension contacts no other server directly. A repeated check may use an on-device cached result. Automatic requests are limited to 200 per local day.
 
-The extension turns patterns in your own browsing history into optional suggestions. It looks for:
+If you choose **Buy from Korea**, the extension asks for your email and name and sends them with a quote token to Korea Concierge to create an order. It may first refresh an expired quote using the same product name, brand and delivery country. It then opens **https://checkout.stripe.com** in a new tab. beforehand does not store your email or name and never sees your card details. Buying is optional.
 
-- new setup activity
-- searches with limited follow-through
-- repeated visits
-- activity that has gone quiet
-- repeated views of a Korean product page without an observed purchase page
+## What never leaves your device
 
-Every use of data in this policy serves that one purpose. The patterns are clues, and the extension does not treat them as conclusions about your intentions.
+Your browsing history, the shopping page address, the price on the page and other tabs are never sent. Your identity is not sent during a product check; email and name are sent only when you choose to buy. beforehand does not have permission to read browsing history. The page price and currency are used only for an on-device comparison. No advertising or analytics SDK is included, and no remote code runs.
 
-## 2. Consent comes first
+## Korea Concierge processing and retention
 
-Before any history read or external call, the extension asks for an explicit **I agree** to the current disclosure, version 3. The accepted version is stored in `chrome.storage.local`. If the disclosure changes, you are asked again.
+Korea Concierge uses **NVIDIA Nemotron on Nebius** to interpret product names, **Serper (Google Shopping)** to find Korean listings, and the **Jikgugak quote engine** to estimate shipping, fees and duty. **Stripe** processes payment when you choose to buy. The extension does not contact Nebius or Serper directly and does not require an AI account or key.
 
-You can withdraw consent at any time. Withdrawing deletes all extension storage, including keys, settings, consent and trace, and any response that arrives after deletion is discarded. Withdrawing does not delete Chrome's own history or records already held by a provider.
+Korea Concierge keeps a demand record containing a normalized product name, category, delivery country, result type, channel label and browser family. It does not keep your IP address with that record. To limit abuse, requests are counted per 10 minutes under a keyed hash of the IP address; these counters are deleted within 24 hours. Demand records support product demand analysis by the operator. This policy does not promise a deletion period for those records or for order records. Contact Munteok about data already received. Other processors apply their own retention policies.
 
-## 3. What the extension reads
+## What is stored on your device
 
-The extension reads only after you agree and press **Scan local history**. It reads, through Chrome's history API, for up to the last 90 days:
+Only Chrome local extension storage is used, not Chrome sync:
 
-- website addresses
-- visit times
-- product-page titles
+- Consent version, auto-check settings, disabled shops and delivery country: until you delete them or uninstall.
+- Product result cache: valid for 24 hours, at most 200 entries, without quote tokens or expiry fields. Expired entries are ignored and pruned when writing the cache.
+- A daily automatic-check counter and date.
+- Local log: up to 500 records, kept for 30 days and pruned when read or updated. Records contain product name and brand, shop host, delivery country, time, result type or checkout-opened status. They contain no page address, quote token, buyer email or buyer name.
 
-From these, it derives supported search-engine query terms locally.
+Quote tokens are held only in service-worker memory for buying. The quote may be refreshed if that memory is lost or the token expires. Exported JSON logs remain wherever you save them until you delete the file.
 
-It does not access page contents, cookies, passwords saved in Chrome, downloads, or other Chrome profiles. Chrome may return history synchronized into the current profile; the extension does not access other devices on its own. Websites you exclude in Settings, and their subdomains, are left out of detection.
+## Your controls
 
-## 4. What leaves your device, and only when you press Run
+The toolbar popup lets you turn auto-check off for the current shop or everywhere and choose a delivery country. When auto-check is off globally, you can still request a manual check. A disabled shop is not checked, including manually. Settings lets you change individual shops, export or delete the local log, or **Turn off and delete everything**. The last action removes consent, settings, cache, counters and log, and opens the welcome page again. A response from an earlier consent session is discarded. Uninstalling removes extension storage. These actions cannot recall a request already sent or remove records a processor already holds.
 
-Raw history records are never uploaded. Each stage of a suggestion needs its own preview and its own Run.
+Supported shop origins (HTTPS, including subdomains):
 
-| Recipient | What is sent | When |
-|---|---|---|
-| **Your selected AI provider**: OpenAI (`api.openai.com`) or Anthropic (`api.anthropic.com`) in the store build; Nebius Token Factory (`api.tokenfactory.nebius.com`) in the hackathon build | Model discovery: no history. Triage and suggestions: instructions plus a minimized signal: a hostname or scrubbed search term, aggregate counts, dates rounded to whole days, and generic path markers such as `/signup`. Research suggestions may add selected, scrubbed search-result titles, URLs without query strings, and snippets. | Each Run you approve |
-| **Korea Concierge** (`concierge.youngji.kim`), optional research | A scrubbed search query. Korea Concierge (operated by Munteok) searches through Tavily and returns result titles, URLs and snippets. Research queries are not logged or stored. For each call, Korea Concierge records only the tool name, success or failure, error code, duration and time. To limit abuse, it also counts requests per 10 minutes under a hashed form of your IP address; these counters are deleted after 24 hours. | Only when your mandate allows research and you approve Run; no Tavily key is required from you |
-| **Korea Concierge** (`concierge.youngji.kim`) | A scrubbed product name and your chosen delivery country (US by default). No product URL, no visit time. | Only for a Korean product signal, when your mandate allows quotes |
+- United States: amazon.com, walmart.com, ebay.com, target.com, bestbuy.com, sephora.com, ulta.com.
+- United Kingdom: amazon.co.uk, ebay.co.uk, argos.co.uk, boots.com, lookfantastic.com, next.co.uk.
+- Japan: amazon.co.jp, rakuten.co.jp, shopping.yahoo.co.jp, zozo.jp, cosme.com.
+- Taiwan: shopee.tw, momoshop.com.tw, pchome.com.tw.
+- Hong Kong: hktvmall.com, watsons.com.hk, sasa.com.hk.
+- China: jd.com.
 
-Only your selected AI provider receives the one AI API key you entered, in an authentication header. Korea Concierge needs no key from you; it manages Tavily access on its server. The AI provider and Korea Concierge receive ordinary connection information, including your IP address, when contacted. Keys are hidden in previews and never written to the trace.
-
-**Scrubbing is not anonymization.** It removes recognizable credentials, email addresses, long identifiers, phone-like numbers and embedded URLs. Model requests also leave out raw history URLs, unsanitized titles, profile and visit IDs, path identifiers, exact visit times and signal hashes. A hostname or search term can still reveal personal interests, names, or health or financial matters. Review each request, and cancel anything you do not want to share.
-
-### Providers act under your own accounts
-
-Your selected AI provider processes requests under your account agreement with it: OpenAI or Anthropic in the store build, or Nebius Token Factory in the hackathon build. Tavily is used by Korea Concierge for research; you do not need a Tavily account or key.
-
-- **OpenAI**: see the [OpenAI privacy policy](https://openai.com/policies/privacy-policy/).
-- **Anthropic**: see the [Anthropic privacy policy](https://www.anthropic.com/legal/privacy).
-
-- **Nebius Token Factory** may, by default, keep prompts and outputs to speed up inference (speculative decoding). Nebius says these are stored in the EU and not used for training. If you enable **Zero Data Retention** in your Nebius account, Nebius says it keeps no copy after each request. We recommend enabling it. See the [Nebius Token Factory legal guide](https://docs.tokenfactory.nebius.com/legal/legal-quick-guide) and the [Nebius privacy policy](https://docs.nebius.com/legal/privacy).
-- **Tavily**: see the [Tavily privacy policy](https://tavily.com/privacy).
-
-Munteok does not control provider-side retention and makes no claim about it. Ask the provider directly to delete data it holds.
-
-### Korea product quotes and a conflict of interest
-
-**Korea Concierge is operated by the developer of this extension (Munteok).** Quotes are free. A service fee is included only if you choose to buy through Korea Concierge.
-
-- This extension cannot place orders. No checkout, order creation or payment is implemented.
-- Quote tokens and next-step instructions from the service are discarded, never stored, displayed or forwarded.
-- Costs are shown exactly as the service returns them, including duty sources, warnings and the local price.
-- When buying locally is cheaper, the quote card says so first.
-- Selected quote facts may then go to your selected AI provider for a separately previewed English explanation.
-- Quotes are estimates and do not commit you to buy anything.
-
-## 5. What is stored on your device
-
-| Item | Where | Kept for |
-|---|---|---|
-| Scan results and detected signals | Memory of the open extension page | Until you close that page or rescan |
-| AI output, quote cards, research results | Memory of the open extension page | Until you close that page |
-| One selected AI provider key, mandate, excluded websites, quote destination, consent | `chrome.storage.local` (never `chrome.storage.sync`) | Until you delete them, withdraw consent, or uninstall |
-| Audit trace: approved scrubbed request bodies, destinations, mandate digests, signal hashes, timestamps, stages, outcomes | `chrome.storage.local` | Newest 500 records, up to 30 days, pruned the next time you open the extension |
-
-Keys are stored **without additional encryption** beyond Chrome's own storage. The trace never contains API keys, Authorization headers, raw history records or provider response bodies.
-
-If you export the trace to a JSON file, that file stays wherever you save it until you delete it. It holds the requests you approved and may still be sensitive.
-
-## 6. What we do not do
-
-- Munteok does not receive your browsing history itself. Only approved research and quote requests (scrubbed search terms, product names and destination countries) pass through its Korea Concierge server. Research queries are not logged or stored. For each call, Korea Concierge records only the tool name, success or failure, error code, duration and time. To limit abuse, it also counts requests per 10 minutes under a hashed form of your IP address; these counters are deleted after 24 hours.
-- No analytics, telemetry, crash reporting or advertising SDKs.
-- No sale or transfer of your data, and no use for advertising, for creditworthiness or lending, or for any purpose other than the single purpose above.
-- No person reads your data.
-- No remote code.
+## Limited Use
 
 **The use of information received from Google APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements.**
 
-## 7. Automated suggestions
+## Contact and changes
 
-Suggestions come from rules on your device plus AI model output. They have no legal or similarly significant effect on you. The allow, hold or deny decision is deterministic, and it is recorded in your local trace so you can inspect it.
-
-## 8. Your choices and rights
-
-- **Settings**: change what your mandate allows, exclude websites, delete the trace, or delete all keys, settings and trace.
-- **Uninstall**: Chrome removes the extension's local storage.
-- These actions do not delete Chrome's own history, files you exported, or data a provider already received. A request that has already been sent cannot be recalled.
-- Research queries are not logged or stored. For each call, Korea Concierge records only the tool name, success or failure, error code, duration and time. To limit abuse, it also counts requests per 10 minutes under a hashed form of your IP address; these counters are deleted after 24 hours. For requests sent under your AI provider account, contact OpenAI, Anthropic or Nebius as applicable; for Korea Concierge processing, contact Munteok.
-- For questions or complaints, write to **privacy@munteok.com**. You may also contact your local data protection authority. In Korea, this is the Personal Information Protection Commission ([pipc.go.kr](https://www.pipc.go.kr)).
-
-## 9. Children
-
-The extension is not directed at children under 14.
-
-## 10. Open source
-
-The full source code is published under the Apache License 2.0 at {{REPO_URL}}, so anyone can check these statements against the code.
-
-## 11. Changes
-
-If what the extension reads or sends changes, we update this policy and the in-extension disclosure version. The extension then asks for your agreement again before it reads or sends anything.
-
-| Date | Change |
-|---|---|
-| {{EFFECTIVE_DATE}} | First published version |
+For questions or deletion requests, contact **privacy@munteok.com**. If what the extension reads or sends changes, we update this policy and the disclosure version and ask for consent again. Updating from the previous product removes retired credentials and local logs before asking for version 4 consent.
