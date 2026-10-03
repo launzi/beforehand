@@ -1,71 +1,48 @@
-import {BUILD} from './build-config.js';
-import {DEFAULT_MANDATE,normalizeMandate} from './mandate.js';
-export const DISCLOSURE_VERSION = 3;
-export const hasConsent = value => value?.consent?.accepted === true && value.consent.version === DISCLOSURE_VERSION;
+import {DESTINATIONS} from './match.js';
+import {shopFor} from './shops.js';
+export const DISCLOSURE_VERSION=4;
+export const RESULT_CACHE_MS=24*3600*1000, DAILY_AUTO_LIMIT=200, TRACE_LIMIT=500, TRACE_DAYS=30;
+export const hasConsent=value=>value?.consent?.accepted===true && value.consent.version===DISCLOSURE_VERSION;
 export async function requireConsent(storage) {
-  if (!storage || !hasConsent(await storage.get('consent'))) throw new Error('Read and agree to the current disclosure first.');
+ const value=await storage?.get('consent');
+ if(!hasConsent(value)) throw new Error('Read and agree to the current disclosure first.');
+ return value.consent;
 }
-export const acceptConsent = storage => locked(()=>storage.set({consent:{accepted:true,version:DISCLOSURE_VERSION}}));
+const queues=new WeakMap();
+export function withStorageLock(storage,fn) {
+ if(globalThis.navigator?.locks?.request) return navigator.locks.request('beforehand-storage-v4',fn);
+ const work=(queues.get(storage) ?? Promise.resolve()).then(fn); queues.set(storage,work.catch(()=>{})); return work;
+}
+export const acceptConsent=(storage,{autoCheck})=>withStorageLock(storage,()=>storage.set({consent:{accepted:true,version:DISCLOSURE_VERSION,revision:crypto.randomUUID()},autoCheck:autoCheck===true}));
 export async function getSettings(storage) {
-  const value = await storage.get(['provider','providerKey','mandate','consent','excludedHosts','destination']);
-  return {provider:typeof value.provider==='string' ? value.provider : BUILD.defaultProvider,
-    providerKey:typeof value.providerKey==='string' ? value.providerKey : '',
-    mandate:normalizeMandate(value.mandate === undefined ? DEFAULT_MANDATE : value.mandate),
-    onboarded:hasConsent(value), destination:value.destination === undefined ? 'US' : value.destination,
-    excludedHosts:Array.isArray(value.excludedHosts) ? value.excludedHosts.filter(x=>typeof x === 'string') : []};
+ const v=await storage.get(['consent','autoCheck','disabledShops','destination']);
+ return {onboarded:hasConsent(v),autoCheck:hasConsent(v) && v.autoCheck===true,
+ disabledShops:Array.isArray(v.disabledShops)?[...new Set(v.disabledShops.filter(h=>shopFor(h)?.host===h))]:[],destination:DESTINATIONS.includes(v.destination)?v.destination:null};
 }
-export async function migrateSettings(storage,build=BUILD) {
-  return locked(async()=>{
-  const v=await storage.get(['nebiusKey','tavilyKey','provider','providerKey']);
-  const updates={};
-  if (typeof v.nebiusKey==='string' && v.nebiusKey && build.providers.includes('nebius') && !v.providerKey) Object.assign(updates,{provider:'nebius',providerKey:v.nebiusKey});
-  const provider=updates.provider ?? v.provider;
-  if (!provider || !build.providers.includes(provider)) Object.assign(updates,{provider:build.defaultProvider,providerKey:''});
-  const secrets=await secretValues(storage), {trace}=await storage.get('trace');
-  if (Array.isArray(trace) && secrets.length) {
-    const clean=value=>typeof value==='string' ? secrets.reduce((text,key)=>text.replaceAll(key,'[API key removed]'),value)
-      : Array.isArray(value) ? value.map(clean) : value && typeof value==='object' ? Object.fromEntries(Object.entries(value).map(([key,v])=>[key,clean(v)])) : value;
-    updates.trace=clean(trace);
-  }
-  if (Object.keys(updates).length) await storage.set(updates);
-  if ('nebiusKey' in v) await storage.remove('nebiusKey');
-  if ('tavilyKey' in v) await storage.remove('tavilyKey');
-  });
+export async function updateSettings(storage,changes) {
+ return withStorageLock(storage,async()=>{
+  await requireConsent(storage); const patch={};
+  if(typeof changes.autoCheck==='boolean') patch.autoCheck=changes.autoCheck;
+  if(Array.isArray(changes.disabledShops)) patch.disabledShops=[...new Set(changes.disabledShops.filter(h=>shopFor(h)?.host===h))];
+  if(changes.destination===null || DESTINATIONS.includes(changes.destination)) patch.destination=changes.destination;
+  await storage.set(patch);
+ });
 }
-export async function secretValues(storage) {
-  const keys=await storage.get(['providerKey','nebiusKey','tavilyKey']);
-  return Object.values(keys).filter(v=>typeof v==='string' && v.length);
-}
-export const TRACE_LIMIT = 500;
-export const TRACE_DAYS = 30;
+const traceFields={match_sent:['shop','name','brand','destination'],match_result:['shop','result'],checkout_opened:['shop']};
 async function loadTrace(storage,now) {
-  const {trace=[]} = await storage.get('trace');
-  if (!Array.isArray(trace)) throw new Error('Local audit log is invalid. Clear local data before continuing.');
-  const kept = trace.filter(x=>Date.parse(x.ts) >= now-TRACE_DAYS*86400000).slice(-TRACE_LIMIT);
-  if (kept.length !== trace.length) await storage.set({trace:kept});
-  return kept;
+ const {trace=[]}=await storage.get('trace');
+ if(!Array.isArray(trace)) throw new Error('Delete the invalid local log before continuing.');
+ const kept=trace.filter(x=>Number.isFinite(Date.parse(x.ts)) && Date.parse(x.ts)>=now-TRACE_DAYS*86400000).slice(-TRACE_LIMIT);
+ if(kept.length!==trace.length) await storage.set({trace:kept}); return kept;
 }
-const locked = fn => globalThis.navigator?.locks?.request
-  ? navigator.locks.request('before-you-ask-local-trace',fn) : fn();
-export const readTrace = (storage,now=Date.now()) => locked(()=>loadTrace(storage,now));
-export async function appendTrace(storage,event,now=Date.now(),requireRequestId=null) {
-  return appendTraces(storage,[event],now,requireRequestId);
-}
-export async function appendTraces(storage,events,now=Date.now(),requireRequestId=null) {
-  // No keys, headers, raw history or provider response bodies belong in event.
-  return locked(async()=>{
-    await requireConsent(storage);
-    const trace = await loadTrace(storage,now);
-    // Deleting a trace during a request must not resurrect it when the response arrives.
-    if (requireRequestId !== null && !trace.some(event=>event.kind === 'request_prepared' && event.request_id === requireRequestId)) return false;
-    const secrets=await secretValues(storage);
-    const redact=value=>typeof value === 'string' ? secrets.reduce((s,key)=>s.replaceAll(key,'[API key removed]'),value)
-      : Array.isArray(value) ? value.map(redact) : value && typeof value === 'object'
-        ? Object.fromEntries(Object.entries(value).map(([k,v])=>[k,redact(v)])) : value;
-    trace.push(...events.slice(-TRACE_LIMIT).map(event=>({...redact(event),ts:new Date(now).toISOString()})));
-    await storage.set({trace:trace.slice(-TRACE_LIMIT)}); // A write failure propagates and blocks sending.
-    return true;
-  });
-}
-export const deleteTrace = storage => locked(()=>storage.remove('trace'));
-export const deleteAllData = storage => locked(()=>storage.clear());
+export const readTrace=(storage,now=Date.now())=>withStorageLock(storage,()=>loadTrace(storage,now));
+export const appendTrace=(storage,event,now=Date.now(),epoch)=>withStorageLock(storage,async()=>{
+ await requireConsent(storage);
+ if(epoch!==undefined && (await storage.get('traceEpoch')).traceEpoch!==epoch) return;
+ const fields=traceFields[event.kind]; if(!fields) throw new Error('Unknown local log event');
+ const safe={kind:event.kind,ts:new Date(now).toISOString()};
+ for(const field of fields) if(typeof event[field]==='string') safe[field]=event[field].slice(0,200);
+ const trace=await loadTrace(storage,now); trace.push(safe); await storage.set({trace:trace.slice(-TRACE_LIMIT)});
+});
+export const deleteTrace=storage=>withStorageLock(storage,async()=>{await storage.remove('trace');await storage.set({traceEpoch:crypto.randomUUID()});});
+export const deleteAllData=storage=>withStorageLock(storage,()=>storage.clear());

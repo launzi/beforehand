@@ -17,3 +17,7 @@ test('sink parses SSE and rejects consent revoked while in flight',async()=>{
 test('sink contains transport and parsing failures',async()=>{
  for(const f of [async()=>{throw Error('private network error');},async()=>({ok:false,status:500}),async()=>({ok:true,json:async()=>{throw Error('bad JSON');}})]) await assert.rejects(sendRequest(req(),{storage:new Store(consent()),fetchImpl:f}),e=>['unavailable','malformed'].includes(e.code));
 });
+test('revocation and re-acceptance cannot revive an old response',async()=>{
+ const {acceptConsent,deleteAllData}=await import('../core/storage.js'); const storage=new Store(); await acceptConsent(storage,{autoCheck:true});
+ await assert.rejects(sendRequest(req(),{storage,fetchImpl:async()=>{await deleteAllData(storage);await acceptConsent(storage,{autoCheck:true});return response({kind:'none',message:'No listing'});}}));
+});

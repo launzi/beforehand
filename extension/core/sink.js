@@ -1,9 +1,5 @@
 import {validRequest,parseMatchRPC,parseCheckoutRPC,MatchError} from './match.js';
-// B4 shares this consent gate with settings and the service worker.
-async function requireConsent(storage) {
- const value=await storage?.get('consent');
- if(value?.consent?.accepted!==true || value.consent.version!==4) throw new Error('Read and agree to the current disclosure first.');
-}
+import {requireConsent} from './storage.js';
 async function readKC(response) {
  if(response.headers?.get('content-type')?.includes('text/event-stream')) {
   const source=await response.text();
@@ -17,7 +13,7 @@ async function readKC(response) {
  return response.json();
 }
 export async function sendRequest(req,{storage,fetchImpl=globalThis.fetch,timeoutMs=45000}) {
- await requireConsent(storage);
+ const consent=await requireConsent(storage);
  if(!validRequest(req)) throw new MatchError('malformed');
  // Snapshot the validated request before yielding to any asynchronous work.
  const {url,method,body,kind}=req;
@@ -29,6 +25,7 @@ export async function sendRequest(req,{storage,fetchImpl=globalThis.fetch,timeou
  if(response.status===429) throw new MatchError('rate_limited');
  if(!response.ok) throw new MatchError('unavailable');
  let raw; try {raw=await readKC(response);} catch {throw new MatchError('malformed');}
- await requireConsent(storage);
+ const current=await requireConsent(storage);
+ if(current.revision!==consent.revision) throw new MatchError('unavailable');
  return kind==='match'?parseMatchRPC(raw):parseCheckoutRPC(raw);
 }
