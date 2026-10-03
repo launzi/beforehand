@@ -44,6 +44,10 @@ def scripted_visits(scenario: dict) -> dict:
     term = others["unresolved"][0]["term"]
     add("www.google.com", "/search?" + urlencode({"q": term}),
         "Compare static site generators", 1, 12, search_term=term)
+    for item in scenario["signals"]:
+        if item["kind"] == "korea_product":
+            for days in (4, 2):
+                add(item["host"], item["path"], item["title"], days, 15)
     return {"visits": visits}
 
 
@@ -51,6 +55,8 @@ class ScriptedLLM:
     def complete(self, prompt, **kwargs):
         if kwargs.get("system") == TRIAGE_SYSTEM:
             return "ACT"
+        if prompt.startswith("Korea quote facts:"):
+            return "It's cheaper to buy locally. The example quote totals USD 65.27 versus a local price of USD 17.85, with estimated duty collected on delivery."
         for marker, reply in (
             ("gone quiet", "You visited this project on several days, then it went quiet. If it still matters, reopen it and pick one small task to resume."),
             ("initial setup", "You opened the signup path, but this history alone can't tell whether setup finished. Check the service's settings page for any remaining step."),
@@ -69,6 +75,18 @@ class ScriptedSearch:
                  "snippet": "Scripted example only; no search request was made."}][:limit]
 
 
+class ScriptedQuote:
+    def quote(self, product, destination="US"):
+        from browsing.web.korea_quote import sanitize_quote
+        raw = json.loads((ROOT / "fixtures/korea-quote-20261003-004400.json").read_text())
+        raw["item"]["title"] = product
+        raw["item"]["link"] = None
+        raw["localPrice"]["url"] = None
+        raw["destination"] = destination
+        raw["warnings"].insert(0, "Illustrative fixture: these sample costs are reused for all fictional products, not actual product quotes.")
+        return sanitize_quote(raw)
+
+
 def regenerate_fixtures(*, scenario_path=DEFAULT_SCENARIO, output_dir=ROOT / "fixtures"):
     scenario = load_scenario(scenario_path)
     payload = scripted_visits(scenario)
@@ -82,7 +100,7 @@ def regenerate_fixtures(*, scenario_path=DEFAULT_SCENARIO, output_dir=ROOT / "fi
     with tempfile.TemporaryDirectory(prefix=".regenerate-", dir=output_dir) as temporary:
         for profile in PROFILES:
             snapshot = execute(signals, profile, Path(temporary) / f"{profile}.jsonl",
-                               llm=ScriptedLLM(), search=ScriptedSearch())
+                               llm=ScriptedLLM(), search=ScriptedSearch(), quote_client=ScriptedQuote())
             if snapshot["status"] != "complete":
                 raise ValueError(f"Scripted pipeline failed for {profile}: {snapshot['result']['errors']}")
             snapshot["source"] = "illustrative-fixture"

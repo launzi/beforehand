@@ -33,3 +33,18 @@ The visits and decisions are reproducible; cache creation/trace timestamps and
 elapsed times reflect each new run. No hashes or trace records are hand-edited.
 When changing the scenario's story structure (not just hostnames), update the
 scripted story too; incompatible stories fail validation before publication.
+
+
+The maker fixture also includes three Korean product URLs, each viewed twice,
+with no purchase-page visit. Names, product IDs and visits are illustrative; URLs
+use real retailer shapes and do not establish that a listing exists. Korea quotes
+use the supplied Anua response through a fake transport/provider. Other product
+cards reuse its sample amounts and explicitly say they are not actual product
+quotes. Tokens and next-step instructions exist only in the redacted input fixture;
+regenerated caches, cards and model inputs exclude them.
+
+The quote runtime, scenario host TOML, template and fixtures are under directories
+already included by the existing Dockerfile and .dockerignore. No Dockerfile
+change or new dependency is required. Existing image builds with a separately
+supplied synthetic DB still require a cache for that exact DB; the fixture cache
+must not be relabelled as a match for an older deployment bundle.

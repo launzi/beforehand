@@ -22,6 +22,7 @@ from starlette.routing import Route
 from starlette.templating import Jinja2Templates
 
 from browsing import providers
+from browsing.web.korea_quote import quote_request
 from browsing.agent import run_agent
 from browsing.mandate import DEFAULT_BASE_PATH, load_mandate
 from browsing.persona.generate import DEFAULT_SCENARIO, detector_window, load_scenario, populate
@@ -58,7 +59,7 @@ def load_dataset(db_path: Path | None):
     return digest, scenario, signals
 
 
-def execute(signals, profile, trace_path, *, llm=None, search=None):
+def execute(signals, profile, trace_path, *, llm=None, search=None, quote_client=None, destination="US"):
     disable_external_tracing()
     tracer = Tracer(path=trace_path)
     started = datetime.now(timezone.utc).isoformat()
@@ -67,7 +68,7 @@ def execute(signals, profile, trace_path, *, llm=None, search=None):
                            llm=providers.get_llm() if llm is None else llm,
                            search=providers.get_search() if search is None else search,
                            max_signals=20, mandate_path=PROFILES[profile],
-                           mandate_local_path=None, tracer=tracer)
+                           mandate_local_path=None, tracer=tracer, quote_client=quote_client, destination=destination)
     finally:
         tracer.close()
     return {"profile": profile, "mandate_digest": load_mandate(PROFILES[profile], None).digest,
@@ -108,6 +109,7 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
             "mandate": mandate, "mandate_text": PROFILES[profile].read_text(),
             "snapshot": snapshot, "decisions": decisions, "actions": actions, "mode": mode,
             "notice": notice, "csrf": csrf, "daily_limit": store.daily_limit,
+            "quote_requests": {s.key: quote_request(s.term) for s in signals if s.kind == "korea_product"},
         }, status_code=status)
         response.set_cookie("demo_csrf", csrf, httponly=True, samesite="strict",
                             secure=request.url.scheme == "https")

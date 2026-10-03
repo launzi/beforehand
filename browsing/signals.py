@@ -1,7 +1,7 @@
 """
 Rule-based signal detection over a browsing-history database.
 
-This module implements four deterministic detectors that propose candidate signals
+This module implements the original four deterministic detectors plus quote candidates that propose candidate signals
 from raw browsing data. No language models are used; all logic is expressed in
 parameterised SQL and Python rules. The same input always yields the same output.
 """
@@ -83,7 +83,7 @@ def _restricted_host_clause(include_restricted: bool) -> str:
 
 @dataclass(frozen=True)
 class Signal:
-    kind: str  # new_entry | unresolved | recurring | dropped
+    kind: str  # new_entry | unresolved | recurring | dropped | korea_product
     key: str  # stable content hash
     host: str | None
     term: str | None
@@ -445,6 +445,44 @@ def detect_dropped(
     return signals
 
 
+def detect_korea_product(conn, *, since_us, until_us, profile=None, include_restricted=False):
+    """Repeated product visits with no later transaction page observed on that host.
+
+    This is a quote candidate, never proof the visitor could not buy.
+    """
+    from browsing.web.korea_quote import korea_product_title
+    import re
+    sql = f"""SELECT u.url_key, u.host, u.path, u.title, v.visit_time_us
+        FROM visits v JOIN urls u ON v.url_key=u.url_key
+        LEFT JOIN domains d ON u.host=d.host
+        WHERE v.visit_time_us >= ? AND v.visit_time_us < ?
+        {_restricted_host_clause(include_restricted)}
+    """
+    params = [since_us, until_us]
+    if profile is not None:
+        sql += " AND v.profile = ?"
+        params.append(profile)
+    cursor = conn.cursor()
+    cursor.row_factory = sqlite3.Row
+    rows = cursor.execute(sql, params).fetchall()
+    groups = {}
+    for row in rows:
+        product = korea_product_title(row["host"], row["path"], row["title"])
+        if product:
+            groups.setdefault((row["host"], row["url_key"], product), []).append(row["visit_time_us"])
+    result = []
+    for (host, key, product), times in groups.items():
+        if len(times) < 2:
+            continue
+        if any(r["host"] == host and r["visit_time_us"] >= min(times)
+               and re.search(r"/(?:checkout|orders?|payment|purchase)(?:/|$|[.?])", r["path"] or "", re.I) for r in rows):
+            continue
+        result.append(Signal("korea_product", _make_key("korea_product", key), host, product,
+                             {"product": product, "visit_count": len(times), "purchase_page_observed": False},
+                             min(times), max(times)))
+    return sorted(result, key=lambda s: (s.kind, s.key))
+
+
 def detect_all(
     conn: sqlite3.Connection,
     *,
@@ -454,7 +492,7 @@ def detect_all(
     profile: str | None = None,
     include_restricted: bool = False,
 ) -> list[Signal]:
-    """Run all four detectors and return a merged, sorted list."""
+    """Run the original four detectors plus Korea quote candidates; return a sorted list."""
     all_signals: list[Signal] = []
     all_signals.extend(
         detect_new_entry(
@@ -491,6 +529,8 @@ def detect_all(
             include_restricted=include_restricted,
         )
     )
+    all_signals.extend(detect_korea_product(conn, since_us=since_us, until_us=until_us,
+        profile=profile, include_restricted=include_restricted))
     all_signals.sort(key=lambda s: (s.kind, s.key))
     return all_signals
 

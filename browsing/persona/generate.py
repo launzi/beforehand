@@ -42,7 +42,7 @@ def load_scenario(path: Path) -> dict:
     identities = set()
     for item in expected:
         kind = item["kind"]
-        if kind not in {"new_entry", "unresolved", "dropped", "recurring"}:
+        if kind not in {"new_entry", "unresolved", "dropped", "recurring", "korea_product"}:
             raise ValueError("Unknown signal kind")
         identifier = item["term"].strip().lower() if kind == "unresolved" else item["host"]
         if not identifier or (kind != "unresolved" and identifier not in hosts):

@@ -15,6 +15,7 @@ from browsing.mandate import load_mandate
 from browsing.persona.generate import DEFAULT_SCENARIO, generate
 from browsing.web.app import PROFILES, ROOT, create_app, execute, load_dataset
 from browsing.web.store import RunStore
+from browsing.web.regenerate import ScriptedQuote, ScriptedLLM
 
 pytestmark = pytest.mark.anyio
 
@@ -59,6 +60,8 @@ async def post_run(client, profile="public"):
 
 class FakeLLM:
     def complete(self, prompt, **kwargs):
+        if prompt.startswith("Korea quote facts:"):
+            return ScriptedLLM().complete(prompt, **kwargs)
         return "ACT" if kwargs.get("system") == TRIAGE_SYSTEM else "Fictional suggestion <script>alert(1)</script>"
 
 
@@ -88,6 +91,7 @@ async def test_offline_page_all_profiles_health_and_raw_trace(tmp_path):
 
 async def test_default_live_factories_and_search_mandate(tmp_path, monkeypatch):
     search = FakeSearch()
+    monkeypatch.setattr("browsing.web.korea_quote.KoreaQuoteClient", ScriptedQuote)
     monkeypatch.setattr(providers, "get_llm", lambda: FakeLLM())
     monkeypatch.setattr(providers, "get_search", lambda: search)
     app = create_app(state_dir=tmp_path)
@@ -108,7 +112,7 @@ async def test_daily_limit_survives_app_restart_and_all_profiles(tmp_path):
     calls = []
     def runner(signals, profile, path):
         calls.append(profile)
-        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch())
+        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch(), quote_client=ScriptedQuote())
     async with client_for(create_app(state_dir=tmp_path, daily_limit=1, runner=runner)) as client:
         assert (await post_run(client)).status_code == 200
     async with client_for(create_app(state_dir=tmp_path, daily_limit=1, runner=runner)) as client:
@@ -124,7 +128,7 @@ async def test_failed_provider_is_visible_and_does_not_overwrite_cache(tmp_path)
         calls += 1
         if calls == 2:
             raise providers.ProviderError("service down")
-        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch())
+        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch(), quote_client=ScriptedQuote())
     app = create_app(state_dir=tmp_path, daily_limit=2, runner=runner)
     async with client_for(app) as client:
         assert (await post_run(client)).status_code == 200
@@ -142,7 +146,7 @@ async def test_agent_partial_failure_is_not_reported_as_success(tmp_path):
         def complete(self, *args, **kwargs):
             raise providers.ProviderError("test provider failure")
     def runner(signals, profile, path):
-        return execute(signals, profile, path, llm=BrokenLLM(), search=FakeSearch())
+        return execute(signals, profile, path, llm=BrokenLLM(), search=FakeSearch(), quote_client=ScriptedQuote())
     app = create_app(state_dir=tmp_path, runner=runner)
     async with client_for(app) as client:
         response = await post_run(client)
@@ -167,7 +171,7 @@ async def test_health_stays_responsive_while_live_run_active(tmp_path):
     def runner(signals, profile, path):
         started.set()
         assert release.wait(5)
-        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch())
+        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch(), quote_client=ScriptedQuote())
     app = create_app(state_dir=tmp_path, runner=runner)
     async with client_for(app) as client, client_for(app) as other:
         pending = asyncio.create_task(post_run(client))
@@ -213,7 +217,7 @@ async def test_generated_bundle_is_readonly_and_hash_checked(tmp_path):
     generate(DEFAULT_SCENARIO, path, llm=Generator())
     before = path.read_bytes()
     _, _, signals = load_dataset(path)
-    assert len(signals) == 6
+    assert len(signals) == 9
     assert path.read_bytes() == before
     path.write_bytes(before + b"tamper")
     with pytest.raises(ValueError, match="manifest"):
@@ -236,7 +240,7 @@ async def test_export_cache_round_trip_and_mismatch(tmp_path):
     from browsing.web.__main__ import export_cache
     state = tmp_path / "state"
     def runner(signals, profile, path):
-        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch())
+        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch(), quote_client=ScriptedQuote())
     async with client_for(create_app(state_dir=state, runner=runner)) as client:
         for profile in PROFILES:
             assert (await post_run(client, profile)).status_code == 200
@@ -266,7 +270,7 @@ async def test_export_refuses_partial_cache_and_preserves_existing_output(tmp_pa
 
 async def test_limit_returns_last_live_result_with_explicit_policy_mismatch(tmp_path):
     def runner(signals, profile, path):
-        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch())
+        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch(), quote_client=ScriptedQuote())
     async with client_for(create_app(state_dir=tmp_path, daily_limit=1, runner=runner)) as client:
         assert (await post_run(client, "public")).status_code == 200
         response = await post_run(client, "no-search")
@@ -281,9 +285,27 @@ async def test_required_trace_failure_is_visible(tmp_path, monkeypatch):
         raise OSError("synthetic disk failure")
     monkeypatch.setattr(Tracer, "decision", broken_audit)
     def runner(signals, profile, path):
-        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch())
+        return execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch(), quote_client=ScriptedQuote())
     app = create_app(state_dir=tmp_path, runner=runner)
     async with client_for(app) as client:
         response = await post_run(client)
         assert response.status_code == 502 and "error:OSError" in response.text
         assert app.state.store.get(app.state.dataset, "public") is None
+
+
+async def test_quote_card_and_exact_outbound_panel_are_visible_without_network(tmp_path):
+    from browsing.web.korea_quote import DISCLOSURE
+    async with client_for(create_app(state_dir=tmp_path)) as client:
+        page=await client.get('/')
+        for expected in ['What leaves your device','quote_korea_product','product','destination',
+                         'KRW 16127','USD 65.27','2.089235915388495','91 FR 47318',
+                         'Local price','Warnings',DISCLOSURE]:
+            assert expected in page.text
+        for forbidden in ['quoteToken','REDACTED-IN-FIXTURE','next_steps','start checkout']:
+            assert forbidden not in page.text
+        assert page.text.count('class="quote-card"')==3
+        assert "It&#39;s cheaper to buy locally" in page.text or "It's cheaper to buy locally" in page.text
+        denied=await client.get('/?profile=no-search')
+        held=await client.get('/?profile=confirm-research')
+        assert 'class="quote-card"' not in denied.text
+        assert 'class="quote-card"' not in held.text

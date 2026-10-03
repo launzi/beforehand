@@ -7,6 +7,7 @@ import pytest
 from browsing.agent import TRIAGE_SYSTEM
 from browsing.providers import ProviderError
 from browsing.web import eval_live
+from browsing.web.regenerate import ScriptedQuote, ScriptedLLM
 from browsing.web.__main__ import main
 
 
@@ -19,6 +20,8 @@ class FakeLLM:
             if self.fail:
                 raise ProviderError("triage budget exhausted")
             return "ACT"
+        if prompt.startswith("Korea quote facts:"):
+            return ScriptedLLM().complete(prompt, **kwargs)
         return "활동 기록을 확인했어요. 다음 단계를 확인해 보세요."
 
 
@@ -81,7 +84,8 @@ def test_eval_measures_alternating_verdicts(tmp_path, monkeypatch, quality_signa
     assert all(len(row["skill_samples"]) == 2 for row in result["signals"])
 
 
-def test_eval_valid_synthetic_bundle_runs_real_loader_offline(tmp_path):
+def test_eval_valid_synthetic_bundle_runs_real_loader_offline(tmp_path, monkeypatch):
+    monkeypatch.setattr("browsing.web.korea_quote.KoreaQuoteClient", ScriptedQuote)
     from browsing.persona.generate import DEFAULT_SCENARIO, generate
     from browsing.web.app import ROOT
 
@@ -94,8 +98,8 @@ def test_eval_valid_synthetic_bundle_runs_real_loader_offline(tmp_path):
     result = eval_live.evaluate_live(db_path=db, runs=1, profiles=["public"],
                                      llm=FakeLLM(), search=FakeSearch())
     assert result["status"] == "complete"
-    assert result["signal_count"] == 6
-    assert len(result["signals"]) == 6
+    assert result["signal_count"] == 9
+    assert len(result["signals"]) == 9
 
 
 def test_cli_emits_json_and_exits_nonzero_on_failed_evaluation(tmp_path, monkeypatch, capsys):

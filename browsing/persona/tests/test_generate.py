@@ -31,9 +31,9 @@ def test_generate_validates_all_planted_signals_and_ingest_schema(tmp_path):
     assert manifest["synthetic"] is True
     assert manifest["sha256"] == hashlib.sha256(output.read_bytes()).hexdigest()
     assert json.loads(output.with_suffix(".db.json").read_text()) == manifest
-    assert len(manifest["signal_keys"]) == 6
+    assert len(manifest["signal_keys"]) == 9
     with sqlite3.connect(output) as conn:
-        assert conn.execute("SELECT COUNT(*) FROM visits").fetchone()[0] == 9
+        assert conn.execute("SELECT COUNT(*) FROM visits").fetchone()[0] == 15
         assert conn.execute("SELECT COUNT(*) FROM searches").fetchone()[0] == 1
         assert {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")} == {
             "urls", "visits", "searches", "downloads", "domains", "sync_state"}

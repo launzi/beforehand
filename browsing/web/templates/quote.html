@@ -1,0 +1,24 @@
+<article class="quote-card">
+<h3>{{ quote.item.title }}</h3><strong class="tag">{{ quote.verdict }}</strong>
+{% if quote.verdict == 'buy_local' %}<p>It's cheaper to buy locally</p>{% else %}<p>Service verdict shown verbatim; no recommendation inferred.</p>{% endif %}
+<table><tbody>
+<tr><th>Destination</th><td>{{ quote.destination }}</td></tr>
+<tr><th>Item</th><td>KRW {{ quote.payNow.itemKrw }}</td></tr>
+<tr><th>Shipping</th><td>KRW {{ quote.payNow.shippingKrw }}</td></tr>
+<tr><th>Service fee</th><td>KRW {{ quote.payNow.serviceFeeKrw }}</td></tr>
+<tr><th>Payment fee</th><td>KRW {{ quote.payNow.paymentFeeKrw }}</td></tr>
+<tr><th>Pay now (quote only)</th><td>{{ quote.currency }} {{ quote.payNow.total }} / KRW {{ quote.payNow.totalKrw }}</td></tr>
+<tr><th>FX rate</th><td>{{ quote.payNow.fxRate }} KRW / {{ quote.currency }}</td></tr>
+<tr><th>Estimated duty on delivery</th><td>{{ quote.currency }} {{ quote.dutyOnDelivery.estimate }}</td></tr>
+<tr><th>Estimated total cost</th><td>{{ quote.currency }} {{ quote.totalCost }}</td></tr>
+<tr><th>Local price</th><td>{% if quote.localPrice %}{{ quote.currency }} {{ quote.localPrice.price }}{% else %}Not available{% endif %}</td></tr>
+</tbody></table>
+<h4>Duty on delivery</h4>
+{% for line in quote.dutyOnDelivery.lines %}<p>{{ line.label }}: {{ line.rate }} · {{ quote.currency }} {{ line.amount }}<br>Source: {{ line.source }}</p>{% endfor %}
+<p>{{ quote.dutyOnDelivery.note }}</p>
+<details><summary>Warnings ({{ quote.warnings|length }})</summary>{% for warning in quote.warnings %}<p>{{ warning }}</p>{% endfor %}</details>
+<p>Korea Concierge is operated by the developer of this extension (Munteok). Quotes are free; a service fee is included only if you choose to buy through it.</p>
+<p>Quotes only. No orders or payments are created.</p>
+{% if quote.item.link %}<a href="{{ quote.item.link }}" target="_blank" rel="noopener noreferrer">Korean item reference</a>{% endif %}
+{% if quote.localPrice and quote.localPrice.url %}<a href="{{ quote.localPrice.url }}" target="_blank" rel="noopener noreferrer">Local price reference</a>{% endif %}
+</article>

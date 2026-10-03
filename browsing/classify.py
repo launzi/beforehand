@@ -118,3 +118,7 @@ def classify_host(rules: dict, host: str | None) -> tuple[str, str]:
             return rules[suffix]
 
     return ("unknown", "none")
+
+
+# Product extraction shares the quote module shipped by the existing image COPY rules.
+from browsing.web.korea_quote import korea_product_title

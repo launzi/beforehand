@@ -31,7 +31,7 @@ def test_regeneration_cli_uses_real_pipeline_without_provider_factories(tmp_path
     assert {urlsplit(v["url"]).hostname for v in payload["visits"]} == set(scenario["allowed_hosts"])
     with closing(sqlite3.connect(":memory:")) as conn:
         signals = populate(conn, payload, scenario)
-    assert len(signals) == 6
+    assert len(signals) == 9
     cache = json.loads((tmp_path / "cache.json").read_text())
     assert cache["dataset"] == hashlib.sha256(source).hexdigest()
     assert set(cache["profiles"]) == set(PROFILES)

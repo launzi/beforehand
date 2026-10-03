@@ -32,9 +32,9 @@ def test_public_default_allows_all_declared_skills_and_search():
     mandate = load_mandate(DEFAULT_BASE_PATH, None)
     assert mandate.error is None
     assert mandate.allow_search is True
-    assert mandate.allowed_skills == frozenset(SKILLS)
+    assert mandate.allowed_skills == frozenset(s.planned_action.skill for s in SKILLS.values())
     for kind, skill in SKILLS.items():
-        assert skill.planned_action.skill == kind
+        assert skill.planned_action.signal_kind == kind
         assert evaluate_mandate(mandate, signal(kind), skill.planned_action).verdict == "allow"
 
 

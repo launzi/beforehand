@@ -3,7 +3,7 @@ fictional = true
 # Stable story time keeps a published demo reproducible.
 since = "2026-09-01T00:00:00+00:00"
 until = "2026-10-01T00:00:00+00:00"
-allowed_hosts = ["www.notion.so", "www.figma.com", "docs.python.org", "github.com", "www.google.com"]
+allowed_hosts = ["www.notion.so", "www.figma.com", "docs.python.org", "github.com", "www.google.com", "global.oliveyoung.com", "www.musinsa.com", "smartstore.naver.com"]
 
 [persona]
 role = "A fictional hobby maker learning Python and planning a small creative project"
@@ -33,3 +33,28 @@ story = "Worked on a fictional project on at least three different days, then st
 kind = "recurring"
 host = "docs.python.org"
 story = "Learning Python: visited on at least three different days, including the final week."
+
+
+[[signals]]
+kind = "korea_product"
+host = "global.oliveyoung.com"
+product = "Anua Heartleaf 77% Soothing Toner 250ml"
+path = "/product/detail?prdtNo=GA230518738"
+title = "Anua Heartleaf 77% Soothing Toner 250ml | OLIVE YOUNG Global"
+story = "Repeated product views without an observed purchase page; intent remains unknown."
+
+[[signals]]
+kind = "korea_product"
+host = "www.musinsa.com"
+product = "MUSINSA STANDARD Relaxed Basic Crew Neck T-Shirt"
+path = "/products/2392256"
+title = "MUSINSA STANDARD Relaxed Basic Crew Neck T-Shirt | MUSINSA"
+story = "Repeated product views without an observed purchase page; intent remains unknown."
+
+[[signals]]
+kind = "korea_product"
+host = "smartstore.naver.com"
+product = "Korean Ceramic Moon Jar Mini Vase"
+path = "/synthetic-maker/products/10482930123"
+title = "Korean Ceramic Moon Jar Mini Vase - 네이버 스마트스토어"
+story = "Fictional store slug and item ID; repeated product views, no purchase page."

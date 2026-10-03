@@ -127,7 +127,9 @@ def evaluate_mandate(
     """Deny overrides hold; triage enthusiasm cannot grant authorization."""
     verdict = "allow"
     reason = "Action is within the configured mandate"
-    if mandate.error is not None:
+    if plan is not None and plan.action_kind == "commerce.checkout":
+        verdict, reason = "deny", "Checkout is out of scope for this build"
+    elif mandate.error is not None:
         verdict, reason = "deny", f"Invalid mandate: {mandate.error}"
     elif plan is None:
         verdict, reason = "deny", "No declared skill for signal kind"
@@ -135,6 +137,8 @@ def evaluate_mandate(
         verdict, reason = "deny", "Signal kind does not match the skill declaration"
     elif plan.skill not in mandate.allowed_skills:
         verdict, reason = "deny", f"Skill '{plan.skill}' is not allowed"
+    elif plan.action_kind == "commerce.quote" and not mandate.allow_search:
+        verdict, reason = "deny", "External commerce quotes are not allowed"
     elif plan.uses_search and not mandate.allow_search:
         verdict, reason = "deny", "External search provider calls are not allowed"
     elif plan.action_kind in mandate.require_confirmation:

@@ -133,9 +133,9 @@ def test_batch_preserves_allow_hold_and_deny_results(setup):
     search, llm = FakeSearch(), FakeLLM()
     result = run(setup, signals=[signal(kind) for kind in SKILLS], search=search, llm=llm)
     assert search.calls == 0 and llm.skill_calls == 2
-    assert [r.mandate.verdict for r in result.decisions] == ["deny", "allow", "allow", "hold"]
-    assert result.stats == {"acted": 2, "skipped": 0, "errors": 0, "held": 1, "denied": 1}
-    assert len(events(setup)) == 4
+    assert [r.mandate.verdict for r in result.decisions] == ["deny", "deny", "allow", "allow", "hold"]
+    assert result.stats == {"acted": 2, "skipped": 0, "errors": 0, "held": 1, "denied": 2}
+    assert len(events(setup)) == len(SKILLS)
     assert len({event["mandate_digest"] for event in events(setup)}) == 1
 
 
@@ -149,7 +149,7 @@ def test_missing_or_malformed_policy_denies_every_skill(setup, bad_layer):
     result = run(setup, signals=[signal(kind) for kind in SKILLS], llm=llm, search=search)
     assert search.calls == llm.skill_calls == 0
     assert result.actions == []
-    assert result.stats["denied"] == 4 and result.stats["acted"] == 0
+    assert result.stats["denied"] == len(SKILLS) and result.stats["acted"] == 0
     assert result.errors and "mandate:" in result.errors[0]
     assert all(r.mandate.verdict == "deny" and "Invalid mandate" in r.mandate.reason for r in result.decisions)
     assert all(e["verdict"] == "deny" and not e["executed"] for e in events(setup))

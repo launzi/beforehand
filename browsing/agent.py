@@ -13,6 +13,7 @@ from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import re
+import json
 from typing import Callable
 
 from langgraph.graph import StateGraph, END
@@ -37,6 +38,7 @@ class Action:
     kind: str              # the signal's kind
     text: str              # human-readable result
     evidence: dict         # what it was based on
+    quote: dict | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,6 +79,8 @@ class AgentState(TypedDict, total=False):
     max_signals: int
     llm: object
     search: object
+    quote_client: object
+    destination: str
     _verdicts: dict[str, bool | None]
     _decisions: dict[str, SignalDecision]
     decisions: list[SignalDecision]
@@ -172,6 +176,11 @@ def triage_signal(signal: Signal, *, llm) -> bool:
     Ask the LLM whether this signal deserves action.
     Returns True for ACT, False for SKIP (or any other reply).
     """
+    if signal.kind == "korea_product":
+        from browsing.web.korea_quote import product_name
+        prompt = "Repeated Korean product visits; a quote may help, purchase intent is unknown. Product: " + product_name(signal.term or "")
+        reply = llm.complete(prompt, tier=TRIAGE_TIER, system=TRIAGE_SYSTEM, max_tokens=TRIAGE_MAX_TOKENS)
+        return re.fullmatch(r"ACT(?:\s*:[^\r\n]+)?", (reply or "").strip().upper()) is not None
     evidence_str = _format_evidence(signal.evidence)
     host_str = signal.host if signal.host is not None else "(none)"
     term_str = signal.term if signal.term is not None else "(none)"
@@ -395,8 +404,25 @@ def _format_hits(hits: list[dict]) -> str:
     return "\n".join(lines)
 
 
+@declares_action(PlannedAction(
+    "korea_quote", "korea_product", "commerce.quote", uses_search=False, uses_llm=True,
+))
+def skill_korea_quote(signal: Signal, *, llm, search, verdict: bool, quote_client=None, destination="US"):
+    from browsing.web.korea_quote import (KoreaQuoteClient, SUMMARY_SYSTEM, quote_arguments,
+                                     sanitize_quote, summary_facts, validate_summary)
+    args = quote_arguments(signal.term or "", destination)
+    client = KoreaQuoteClient() if quote_client is None else quote_client
+    quote = sanitize_quote(client.quote(**args))
+    if quote["destination"] != destination:
+        raise ValueError("Quote destination mismatch")
+    prompt = "Korea quote facts: " + json.dumps(summary_facts(quote), ensure_ascii=False)
+    text = llm.complete(prompt, tier="nano", system=SUMMARY_SYSTEM, max_tokens=2348)
+    return validate_summary(text, quote), quote
+
+
 # Registry: signal kind -> skill function
 SKILLS: dict[str, Callable] = {
+    "korea_product": skill_korea_quote,
     "unresolved": skill_unresolved,
     "new_entry": skill_new_entry,
     "recurring": skill_recurring,
@@ -457,6 +483,7 @@ def run_act(
     errors: list[str],
     decisions: dict[str, SignalDecision],
     tracer: Tracer,
+    quote_client=None, destination="US",
 ) -> tuple[list[Action], dict, list[str], list[SignalDecision]]:
     """
     Run skills only for ACT + allow. Every processed signal gets an audit record.
@@ -480,8 +507,13 @@ def run_act(
                 stats["errors"] += 1
         elif verdict:
             try:
-                text = skill(signal, llm=llm, search=search, verdict=True)
-                actions.append(Action(signal.key, signal.kind, text, signal.evidence))
+                quote = None
+                if signal.kind == "korea_product":
+                    text, quote = skill(signal, llm=llm, search=search, verdict=True,
+                                        quote_client=quote_client, destination=destination)
+                else:
+                    text = skill(signal, llm=llm, search=search, verdict=True)
+                actions.append(Action(signal.key, signal.kind, text, signal.evidence, quote))
                 record = replace(record, executed=True, execution_status="succeeded")
             except Exception as e:
                 errors.append(f"act:{signal.key}: {e}")
@@ -560,6 +592,7 @@ def act_node(state: AgentState, *, tracer: Tracer | None = None) -> AgentState:
         actions, stats, errors, decisions = run_act(
             signals, verdicts, llm=llm, search=search, stats=stats, errors=errors,
             decisions=state["_decisions"], tracer=active_tracer,
+            quote_client=state.get("quote_client"), destination=state.get("destination", "US"),
         )
     finally:
         if tracer is None:
@@ -579,6 +612,7 @@ def act_node(state: AgentState, *, tracer: Tracer | None = None) -> AgentState:
 def build_graph(
     *, llm, search, mandate_path: Path = DEFAULT_BASE_PATH,
     mandate_local_path: Path | None = DEFAULT_LOCAL_PATH, tracer: Tracer | None = None,
+    quote_client=None, destination="US",
 ) -> StateGraph:
     """
     Build and compile the LangGraph for the agent.
@@ -598,7 +632,7 @@ def build_graph(
         return mandate_node(state, base_path=mandate_path, local_path=mandate_local_path)
 
     def _act(state):
-        return act_node({**state, "llm": llm, "search": search}, tracer=tracer)
+        return act_node({**state, "llm": llm, "search": search, "quote_client": quote_client, "destination": destination}, tracer=tracer)
 
     graph.add_node("triage", _triage)
     graph.add_node("mandate", _mandate)
@@ -632,6 +666,7 @@ def run_agent(
     mandate_path: Path = DEFAULT_BASE_PATH,
     mandate_local_path: Path | None = DEFAULT_LOCAL_PATH,
     tracer: Tracer | None = None,
+    quote_client=None, destination="US",
 ) -> AgentResult:
     """
     Run the agent over a batch of signals.
@@ -655,7 +690,8 @@ def run_agent(
         OSError: A required local mandate audit record could not be written.
     """
     graph = build_graph(llm=llm, search=search, mandate_path=mandate_path,
-                        mandate_local_path=mandate_local_path, tracer=tracer)
+                        mandate_local_path=mandate_local_path, tracer=tracer,
+                        quote_client=quote_client, destination=destination)
 
     initial_state: AgentState = {
         "signals": signals,

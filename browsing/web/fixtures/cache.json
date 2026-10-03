@@ -1,10 +1,10 @@
 {
-  "dataset": "e876dad92df9836f402fd0be0c56ff6a3376c509545fe413ec1028910d834c8e",
+  "dataset": "7a1914fd7df7b14366f1c79fe16ca0b95cbf1cc1b8c3fe9386461988e3637c96",
   "profiles": {
     "public": {
       "profile": "public",
-      "mandate_digest": "b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8",
-      "created_at": "2026-10-02T23:27:25.377350+00:00",
+      "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507",
+      "created_at": "2026-10-03T01:05:06.248951+00:00",
       "source": "illustrative-fixture",
       "status": "complete",
       "result": {
@@ -17,6 +17,205 @@
               "active_days": 3,
               "last_visit_us": 13433162400000000,
               "days_quiet": 24
+            },
+            "quote": null
+          },
+          {
+            "signal_key": "65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604",
+            "kind": "korea_product",
+            "text": "It's cheaper to buy locally. The example quote totals USD 65.27 versus a local price of USD 17.85, with estimated duty collected on delivery.",
+            "evidence": {
+              "product": "Anua Heartleaf 77% Soothing Toner 250ml",
+              "visit_count": 2,
+              "purchase_page_observed": false
+            },
+            "quote": {
+              "seller": "Munteok",
+              "item": {
+                "title": "Anua Heartleaf 77% Soothing Toner 250ml",
+                "priceKrw": 22535,
+                "link": null
+              },
+              "destination": "US",
+              "currency": "USD",
+              "payNow": {
+                "total": 60.49,
+                "totalKrw": 81545,
+                "itemKrw": 22535,
+                "shippingKrw": 39000,
+                "serviceFeeKrw": 16127,
+                "paymentFeeKrw": 3883,
+                "fxRate": 1348.28
+              },
+              "dutyOnDelivery": {
+                "estimate": 4.78,
+                "note": "Estimated import duty and tax. Not charged at checkout; the carrier or customs collects it from the buyer on delivery.",
+                "lines": [
+                  {
+                    "label": "US base duty (HTS Column 1 General)",
+                    "rate": "Free",
+                    "amount": 0,
+                    "source": "HTS 3304.99.10.00, Column 1 General \"Free\" (hts.usitc.gov)"
+                  },
+                  {
+                    "label": "Section 301 forced-labor baseline (origin KR)",
+                    "rate": "12.5%",
+                    "amount": 2.089235915388495,
+                    "source": "91 FR 47318 (FR doc 2026-15181); CBP CSMS #69326983"
+                  },
+                  {
+                    "label": "Merchandise Processing Fee (informal entry, flat)",
+                    "rate": "flat",
+                    "amount": 2.69,
+                    "source": "CBP Dec. 25-10, FR 2025-13869 (July 23, 2025); CBP CSMS #65741993; CBP User Fee Table"
+                  }
+                ]
+              },
+              "totalCost": 65.27,
+              "localPrice": {
+                "price": 17.85,
+                "url": null
+              },
+              "verdict": "buy_local",
+              "warnings": [
+                "Illustrative fixture: these sample costs are reused for all fictional products, not actual product quotes.",
+                "Exchange rate used: 1 USD = 1,348.28 KRW (ECB reference rate via frankfurter.dev, 2026-10-02).",
+                "Shipping uses actual-weight EMS estimate; bulky items may cost more under volumetric weight.",
+                "De minimis exemption is eliminated (since 2025-08-29).",
+                "US tariff rules table is past its review date (2026-10-01) \u2014 figures may be stale."
+              ]
+            }
+          },
+          {
+            "signal_key": "d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a",
+            "kind": "korea_product",
+            "text": "It's cheaper to buy locally. The example quote totals USD 65.27 versus a local price of USD 17.85, with estimated duty collected on delivery.",
+            "evidence": {
+              "product": "MUSINSA STANDARD Relaxed Basic Crew Neck T-Shirt",
+              "visit_count": 2,
+              "purchase_page_observed": false
+            },
+            "quote": {
+              "seller": "Munteok",
+              "item": {
+                "title": "MUSINSA STANDARD Relaxed Basic Crew Neck T-Shirt",
+                "priceKrw": 22535,
+                "link": null
+              },
+              "destination": "US",
+              "currency": "USD",
+              "payNow": {
+                "total": 60.49,
+                "totalKrw": 81545,
+                "itemKrw": 22535,
+                "shippingKrw": 39000,
+                "serviceFeeKrw": 16127,
+                "paymentFeeKrw": 3883,
+                "fxRate": 1348.28
+              },
+              "dutyOnDelivery": {
+                "estimate": 4.78,
+                "note": "Estimated import duty and tax. Not charged at checkout; the carrier or customs collects it from the buyer on delivery.",
+                "lines": [
+                  {
+                    "label": "US base duty (HTS Column 1 General)",
+                    "rate": "Free",
+                    "amount": 0,
+                    "source": "HTS 3304.99.10.00, Column 1 General \"Free\" (hts.usitc.gov)"
+                  },
+                  {
+                    "label": "Section 301 forced-labor baseline (origin KR)",
+                    "rate": "12.5%",
+                    "amount": 2.089235915388495,
+                    "source": "91 FR 47318 (FR doc 2026-15181); CBP CSMS #69326983"
+                  },
+                  {
+                    "label": "Merchandise Processing Fee (informal entry, flat)",
+                    "rate": "flat",
+                    "amount": 2.69,
+                    "source": "CBP Dec. 25-10, FR 2025-13869 (July 23, 2025); CBP CSMS #65741993; CBP User Fee Table"
+                  }
+                ]
+              },
+              "totalCost": 65.27,
+              "localPrice": {
+                "price": 17.85,
+                "url": null
+              },
+              "verdict": "buy_local",
+              "warnings": [
+                "Illustrative fixture: these sample costs are reused for all fictional products, not actual product quotes.",
+                "Exchange rate used: 1 USD = 1,348.28 KRW (ECB reference rate via frankfurter.dev, 2026-10-02).",
+                "Shipping uses actual-weight EMS estimate; bulky items may cost more under volumetric weight.",
+                "De minimis exemption is eliminated (since 2025-08-29).",
+                "US tariff rules table is past its review date (2026-10-01) \u2014 figures may be stale."
+              ]
+            }
+          },
+          {
+            "signal_key": "f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d",
+            "kind": "korea_product",
+            "text": "It's cheaper to buy locally. The example quote totals USD 65.27 versus a local price of USD 17.85, with estimated duty collected on delivery.",
+            "evidence": {
+              "product": "Korean Ceramic Moon Jar Mini Vase",
+              "visit_count": 2,
+              "purchase_page_observed": false
+            },
+            "quote": {
+              "seller": "Munteok",
+              "item": {
+                "title": "Korean Ceramic Moon Jar Mini Vase",
+                "priceKrw": 22535,
+                "link": null
+              },
+              "destination": "US",
+              "currency": "USD",
+              "payNow": {
+                "total": 60.49,
+                "totalKrw": 81545,
+                "itemKrw": 22535,
+                "shippingKrw": 39000,
+                "serviceFeeKrw": 16127,
+                "paymentFeeKrw": 3883,
+                "fxRate": 1348.28
+              },
+              "dutyOnDelivery": {
+                "estimate": 4.78,
+                "note": "Estimated import duty and tax. Not charged at checkout; the carrier or customs collects it from the buyer on delivery.",
+                "lines": [
+                  {
+                    "label": "US base duty (HTS Column 1 General)",
+                    "rate": "Free",
+                    "amount": 0,
+                    "source": "HTS 3304.99.10.00, Column 1 General \"Free\" (hts.usitc.gov)"
+                  },
+                  {
+                    "label": "Section 301 forced-labor baseline (origin KR)",
+                    "rate": "12.5%",
+                    "amount": 2.089235915388495,
+                    "source": "91 FR 47318 (FR doc 2026-15181); CBP CSMS #69326983"
+                  },
+                  {
+                    "label": "Merchandise Processing Fee (informal entry, flat)",
+                    "rate": "flat",
+                    "amount": 2.69,
+                    "source": "CBP Dec. 25-10, FR 2025-13869 (July 23, 2025); CBP CSMS #65741993; CBP User Fee Table"
+                  }
+                ]
+              },
+              "totalCost": 65.27,
+              "localPrice": {
+                "price": 17.85,
+                "url": null
+              },
+              "verdict": "buy_local",
+              "warnings": [
+                "Illustrative fixture: these sample costs are reused for all fictional products, not actual product quotes.",
+                "Exchange rate used: 1 USD = 1,348.28 KRW (ECB reference rate via frankfurter.dev, 2026-10-02).",
+                "Shipping uses actual-weight EMS estimate; bulky items may cost more under volumetric weight.",
+                "De minimis exemption is eliminated (since 2025-08-29).",
+                "US tariff rules table is past its review date (2026-10-01) \u2014 figures may be stale."
+              ]
             }
           },
           {
@@ -29,7 +228,8 @@
               ],
               "first_visit_us": 13435156800000000,
               "visit_count": 1
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
@@ -41,7 +241,8 @@
               ],
               "first_visit_us": 13435070400000000,
               "visit_count": 1
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f",
@@ -52,7 +253,8 @@
               "total_visits": 3,
               "first_day": "2026-09-02",
               "last_day": "2026-09-06"
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070",
@@ -63,7 +265,8 @@
               "total_visits": 3,
               "first_day": "2026-09-20",
               "last_day": "2026-09-29"
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb",
@@ -78,12 +281,13 @@
               "distinct_days": 1,
               "low_follow_through": true,
               "repeat_across_days": false
-            }
+            },
+            "quote": null
           }
         ],
         "errors": [],
         "stats": {
-          "acted": 6,
+          "acted": 9,
           "skipped": 0,
           "errors": 0,
           "held": 0,
@@ -104,7 +308,67 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8"
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -124,7 +388,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8"
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -144,7 +408,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8"
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -164,7 +428,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8"
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -184,7 +448,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8"
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -204,7 +468,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8"
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -212,12 +476,12 @@
           }
         ]
       },
-      "trace": "{\"ts\": \"2026-10-02T23:27:25.381565+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.381638+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.381680+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.381714+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.381744+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.381783+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"b963ceccdc12d84d94c281fec7a2ab0c09aadfc87162462ebc06c7ceefc68ab8\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n"
+      "trace": "{\"ts\": \"2026-10-03T01:05:06.252918+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.253275+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.253485+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.253657+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.253704+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.253742+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.253775+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.253806+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.253853+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n"
     },
     "no-search": {
       "profile": "no-search",
-      "mandate_digest": "fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119",
-      "created_at": "2026-10-02T23:27:25.382254+00:00",
+      "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106",
+      "created_at": "2026-10-03T01:05:06.254442+00:00",
       "source": "illustrative-fixture",
       "status": "complete",
       "result": {
@@ -230,7 +494,8 @@
               "active_days": 3,
               "last_visit_us": 13433162400000000,
               "days_quiet": 24
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
@@ -242,7 +507,8 @@
               ],
               "first_visit_us": 13435156800000000,
               "visit_count": 1
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
@@ -254,7 +520,8 @@
               ],
               "first_visit_us": 13435070400000000,
               "visit_count": 1
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f",
@@ -265,7 +532,8 @@
               "total_visits": 3,
               "first_day": "2026-09-02",
               "last_day": "2026-09-06"
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070",
@@ -276,7 +544,8 @@
               "total_visits": 3,
               "first_day": "2026-09-20",
               "last_day": "2026-09-29"
-            }
+            },
+            "quote": null
           }
         ],
         "errors": [],
@@ -285,7 +554,7 @@
           "skipped": 0,
           "errors": 0,
           "held": 0,
-          "denied": 1
+          "denied": 4
         },
         "decisions": [
           {
@@ -302,10 +571,70 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119"
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
             },
             "executed": true,
             "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "deny",
+              "reason": "External commerce quotes are not allowed",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "deny",
+              "reason": "External commerce quotes are not allowed",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "deny",
+              "reason": "External commerce quotes are not allowed",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": false,
+            "execution_status": "not_run",
             "execution_error": null
           },
           {
@@ -322,7 +651,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119"
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -342,7 +671,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119"
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -362,7 +691,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119"
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -382,7 +711,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119"
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -402,7 +731,7 @@
             "mandate": {
               "verdict": "deny",
               "reason": "External search provider calls are not allowed",
-              "mandate_digest": "fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119"
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
             },
             "executed": false,
             "execution_status": "not_run",
@@ -410,12 +739,12 @@
           }
         ]
       },
-      "trace": "{\"ts\": \"2026-10-02T23:27:25.384336+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.384399+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.384437+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.384469+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.384499+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.384520+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"fed9b13653308a3c4197a24243fa9d9d768b6c89d6198ce63970e94a9347a119\", \"verdict\": \"deny\", \"reason\": \"External search provider calls are not allowed\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n"
+      "trace": "{\"ts\": \"2026-10-03T01:05:06.256985+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.257034+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"deny\", \"reason\": \"External commerce quotes are not allowed\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.257074+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"deny\", \"reason\": \"External commerce quotes are not allowed\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.257098+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"deny\", \"reason\": \"External commerce quotes are not allowed\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.257134+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.257168+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.257198+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.257226+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.257251+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"deny\", \"reason\": \"External search provider calls are not allowed\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n"
     },
     "confirm-research": {
       "profile": "confirm-research",
-      "mandate_digest": "618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e",
-      "created_at": "2026-10-02T23:27:25.385000+00:00",
+      "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb",
+      "created_at": "2026-10-03T01:05:06.257715+00:00",
       "source": "illustrative-fixture",
       "status": "complete",
       "result": {
@@ -428,7 +757,8 @@
               "active_days": 3,
               "last_visit_us": 13433162400000000,
               "days_quiet": 24
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
@@ -440,7 +770,8 @@
               ],
               "first_visit_us": 13435156800000000,
               "visit_count": 1
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
@@ -452,7 +783,8 @@
               ],
               "first_visit_us": 13435070400000000,
               "visit_count": 1
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f",
@@ -463,7 +795,8 @@
               "total_visits": 3,
               "first_day": "2026-09-02",
               "last_day": "2026-09-06"
-            }
+            },
+            "quote": null
           },
           {
             "signal_key": "75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070",
@@ -474,7 +807,8 @@
               "total_visits": 3,
               "first_day": "2026-09-20",
               "last_day": "2026-09-29"
-            }
+            },
+            "quote": null
           }
         ],
         "errors": [],
@@ -482,7 +816,7 @@
           "acted": 5,
           "skipped": 0,
           "errors": 0,
-          "held": 1,
+          "held": 4,
           "denied": 0
         },
         "decisions": [
@@ -500,10 +834,70 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e"
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
             },
             "executed": true,
             "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "hold",
+              "reason": "Action 'commerce.quote' requires user confirmation",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "hold",
+              "reason": "Action 'commerce.quote' requires user confirmation",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "hold",
+              "reason": "Action 'commerce.quote' requires user confirmation",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": false,
+            "execution_status": "not_run",
             "execution_error": null
           },
           {
@@ -520,7 +914,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e"
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -540,7 +934,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e"
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -560,7 +954,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e"
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -580,7 +974,7 @@
             "mandate": {
               "verdict": "allow",
               "reason": "Action is within the configured mandate",
-              "mandate_digest": "618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e"
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
             },
             "executed": true,
             "execution_status": "succeeded",
@@ -600,7 +994,7 @@
             "mandate": {
               "verdict": "hold",
               "reason": "Action 'research_briefing' requires user confirmation",
-              "mandate_digest": "618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e"
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
             },
             "executed": false,
             "execution_status": "not_run",
@@ -608,7 +1002,7 @@
           }
         ]
       },
-      "trace": "{\"ts\": \"2026-10-02T23:27:25.387008+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.387067+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.387105+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.387142+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.387172+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-02T23:27:25.387193+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"618c121f2a191be31a0d2bf2ee0722ed8ea64871e7d96a06768711654c8d1f4e\", \"verdict\": \"hold\", \"reason\": \"Action 'research_briefing' requires user confirmation\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n"
+      "trace": "{\"ts\": \"2026-10-03T01:05:06.259871+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.259916+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"hold\", \"reason\": \"Action 'commerce.quote' requires user confirmation\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.259943+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"hold\", \"reason\": \"Action 'commerce.quote' requires user confirmation\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.259963+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"hold\", \"reason\": \"Action 'commerce.quote' requires user confirmation\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.260003+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.260037+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.260077+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.260109+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-03T01:05:06.260135+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"hold\", \"reason\": \"Action 'research_briefing' requires user confirmation\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n"
     }
   }
 }
