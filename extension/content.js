@@ -1,14 +1,17 @@
 (()=>{
  function createContent({doc,location,sendMessage,onMessage,extract=globalThis.BeforehandExtract,card=globalThis.BeforehandCard,setInterval:every=globalThis.setInterval,clearInterval:cancel=globalThis.clearInterval}) {
-  let lastURL=null,active=null,generation=0,stopped=false,onQuoteChanged=null;
+  let lastURL=null,lastIdentity=null,active=null,generation=0,stopped=false,onQuoteChanged=null;
   const changed=message=>{if(message?.type==='quote_changed')onQuoteChanged?.(message.handle);};
   onMessage?.addListener(changed);
   async function tick() {
-   if(stopped || doc.visibilityState!=='visible' || location.href===lastURL) return;
-   lastURL=location.href;const run=++generation;active?.destroy();active=null;
-   const product=extract.extractFromParts(extract.readPageParts(doc,location.hostname),location.hostname);if(!product)return;
+   if(stopped || doc.visibilityState!=='visible') return;
+   const url=location.href,product=extract.extractFromParts(extract.readPageParts(doc,location.hostname),location.hostname);
+   const identity=product?JSON.stringify([product.name,product.brand ?? '']):null;
+   if(url===lastURL && identity===lastIdentity)return;
+   lastURL=url;lastIdentity=identity;const run=++generation;active?.destroy();active=null;onQuoteChanged=null;
+   if(!product)return;
    const input={name:product.name,brand:product.brand},local={price:product.price,currency:product.currency};
-   const alive=()=>!stopped && generation===run && location.href===lastURL;
+   const alive=()=>!stopped && generation===run && location.href===url;
    let status;try {status=await sendMessage({type:'status'});}catch{return;}
    if(!alive() || !status?.onboarded || !status.shopEnabled)return;
    let checking=false,handle=null;
