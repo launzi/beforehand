@@ -1,54 +1,125 @@
-# Before You Ask — Privacy Policy (draft)
+# Before You Ask: Privacy Policy
 
-Publisher: **Munteok**. Version: 0.1.0. Contact: **privacy@munteok.com**.
+Publisher: **Munteok**, an individual developer in the Republic of Korea · Contact: **privacy@munteok.com**
+Policy version 2 (matches in-extension disclosure version 2) · Effective: {{EFFECTIVE_DATE}}
 
-Before You Ask turns patterns in your local browsing history into optional, useful next-step suggestions. The extension is free and licensed under Apache-2.0. You supply your own provider accounts; their charges may apply.
+## Summary
 
-## What we read and why
+Before You Ask reads your Chrome history **on your device** to suggest useful next steps. Munteok runs no server for this extension and receives none of your browsing data.
 
-After you accept the first-use disclosure and press **Scan local history**, the extension reads website addresses, visit times and product-page titles from Chrome's history API for up to the last 90 days. It derives supported search-engine query terms locally. It looks for new setup activity, searches with limited follow-through, repeated visits, and activity that has gone quiet, plus repeated Korean product views without an observed purchase page. These are clues, not conclusions about your intentions.
+Data leaves your device in one situation only. When you press **Run this request**, a minimized request goes to a service you have chosen. Before that request is sent, the extension shows you its exact body and destination. Nothing runs in the background, and nothing is read until you agree on the first-use screen.
 
-The extension does not access page contents, cookies, passwords saved in Chrome, downloads, or other Chrome profiles. It does not scan in the background. Chrome may return history synchronized into the current profile; the extension does not independently access other devices.
+## 1. Single purpose
 
-## What leaves your device
+The extension turns patterns in your own browsing history into optional suggestions. It looks for:
 
-Raw history records are never uploaded. Before **every** external request, the “What leaves your device” panel shows the exact request body and destination. Only pressing **Run this request** sends that request. Each following stage requires a new preview and Run click.
+- new setup activity
+- searches with limited follow-through
+- repeated visits
+- activity that has gone quiet
+- repeated views of a Korean product page without an observed purchase page
 
-- **Nebius Token Factory** (`https://api.tokenfactory.nebius.com/v1/models` and `/v1/chat/completions`): model discovery sends no history. Triage and suggestion requests send instructions plus a minimized signal: a hostname or scrubbed search term, aggregate activity counts, dates rounded to whole days, and generic onboarding path markers such as `/signup`. Research suggestions may also send selected, scrubbed Tavily result titles, URLs with query strings and fragments removed, and snippets.
-- **Tavily** (`https://api.tavily.com/search`): optional research sends only a scrubbed search query and a result-count limit. Research is denied without a Tavily key or when the search mandate forbids it. A held mandate must be changed to Allow before research can run.
-- Nebius and Tavily receive their respective API key in an Authorization header. Korea Concierge uses no key and is operated by Munteok. All three services receive ordinary connection information, including your IP address. Keys are hidden in previews and never written to traces.
+Every use of data in this policy serves that one purpose. The patterns are clues, and the extension does not treat them as conclusions about your intentions.
 
-Scrubbing removes recognizable credentials, email addresses, long identifiers, phone-like numbers and embedded URLs from outgoing free text. It also removes raw history URLs, unsanitized page titles, profile and visit IDs, path identifiers, exact visit times and stable signal hashes from model requests. **Scrubbing is not a guarantee of anonymity.** A hostname or search term can still reveal personal interests, names, health or financial matters. Review each request and cancel anything you do not want to share. Excluded websites and their subdomains are omitted from signal detection and search-term extraction.
+## 2. Consent comes first
 
-## Local storage and retention
+Before any history read or external call, the extension asks for an explicit **I agree** to the current disclosure, version 2. The accepted version is stored in `chrome.storage.local`. If the disclosure changes, you are asked again.
 
-- Raw scan records and detected signals exist only in the current extension page's memory. Closing that page discards them. Scanning again replaces the previous results.
-- Nebius/Tavily keys, your mandate, excluded websites, quote destination and versioned disclosure consent are stored only in **chrome.storage.local**, never chrome.storage.sync. The extension does not add encryption to Chrome's local storage.
-- A local audit log records approved scrubbed request bodies, destinations, mandate digests, local signal hashes, timestamps, stages and outcomes. It never stores API keys, Authorization headers, raw history records or provider response bodies. It retains the newest **500 records**, for up to **30 days**. Age-based cleanup happens when the extension is next opened or used; no background timer runs while it is closed.
-- AI output, quote cards and research hits remain in the active page's memory. They are not saved as a conversation history.
-- Exported JSON trace files remain wherever you download them until you delete those files yourself. They contain the minimized requests you approved and may still be sensitive.
+You can withdraw consent at any time. Withdrawing deletes all extension storage, including keys, settings, consent and trace, and any response that arrives after deletion is discarded. Withdrawing does not delete Chrome's own history or records already held by a provider.
 
-## Your controls and deletion
+## 3. What the extension reads
 
-Use Settings to change search permission, exclude websites, delete the local trace, or delete all extension keys, settings and trace. Deleting all local data also resets the first-use acknowledgement. Uninstalling removes the extension's local storage. These actions do not delete Chrome's own history, exported files, or data already received by providers. A request already sent cannot be recalled by closing the page or deleting settings.
+The extension reads only after you agree and press **Scan local history**. It reads, through Chrome's history API, for up to the last 90 days:
 
-Nebius Token Factory and Tavily process requests under your respective account agreements and privacy terms. Korea Concierge processes the approved product and destination to return an estimate under its own terms. Their retention and deletion practices are provider-controlled and may differ from local retention above. Munteok does not claim a provider-side zero-retention period. Contact the relevant provider to request deletion of provider-side data.
+- website addresses
+- visit times
+- product-page titles
 
-## No sale, advertising or unrelated use
+From these, it derives supported search-engine query terms locally.
 
-Munteok does not sell browsing data, use it for advertising, transmit analytics, or build advertising profiles. Data is used only to provide the user-visible browsing-signal and next-step suggestion feature. There is no remote code, telemetry, or third-party analytics SDK.
+It does not access page contents, cookies, passwords saved in Chrome, downloads, or other Chrome profiles. Chrome may return history synchronized into the current profile; the extension does not access other devices on its own. Websites you exclude in Settings, and their subdomains, are left out of detection.
 
-The use of information received from Google APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements.
+## 4. What leaves your device, and only when you press Run
 
-This is a publication draft. Publish an accessible policy URL, and review the final store disclosures before release.
+Raw history records are never uploaded. Each stage of a suggestion needs its own preview and its own Run.
 
+| Recipient | What is sent | When |
+|---|---|---|
+| **Nebius Token Factory** (`api.tokenfactory.nebius.com`) | Model discovery: no history. Triage and suggestions: instructions plus a minimized signal: a hostname or scrubbed search term, aggregate counts, dates rounded to whole days, and generic path markers such as `/signup`. Research suggestions may add selected, scrubbed search-result titles, URLs without query strings, and snippets. | Each Run you approve |
+| **Tavily** (`api.tavily.com`), optional | A scrubbed search query and a result-count limit | Only with your Tavily key, and only when your mandate allows research |
+| **Korea Concierge** (`concierge.youngji.kim`) | A scrubbed product name and your chosen delivery country (US by default). No product URL, no visit time. | Only for a Korean product signal, when your mandate allows quotes |
 
-## Korea product quotes and conflict disclosure
+Nebius and Tavily receive your own API key in an Authorization header. Korea Concierge needs no key. All three receive ordinary connection information, including your IP address. Keys are hidden in previews and never written to the trace.
 
-Korea Concierge is operated by the developer of this extension (Munteok). Quotes are free; a service fee is included only if you choose to buy through it.
+**Scrubbing is not anonymization.** It removes recognizable credentials, email addresses, long identifiers, phone-like numbers and embedded URLs. Model requests also leave out raw history URLs, unsanitized titles, profile and visit IDs, path identifiers, exact visit times and signal hashes. A hostname or search term can still reveal personal interests, names, or health or financial matters. Review each request, and cancel anything you do not want to share.
 
-Only a scrubbed product name and the selected destination (US by default) are sent to https://concierge.youngji.kim/api/mcp. The exact JSON-RPC body is shown before Run. No product URL or visit timestamp goes to Korea Concierge. The provider sees your IP address. Selected quote facts may then be sent to Nebius for a separately previewed English interpretation. Costs are rendered from the service response, including duty source text, warnings, local comparison and unknown verdicts verbatim. Quotes are estimates, not purchase commitments. No checkout, order creation or payment is implemented. Opaque quote tokens and next-step instructions are discarded and are never stored, displayed or sent onwards.
+### Providers act under your own accounts
 
-## Prominent disclosure and consent
+Nebius Token Factory and Tavily process requests under your account agreements with them.
 
-Before any history read or external call, the extension requires an explicit **I agree** to disclosure version 2. It stores the accepted version in chrome.storage.local. A newer disclosure requires new agreement. Withdrawing consent deletes all extension storage, including keys, settings, consent and trace; responses arriving after deletion are discarded. It does not delete Chrome's history or provider records. No telemetry or provider call runs before consent.
+- **Nebius Token Factory** may, by default, keep prompts and outputs to speed up inference (speculative decoding). Nebius says these are stored in the EU and not used for training. If you enable **Zero Data Retention** in your Nebius account, Nebius says it keeps no copy after each request. We recommend enabling it. See the [Nebius Token Factory legal guide](https://docs.tokenfactory.nebius.com/legal/legal-quick-guide) and the [Nebius privacy policy](https://docs.nebius.com/legal/privacy).
+- **Tavily**: see the [Tavily privacy policy](https://tavily.com/privacy).
+
+Munteok does not control provider-side retention and makes no claim about it. Ask the provider directly to delete data it holds.
+
+### Korea product quotes and a conflict of interest
+
+**Korea Concierge is operated by the developer of this extension (Munteok).** Quotes are free. A service fee is included only if you choose to buy through Korea Concierge.
+
+- This extension cannot place orders. No checkout, order creation or payment is implemented.
+- Quote tokens and next-step instructions from the service are discarded, never stored, displayed or forwarded.
+- Costs are shown exactly as the service returns them, including duty sources, warnings and the local price.
+- When buying locally is cheaper, the quote card says so first.
+- Selected quote facts may then go to Nebius for a separately previewed English explanation.
+- Quotes are estimates and do not commit you to buy anything.
+
+## 5. What is stored on your device
+
+| Item | Where | Kept for |
+|---|---|---|
+| Scan results and detected signals | Memory of the open extension page | Until you close that page or rescan |
+| AI output, quote cards, research results | Memory of the open extension page | Until you close that page |
+| Nebius and Tavily keys, mandate, excluded websites, quote destination, consent | `chrome.storage.local` (never `chrome.storage.sync`) | Until you delete them, withdraw consent, or uninstall |
+| Audit trace: approved scrubbed request bodies, destinations, mandate digests, signal hashes, timestamps, stages, outcomes | `chrome.storage.local` | Newest 500 records, up to 30 days, pruned the next time you open the extension |
+
+Keys are stored **without additional encryption** beyond Chrome's own storage. The trace never contains API keys, Authorization headers, raw history records or provider response bodies.
+
+If you export the trace to a JSON file, that file stays wherever you save it until you delete it. It holds the requests you approved and may still be sensitive.
+
+## 6. What we do not do
+
+- Munteok does not collect, receive or store your browsing data on any server.
+- No analytics, telemetry, crash reporting or advertising SDKs.
+- No sale or transfer of your data, and no use for advertising, for creditworthiness or lending, or for any purpose other than the single purpose above.
+- No person reads your data.
+- No remote code.
+
+**The use of information received from Google APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements.**
+
+## 7. Automated suggestions
+
+Suggestions come from rules on your device plus AI model output. They have no legal or similarly significant effect on you. The allow, hold or deny decision is deterministic, and it is recorded in your local trace so you can inspect it.
+
+## 8. Your choices and rights
+
+- **Settings**: change what your mandate allows, exclude websites, delete the trace, or delete all keys, settings and trace.
+- **Uninstall**: Chrome removes the extension's local storage.
+- These actions do not delete Chrome's own history, files you exported, or data a provider already received. A request that has already been sent cannot be recalled.
+- Munteok holds none of your data, so there is nothing for us to access, correct or delete on our side. For requests sent under your provider accounts, contact Nebius, Tavily or Korea Concierge.
+- For questions or complaints, write to **privacy@munteok.com**. You may also contact your local data protection authority. In Korea, this is the Personal Information Protection Commission ([pipc.go.kr](https://www.pipc.go.kr)).
+
+## 9. Children
+
+The extension is not directed at children under 14.
+
+## 10. Open source
+
+The full source code is published under the Apache License 2.0 at {{REPO_URL}}, so anyone can check these statements against the code.
+
+## 11. Changes
+
+If what the extension reads or sends changes, we update this policy and the in-extension disclosure version. The extension then asks for your agreement again before it reads or sends anything.
+
+| Date | Change |
+|---|---|
+| {{EFFECTIVE_DATE}} | First published version |
