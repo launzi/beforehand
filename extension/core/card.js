@@ -25,7 +25,7 @@
    for(const warning of q.warnings) d.append(el('p',warning,'muted'));
    const url=safeLink(q.item.link);if(url){const a=el('a','Korean listing');a.href=url;a.target='_blank';a.rel='noopener noreferrer';d.append(a);}parent.append(d);
   }
-  function buyButton(parent,choice) {parent.append(button('Buy from Korea',()=>setState({view:'buy_form',choice}),'buy'));}
+  function buyButton(parent,choice) {parent.append(button('Buy from Korea',async()=>{setState({view:'opening'});try{await onBuy(choice);}catch{setState({view:'busy'});}},'buy'));}
   function render() {
    if(destroyed)return;body.replaceChildren();
    if(collapsed) {pill('beforehand',()=>{collapsed=false;render();});return;}
@@ -45,15 +45,8 @@
    } else if(current.view==='alternatives') {
     body.append(el('h2','Korean alternatives'));
     current.items.slice(0,2).forEach((item,index)=>{const row=el('div',null,'row');row.append(el('h2',item.title),el('p',item.why),el('p',money(item.quote.totalCost,item.quote.currency),'total'));buyButton(row,index);details(item.quote,row);body.append(row);});
-   } else if(current.view==='buy_form') {
-    body.append(el('h2','Buy from Korea'));const form=el('form');const email=el('input'),name=el('input');
-    email.type='email';email.required=true;email.maxLength=200;email.autocomplete='email';name.type='text';name.required=true;name.maxLength=120;name.autocomplete='name';
-    for(const [text,input] of [['Email',email],['Name',name]]) {const label=el('label',text);label.append(input);form.append(label);}
-    const submit=el('button','Continue to payment','buy');submit.type='submit';form.append(submit);
-    form.addEventListener('submit',async e=>{e.preventDefault();if(submit.disabled)return;submit.disabled=true;const choice=current.choice,mail=email.value.trim(),buyer=name.value.trim();email.value='';name.value='';setState({view:'opening'});try{await onBuy(choice,mail,buyer);}catch{setState({view:'busy'});}});
-    body.append(form,el('p','Sent to Korea Concierge to create your order. Not stored by beforehand.','muted'));email.focus();
    } else {
-    const messages={loading:'Checking Korea…',cant_ship:`Can't ship to ${current.destination ?? 'this country'}`,busy:'Busy — try again',paused:'Auto-check paused for today',opening:'Opening payment…',changed:'Price changed — check again',opened:'Payment opened in a new tab.'};
+    const messages={loading:'Checking Korea…',cant_ship:`Can't ship to ${current.destination ?? 'this country'}`,busy:'Busy — try again',paused:'Auto-check paused for today',opening:'Opening checkout…',changed:'Price changed — check again',opened:'Checkout opened in a new tab.'};
     body.append(el('p',messages[current.view] ?? messages.busy));if(['busy','changed'].includes(current.view))body.append(button('Check Korea price',onCheck));
    }
   }

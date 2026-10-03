@@ -17,12 +17,13 @@ test('alternatives are capped and untrusted HTML stays text',()=>{
  assert.equal(all(c.root.testShadow).filter(n=>n.tagName==='button'&&n.textContent==='Buy from Korea').length,2);
  assert.equal(all(c.root.testShadow).filter(n=>n.tagName==='img').length,0); assert.ok(c.root.testShadow.textContent.includes(title)); c.destroy();
 });
-test('buy form submits only choice/email/name and blocks duplicate submits',async()=>{
- const calls=[],doc=documentFake(),c=mount(doc,{onBuy:async(...args)=>calls.push(args)});
- c.setState({view:'same',quote:quote(),local:null}); await findText(c.root.testShadow,'Buy from Korea').fire();
- const inputs=all(c.root.testShadow).filter(n=>n.tagName==='input');inputs[0].value='buyer@example.com';inputs[1].value='Buyer';
- await all(c.root.testShadow).find(n=>n.tagName==='form').fire('submit');assert.deepEqual(calls,[['same','buyer@example.com','Buyer']]);
- assert.doesNotMatch(c.root.testShadow.textContent,/buyer@example.com/);c.destroy();
+test('Buy opens checkout with only a choice and the card never renders inputs',async()=>{
+ const calls=[],c=mount(documentFake(),{onBuy:async(...args)=>calls.push(args)});
+ for(const state of [{view:'same',quote:quote(),local:null},{view:'alternatives',items:[{title:'Toner',why:'Gentle',quote:quote()}]}]) {
+  c.setState(state);await findText(c.root.testShadow,'Buy from Korea').fire();
+  assert.equal(all(c.root.testShadow).filter(n=>['input','form'].includes(n.tagName)).length,0);
+ }
+ assert.deepEqual(calls,[['same'],[0]]);c.destroy();
 });
 test('closed shadow isolates card, details use safe links, collapse and destroy work',async()=>{
  const doc=documentFake(),c=mount(doc);assert.equal(c.root.shadowOptions.mode,'closed');

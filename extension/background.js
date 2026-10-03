@@ -25,24 +25,48 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
  }
  async function run(msg,sender) {
   await ready;
-  const state=await status(sender);
-  if(msg?.type==='status') return {onboarded:state.onboarded,autoCheck:state.autoCheck,shopEnabled:state.shopEnabled,destination:state.destination};
-  if(!state.onboarded || !state.shopEnabled || (sender.frameId!=null && sender.frameId!==0)) throw new MatchError('unavailable');
-  if(!['match','buy'].includes(msg?.type)) throw new MatchError('malformed');
+  if(msg?.type==='status') {
+   const state=await status(sender);
+   return {onboarded:state.onboarded,autoCheck:state.autoCheck,shopEnabled:state.shopEnabled,destination:state.destination};
+  }
+  if(!['match','open_checkout','checkout_snapshot','buy'].includes(msg?.type)) throw new MatchError('malformed');
+  const checkoutPage=['checkout_snapshot','buy'].includes(msg.type);
+  const checkoutURL=()=>chrome.runtime.getURL(`checkout.html?h=${encodeURIComponent(msg.handle)}&c=${encodeURIComponent(msg.choice)}`);
   let record;
-  if(msg.type==='buy') {
+  if(msg.type!=='match') {
    const {snapshots={}}=await session.get('snapshots');
    record=typeof msg.handle==='string' && Object.hasOwn(snapshots,msg.handle)?snapshots[msg.handle]:null;
-   if(!record || record.tabId!==sender.tab?.id || (record.documentId && record.documentId!==sender.documentId)) return {error:'changed'};
+   if(!record || !['same',0,1].includes(msg.choice) || !record.snapshot.choices[msg.choice]) return {error:'changed'};
+   if(checkoutPage) {
+    if(sender.url!==checkoutURL() || !record.checkouts?.some(c=>c.tabId===sender.tab?.id && c.choice===msg.choice)) return {error:'changed'};
+   } else if(record.tabId!==sender.tab?.id || (record.documentId && record.documentId!==sender.documentId)) return {error:'changed'};
   }
+  const context=checkoutPage?{url:`https://${record.shop}/`}:sender;
+  const state=await status(context);
+  if(!state.onboarded || !state.shopEnabled || (sender.frameId!=null && sender.frameId!==0)) throw new MatchError('unavailable');
   const input=record?record.snapshot:{name:msg.product?.name,brand:msg.product?.brand,destination:state.destination};
   const req=matchRequest(input),args=JSON.parse(req.body).params.arguments;
   const key=JSON.stringify([args.name,args.brand ?? '',args.destination]);
   const consent=await requireConsent(storage);
   if(record && (record.revision!==consent.revision || record.snapshot.destination!==state.destination)) throw new MatchError('unavailable');
   async function stillAllowed() {
-   const current=await requireConsent(storage),s=await status(sender);
+   const current=await requireConsent(storage),s=await status(context);
    if(current.revision!==consent.revision || !s.shopEnabled || s.destination!==state.destination || (msg.type==='match' && msg.manual!==true && !s.autoCheck)) throw new MatchError('unavailable');
+  }
+  if(msg.type==='open_checkout') {
+   await stillAllowed();
+   const tab=await chrome.tabs.create({url:checkoutURL()});
+   record.checkouts=[...(record.checkouts ?? []),{tabId:tab.id,choice:msg.choice}].slice(-20);
+   const {snapshots={}}=await session.get('snapshots');
+   snapshots[msg.handle]=record;await session.set({snapshots});
+   return {ok:true};
+  }
+  if(msg.type==='checkout_snapshot') {
+   await stillAllowed();return {snapshot:record.snapshot.choices[msg.choice],seller:'Munteok',destination:record.snapshot.destination};
+  }
+  async function changed() {
+   try {await chrome.tabs.sendMessage(record.tabId,{type:'quote_changed',handle:msg.handle},record.documentId?{documentId:record.documentId}:{frameId:0});} catch { /* The source document may have closed. */ }
+   return {error:'changed'};
   }
   async function lookup(fresh=false) {
    if(!fresh) {
@@ -92,14 +116,14 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
   let q=selected(memory.get(msg.handle),msg.choice);
   if(!q?.quoteToken || !(Date.parse(q.quoteExpiresAt)-60000>now())) {
    const fresh=await lookup(true),next=selected(fresh,msg.choice);
-   if(!sameQuote(prior,next)) return {error:'changed'};
+   if(!sameQuote(prior,next)) return changed();
    memory.set(msg.handle,fresh);q=next;
   }
-  if(!sameQuote(prior,q)) return {error:'changed'};
+  if(!sameQuote(prior,q)) return changed();
   if(!q.quoteToken || !(Date.parse(q.quoteExpiresAt)-60000>now())) throw new MatchError('unavailable');
   await stillAllowed();
   const {checkoutUrl}=await send(checkoutRequest({quoteToken:q.quoteToken,email:msg.email,name:msg.name}));
-  await stillAllowed(); await chrome.tabs.create({url:checkoutUrl});
+  await stillAllowed(); await chrome.tabs.update(sender.tab.id,{url:checkoutUrl});
   await appendTrace(storage,{kind:'checkout_opened',shop:state.shop.host},now()); return {ok:true};
  }
  async function onMessage(msg,sender={}) {

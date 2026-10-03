@@ -1,6 +1,8 @@
 (()=>{
- function createContent({doc,location,sendMessage,extract=globalThis.BeforehandExtract,card=globalThis.BeforehandCard,setInterval:every=globalThis.setInterval,clearInterval:cancel=globalThis.clearInterval}) {
-  let lastURL=null,active=null,generation=0,stopped=false;
+ function createContent({doc,location,sendMessage,onMessage,extract=globalThis.BeforehandExtract,card=globalThis.BeforehandCard,setInterval:every=globalThis.setInterval,clearInterval:cancel=globalThis.clearInterval}) {
+  let lastURL=null,active=null,generation=0,stopped=false,onQuoteChanged=null;
+  const changed=message=>{if(message?.type==='quote_changed')onQuoteChanged?.(message.handle);};
+  onMessage?.addListener(changed);
   async function tick() {
    if(stopped || doc.visibilityState!=='visible' || location.href===lastURL) return;
    lastURL=location.href;const run=++generation;active?.destroy();active=null;
@@ -17,20 +19,21 @@
      if(alive()) {handle=reply?.handle;instance.setState({...reply,view:['same','alternatives','none','cant_ship','paused'].includes(reply?.kind)?reply.kind:'busy',local,destination:status.destination});}
     }catch {if(alive())instance.setState({view:'busy'});}finally{checking=false;}
    }
-   const instance=card.mount(doc,{onCheck:()=>check(true),onBuy:async(choice,email,name)=>{
+   const instance=card.mount(doc,{onCheck:()=>check(true),onBuy:async choice=>{
     if(!alive())return;
-    try {const reply=await sendMessage({type:'buy',handle,choice,email,name});if(alive())instance.setState({view:reply?.ok?'opened':reply?.error==='changed'?'changed':'busy'});}
+    try {const reply=await sendMessage({type:'open_checkout',handle,choice});if(alive())instance.setState({view:reply?.ok?'opened':reply?.error==='changed'?'changed':'busy'});}
     catch {if(alive())instance.setState({view:'busy'});}
    }});
    active=instance;
+   onQuoteChanged=changedHandle=>{if(alive() && changedHandle===handle)instance.setState({view:'changed'});};
    if(status.autoCheck)await check(false);else instance.setState({view:'manual'});
   }
   const timer=every(()=>{void tick();},1000);
-  return {tick,destroy(){stopped=true;generation++;cancel(timer);active?.destroy();active=null;}};
+  return {tick,destroy(){stopped=true;generation++;cancel(timer);onMessage?.removeListener(changed);active?.destroy();active=null;}};
  }
  globalThis.BeforehandContent={createContent};
  if(globalThis.document && globalThis.chrome?.runtime?.sendMessage) {
-  const app=createContent({doc:document,location:globalThis.location,sendMessage:message=>chrome.runtime.sendMessage(message)});void app.tick();
+  const app=createContent({doc:document,location:globalThis.location,sendMessage:message=>chrome.runtime.sendMessage(message),onMessage:chrome.runtime.onMessage});void app.tick();
   globalThis.addEventListener?.('pagehide',()=>app.destroy(),{once:true});
  }
 })();

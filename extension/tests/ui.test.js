@@ -32,6 +32,6 @@ test('options export, delete log and delete-all use local data and reopen welcom
  await e.id('deleteAll').fire();assert.deepEqual(e.storage.data,{});assert.deepEqual(e.tabs,[{url:'chrome-extension://id/welcome.html'}]);
 });
 test('shipped UI avoids HTML injection, eval and extra network sinks',async()=>{
- const files=['welcome.js','popup.js','options.js','content.js','background.js',...(await readdir(new URL('../core/',import.meta.url))).filter(f=>f.endsWith('.js')).map(f=>'core/'+f)];
+ const files=['checkout.js','welcome.js','popup.js','options.js','content.js','background.js',...(await readdir(new URL('../core/',import.meta.url))).filter(f=>f.endsWith('.js')).map(f=>'core/'+f)];
  for(const file of files){const source=await readFile(new URL('../'+file,import.meta.url),'utf8');assert.doesNotMatch(source,/innerHTML|eval\(|new Function/);if(file!=='core/sink.js')assert.doesNotMatch(source,/\bfetch\(/);}
 });

@@ -1,9 +1,9 @@
 import test from 'node:test'; import assert from 'node:assert/strict'; import {documentFake} from './dom.js';
 await import('../content.js'); const {createContent}=globalThis.BeforehandContent;
 function setup(sendMessage) {
- const doc=documentFake(),location={href:'https://walmart.com/item/1',hostname:'walmart.com'},cards=[],messages=[];
- const app=createContent({doc,location,sendMessage:async m=>{messages.push(m);return sendMessage(m);},extract:{readPageParts:()=>({}),extractFromParts:()=>({name:'Toner',brand:'Anua',price:20,currency:'USD'})},card:{mount:(_,opts)=>{const c={opts,states:[],setState(s){this.states.push(s);},destroy(){this.destroyed=true;}};cards.push(c);return c;}},setInterval:()=>1,clearInterval:()=>{}});
- return {app,doc,location,cards,messages};
+ const doc=documentFake(),location={href:'https://walmart.com/item/1',hostname:'walmart.com'},cards=[],messages=[],listeners=new Set();
+ const app=createContent({doc,location,onMessage:{addListener:fn=>listeners.add(fn),removeListener:fn=>listeners.delete(fn)},sendMessage:async m=>{messages.push(m);return sendMessage(m);},extract:{readPageParts:()=>({}),extractFromParts:()=>({name:'Toner',brand:'Anua',price:20,currency:'USD'})},card:{mount:(_,opts)=>{const c={opts,states:[],setState(s){this.states.push(s);},destroy(){this.destroyed=true;}};cards.push(c);return c;}},setInterval:()=>1,clearInterval:()=>{}});
+ return {app,doc,location,cards,messages,notify:m=>{for(const listener of listeners)listener(m);},listeners};
 }
 const status={onboarded:true,shopEnabled:true,autoCheck:true,destination:'US'};
 test('SPA URL changes destroy old card, check once and never send local price or URL',async()=>{
@@ -29,7 +29,14 @@ test('no card without consent and transport errors become retryable busy',async(
 
 test('Buy sends the displayed handle and choice without reselecting by product',async()=>{
  const a=setup(async m=>m.type==='status'?status:m.type==='match'?{kind:'same',handle:'display-a'}:{error:'changed'});
- await a.app.tick();await a.cards[0].opts.onBuy('same','buyer@example.com','Buyer');
- assert.deepEqual(a.messages.at(-1),{type:'buy',handle:'display-a',choice:'same',email:'buyer@example.com',name:'Buyer'});
+ await a.app.tick();await a.cards[0].opts.onBuy('same');
+ assert.deepEqual(a.messages.at(-1),{type:'open_checkout',handle:'display-a',choice:'same'});
  assert.equal(a.cards[0].states.at(-1).view,'changed');a.app.destroy();
+});
+
+test('checkout change notifications affect only the matching displayed handle',async()=>{
+ const a=setup(async m=>m.type==='status'?status:{kind:'same',handle:'display-a'});await a.app.tick();
+ a.notify({type:'quote_changed',handle:'display-b'});assert.equal(a.cards[0].states.at(-1).view,'same');
+ a.notify({type:'quote_changed',handle:'display-a'});assert.equal(a.cards[0].states.at(-1).view,'changed');
+ a.app.destroy();assert.equal(a.listeners.size,0);
 });

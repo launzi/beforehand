@@ -14,7 +14,7 @@ export function manifestFor(target) {
  icons:{16:'icons/16.png',32:'icons/32.png',48:'icons/48.png',128:'icons/128.png'},options_page:'options.html',
  content_security_policy:{extension_pages:"script-src 'self'; object-src 'none'; connect-src https://concierge.youngji.kim"}};
 }
-const SHIP=['background.js','content.js','welcome.html','welcome.js','popup.html','popup.js','options.html','options.js','style.css','core','icons','LICENSE','NOTICE','PRIVACY.md'];
+const SHIP=['background.js','content.js','checkout.html','checkout.js','welcome.html','welcome.js','popup.html','popup.js','options.html','options.js','style.css','core','icons','LICENSE','NOTICE','PRIVACY.md'];
 export async function build(target='store') {
  const manifest=manifestFor(target);
  execFileSync('zip',['-v'],{stdio:'ignore'});
