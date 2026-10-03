@@ -36,3 +36,12 @@ test('changed quote asks for an explicit re-check',async()=>{
  assert.match(c.root.testShadow.textContent,/Price changed — check again/);
  await findText(c.root.testShadow,'Check Korea price').fire();assert.equal(checks,1);c.destroy();
 });
+test('alternative why is omitted for every numeric or currency marker',()=>{
+ const c=mount(documentFake());
+ for(const why of ['Save 250','Save ２５０','Save ٢٥٠','Save Ⅻ','Save ²',...['$','£','€','¥','￥','₩','%'].map(symbol=>'Save '+symbol)]) {
+  c.setState({view:'alternatives',items:[{title:'Toner',why,quote:quote()}]});
+  assert.ok(!c.root.testShadow.textContent.includes(why),why);
+ }
+ const why='A gentle Korean toner';c.setState({view:'alternatives',items:[{title:'Toner',why,quote:quote()}]});
+ assert.ok(c.root.testShadow.textContent.includes(why));c.destroy();
+});

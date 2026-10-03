@@ -35,3 +35,7 @@ test('shipped UI avoids HTML injection, eval and extra network sinks',async()=>{
  const files=['checkout.js','welcome.js','popup.js','options.js','content.js','background.js',...(await readdir(new URL('../core/',import.meta.url))).filter(f=>f.endsWith('.js')).map(f=>'core/'+f)];
  for(const file of files){const source=await readFile(new URL('../'+file,import.meta.url),'utf8');assert.doesNotMatch(source,/innerHTML|eval\(|new Function/);if(file!=='core/sink.js')assert.doesNotMatch(source,/\bfetch\(/);}
 });
+test('welcome labels the manual consent choice Only when I click',async()=>{
+ const html=await readFile(new URL('../welcome.html',import.meta.url),'utf8');
+ assert.match(html,/<button id="notNow"[^>]*>Only when I click<\/button>/);assert.doesNotMatch(html,/>Not now</);
+});

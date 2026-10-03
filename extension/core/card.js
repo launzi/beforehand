@@ -44,7 +44,7 @@
     details(q,body);
    } else if(current.view==='alternatives') {
     body.append(el('h2','Korean alternatives'));
-    current.items.slice(0,2).forEach((item,index)=>{const row=el('div',null,'row');row.append(el('h2',item.title),el('p',item.why),el('p',money(item.quote.totalCost,item.quote.currency),'total'));buyButton(row,index);details(item.quote,row);body.append(row);});
+    current.items.slice(0,2).forEach((item,index)=>{const row=el('div',null,'row');row.append(el('h2',item.title));if(typeof item.why==='string' && !/[\p{N}$£€¥￥₩%]/u.test(item.why))row.append(el('p',item.why));row.append(el('p',money(item.quote.totalCost,item.quote.currency),'total'));buyButton(row,index);details(item.quote,row);body.append(row);});
    } else {
     const messages={loading:'Checking Korea…',cant_ship:`Can't ship to ${current.destination ?? 'this country'}`,busy:'Busy — try again',paused:'Auto-check paused for today',opening:'Opening checkout…',changed:'Price changed — check again',opened:'Checkout opened in a new tab.'};
     body.append(el('p',messages[current.view] ?? messages.busy));if(['busy','changed'].includes(current.view))body.append(button('Check Korea price',onCheck));
