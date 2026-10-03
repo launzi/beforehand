@@ -198,6 +198,16 @@ one replica, runtime secrets, and persistent `/state` in the deployment service.
 Actual Serverless deployment, persistence configuration, and image execution
 remain to be verified by the deployment operator. No deployment was made here.
 
+## Chrome extension MVP
+
+[`extension/`](../extension/README.md) contains **Before You Ask**, Munteok's
+dependency-free Chrome MV3 extension (Apache-2.0). Load it unpacked from
+`chrome://extensions`, scan history locally, and review each outgoing request
+before pressing Run. It ports the four detectors and mandate rules, uses Ultra
+for triage and Nano for suggestions, and supports optional Tavily research.
+Keys and audit traces stay in `chrome.storage.local`. See the extension README
+for Python/JavaScript parity tests, API approximation limits, privacy and store drafts.
+
 ## Tests
 
 ```sh
