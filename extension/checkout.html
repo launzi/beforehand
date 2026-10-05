@@ -1,12 +1,21 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Checkout · beforehand</title><link rel="stylesheet" href="style.css"></head>
-<body><main class="welcome"><img class="lockup" src="icons/lockup.svg" alt="beforehand" width="214" height="48"><h1>Buy from Korea</h1>
-<div id="summary"></div>
+<body class="checkout"><main class="receipt">
+<header class="receipt-head"><img class="mark" src="icons/mark.svg" alt="" width="20" height="20"><span class="wordmark">beforehand</span><span id="expiry" class="hold" hidden></span></header>
+<p id="notice" class="notice" role="status">Checking Korea…</p>
+<section id="summary" hidden></section>
 <form id="checkoutForm" hidden>
-<label for="email">Email</label><input id="email" type="email" required maxlength="200" autocomplete="email">
-<label for="name">Name</label><input id="name" type="text" required maxlength="120" autocomplete="name">
-<button id="card" type="submit" disabled>Pay by card</button>
-<button id="paypal" type="submit" disabled>Pay with PayPal</button>
-<p>If the item is out of stock in Korea, we refund you in full.</p>
-<p>Sent to Korea Concierge to create your order. Not stored by beforehand.</p>
-</form><p id="notice" role="status">Loading your quote…</p></main><script type="module" src="checkout.js"></script></body></html>
+<label class="field"><span>Email</span><input id="email" type="email" required maxlength="200" autocomplete="email" placeholder="you@example.com"></label>
+<label class="field"><span>Name</span><input id="name" type="text" required maxlength="120" autocomplete="name" placeholder="Full name"></label>
+<fieldset class="methods"><legend>Pay with</legend>
+<label class="method"><input type="radio" name="method" id="methodCard" value="card" checked><span class="method-name">Card</span><span class="brands" aria-hidden="true"><b>VISA</b><b>MC</b><b>AMEX</b></span></label>
+<label class="method"><input type="radio" name="method" id="methodPaypal" value="paypal"><span class="method-name">PayPal</span><span class="pp" aria-hidden="true">Pay<i>Pal</i></span></label>
+</fieldset>
+<p id="error" class="error" role="alert" hidden></p>
+<button id="pay" type="submit" class="pay" disabled>Continue to payment</button>
+<button id="switchMethod" type="button" class="linkish" hidden>Use PayPal instead</button>
+<p class="trust"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="8" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2"/></svg><span id="provider">You'll pay on Stripe. beforehand never sees your card details.</span></p>
+<p class="trust"><span class="glyph" aria-hidden="true">↺</span><span>Out of stock in Korea? Full refund.</span></p>
+</form>
+<footer class="receipt-foot">Questions? <a href="mailto:support@munteok.com">support@munteok.com</a></footer>
+</main><script type="module" src="checkout.js"></script></body></html>

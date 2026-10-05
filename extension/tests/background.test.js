@@ -124,7 +124,7 @@ test('refresh compares title, currency and amounts including equal-total payment
  for(const change of changes) {
   const a=env(undefined,[{kind:'same',quote:quote({quoteExpiresAt:'2026-10-03T09:00:30Z'})},{kind:'same',quote:quote(change)}]);
   const {handle}=await a.bg.onMessage(match,sender);
-  assert.deepEqual(await buyFrom(a.bg,a,handle),{error:'changed'});
+  assert.equal((await buyFrom(a.bg,a,handle)).error,'changed');
   assert.equal(a.calls.length,2);assert.equal(a.updates.length,0);
  }
 });
@@ -176,7 +176,8 @@ test('refreshing one alternative never authorizes a changed sibling choice',asyn
  const replies=[{kind:'alternatives',items:fresh},{method:'card',url:'https://checkout.stripe.com/c/pay/first'},{kind:'alternatives',items:fresh}];
  const resumed=createBackground({chrome:a.chrome,now:a.clock,fetchImpl:async()=>response(replies.shift())});
  assert.deepEqual(await buyFrom(resumed,a,handle,sender,0),{ok:true});
- assert.deepEqual(await buyFrom(resumed,a,handle,sender,1),{error:'changed'});
+ const repriced=await buyFrom(resumed,a,handle,sender,1);
+ assert.equal(repriced.error,'changed');assert.equal(repriced.previous.totalCost,32);assert.equal(repriced.snapshot.totalCost,99);
 });
 
 test('only the registered extension checkout tab can read its snapshot or buy',async()=>{
@@ -184,7 +185,8 @@ test('only the registered extension checkout tab can read its snapshot or buy',a
  const {handle}=await a.bg.onMessage(match,sender),page=await openCheckout(a.bg,a,handle);
  assert.equal(page.url,`chrome-extension://id/checkout.html?h=${handle}&c=same`);
  const shown=await a.bg.onMessage({type:'checkout_snapshot',handle,choice:'same'},page);
- assert.deepEqual(shown.snapshot,{title:quote().item.title,link:quote().item.link,currency:'USD',totalCost:32,payNow:{total:30},dutyOnDelivery:{estimate:2}});
+ assert.deepEqual(shown.snapshot,{title:quote().item.title,link:quote().item.link,currency:'USD',totalCost:32,payNow:{total:30,itemKrw:18000,shippingKrw:18000,serviceFeeKrw:4000,paymentFeeKrw:2000,fxRate:1400},dutyOnDelivery:{estimate:2}});
+ assert.equal(shown.expiresAt,quote().quoteExpiresAt);
  assert.equal(shown.seller,'Munteok');assert.doesNotMatch(JSON.stringify(shown),/quoteToken|quoteExpiresAt/);
  for(const intruder of [sender,{...page,tab:{id:999}},{...page,url:'chrome-extension://id/popup.html'}]) {
   assert.deepEqual(await a.bg.onMessage({...buy,handle},intruder),{error:'changed'});
@@ -197,7 +199,7 @@ test('only the registered extension checkout tab can read its snapshot or buy',a
 test('changed checkout notifies only its originating document and handle',async()=>{
  const a=env(undefined,[{kind:'same',quote:quote({quoteExpiresAt:'2026-10-03T09:00:30Z'})},{kind:'same',quote:quote({totalCost:99})}]);
  const {handle}=await a.bg.onMessage(match,sender);
- assert.deepEqual(await buyFrom(a.bg,a,handle),{error:'changed'});
+ assert.equal((await buyFrom(a.bg,a,handle)).error,'changed');
  assert.deepEqual(a.notifications,[[sender.tab.id,{type:'quote_changed',handle},{documentId:sender.documentId}]]);
 });
 
@@ -275,8 +277,25 @@ test('a cached quote refreshes when the checkout page loads, then Buy needs no s
  assert.deepEqual(await resumed.onMessage({...buy,handle},page),{ok:true});
  assert.equal(calls.length,2);assert.equal(calls[1].body.quoteToken,'FAKE_LOAD_TOKEN_0123456789');
 });
-test('a changed price is reported when the checkout page loads, before any buyer input',async()=>{
- const a=env(undefined,[{kind:'same',quote:quote({quoteExpiresAt:'2026-10-03T09:00:30Z'})},{kind:'same',quote:quote({totalCost:45})}]);
+test('a changed price is shown when the checkout page loads, before any buyer input',async()=>{
+ const a=env(undefined,[{kind:'same',quote:quote({quoteExpiresAt:'2026-10-03T09:00:30Z'})},{kind:'same',quote:quote({totalCost:45,quoteToken:'FAKE_REPRICED_TOKEN_01'})},{method:'card',url:'https://checkout.stripe.com/c/pay/repriced'}]);
+ const {handle}=await a.bg.onMessage(match,sender),page=await openCheckout(a.bg,a,handle);
+ const shown=await a.bg.onMessage({type:'checkout_snapshot',handle,choice:'same'},page);
+ assert.equal(shown.previous.totalCost,32);assert.equal(shown.snapshot.totalCost,45);assert.equal(shown.seller,'Munteok');
+ // The confirmed new price pays with its own token and no further check.
+ assert.deepEqual(await a.bg.onMessage({...buy,handle},page),{ok:true});
+ assert.equal(a.calls.length,3);assert.equal(a.calls[2].quoteToken,'FAKE_REPRICED_TOKEN_01');
+});
+test('a repriced Buy waits for confirmation, then the second Buy pays the new price',async()=>{
+ const a=env(undefined,[{kind:'same',quote:quote({quoteExpiresAt:'2026-10-03T09:00:30Z'})},{kind:'same',quote:quote({totalCost:45,quoteToken:'FAKE_SECOND_BUY_TOKEN'})},{method:'paypal',url:'https://www.paypal.com/checkoutnow?token=X'}]);
+ const {handle}=await a.bg.onMessage(match,sender),page=await openCheckout(a.bg,a,handle);
+ const first=await a.bg.onMessage({...buy,handle},page);
+ assert.equal(first.error,'changed');assert.equal(first.snapshot.totalCost,45);assert.equal(a.updates.length,0);
+ assert.deepEqual(await a.bg.onMessage({...buy,handle,method:'paypal'},page),{ok:true});
+ assert.equal(a.calls[2].quoteToken,'FAKE_SECOND_BUY_TOKEN');
+});
+test('an offer that disappears at page load ends in changed with nothing to confirm',async()=>{
+ const a=env(undefined,[{kind:'same',quote:quote({quoteExpiresAt:'2026-10-03T09:00:30Z'})},{kind:'none',message:'No match'}]);
  const {handle}=await a.bg.onMessage(match,sender),page=await openCheckout(a.bg,a,handle);
  assert.deepEqual(await a.bg.onMessage({type:'checkout_snapshot',handle,choice:'same'},page),{error:'changed'});
 });

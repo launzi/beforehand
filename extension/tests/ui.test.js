@@ -14,15 +14,24 @@ test('welcome renders the exact approved text with safe nodes and both choices a
  }
 });
 test('popup tolerates unavailable tab URL and persists global/destination controls',async()=>{
- const e=ui(['controls','recent'],{...consent(),autoCheck:true});await initPopup({doc:e.doc,chrome:e.chrome});
+ const e=ui(['controls','version'],{...consent(),autoCheck:true});await initPopup({doc:e.doc,chrome:e.chrome});
  assert.match(e.id('controls').textContent,/Open a supported shop/);
  const toggle=e.doc.getElementById('autoEverywhere');toggle.checked=false;await toggle.fire('change');assert.equal(e.storage.data.autoCheck,false);
  const select=e.doc.getElementById('destination');select.value='GB';await select.fire('change');assert.equal(e.storage.data.destination,'GB');
 });
-test('popup site switch controls the real tab shop; recent checks are capped to five',async()=>{
- const e=ui(['controls','recent'],{...consent(),autoCheck:true,trace:Array.from({length:7},(_,i)=>({kind:'match_result',shop:'amazon.com',result:'same',ts:new Date(Date.now()-i*1000).toISOString()}))});
- e.chrome.tabs.query=async()=>[{url:'https://www.amazon.com/dp/example'}];await initPopup({doc:e.doc,chrome:e.chrome});
- const toggle=e.doc.getElementById('autoShop');toggle.checked=false;await toggle.fire('change');assert.deepEqual(e.storage.data.disabledShops,['amazon.com']);assert.equal(e.id('recent').children.length,5);
+test('popup site switch controls the real tab shop with the reviewed labels',async()=>{
+ const e=ui(['controls','version'],{...consent(),autoCheck:true});
+ e.chrome.tabs.query=async()=>[{url:'https://www.amazon.com/dp/example'}];e.chrome.runtime.getManifest=()=>({version:'1.2.0'});await initPopup({doc:e.doc,chrome:e.chrome});
+ for(const t of ['amazon.com','Show Korea prices on this shop','Check automatically','Off: only when you click','Deliver to']) assert.ok(e.id('controls').textContent.includes(t),t);
+ assert.equal(e.id('version').textContent,'v1.2.0');
+ const toggle=e.doc.getElementById('autoShop');toggle.checked=false;await toggle.fire('change');assert.deepEqual(e.storage.data.disabledShops,['amazon.com']);
+});
+test('settings page lists shops without a current-shop row and states the data scope',async()=>{
+ const e=ui(['controls','shopControls','exportLog','deleteLog','deleteAll','notice'],{...consent()});
+ await initOptions({doc:e.doc,chrome:e.chrome,download:()=>{}});
+ assert.doesNotMatch(e.id('controls').textContent,/Open a supported shop/);assert.match(e.id('shopControls').textContent,/amazon\.com/);
+ const html=await readFile(new URL('../options.html',import.meta.url),'utf8');
+ assert.match(html,/Turn off and delete my data/);assert.match(html,/Orders and payments aren't affected\./);assert.match(html,/mailto:support@munteok\.com/);
 });
 test('options export, delete log and delete-all use local data and reopen welcome',async()=>{
  const e=ui(['controls','shopControls','exportLog','deleteLog','deleteAll','notice'],{...consent(),trace:[{kind:'match_result',shop:'amazon.com',result:'same',ts:new Date().toISOString()}]});

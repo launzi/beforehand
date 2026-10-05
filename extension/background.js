@@ -4,7 +4,8 @@ import {sendRequest} from './core/sink.js';
 import {getSettings,requireConsent,hasConsent,appendTrace,RESULT_CACHE_MS,DAILY_AUTO_LIMIT,withStorageLock} from './core/storage.js';
 const selected=(r,c)=>c==='same'?(r?.kind==='same'?r.quote:null):([0,1].includes(c)&&r?.kind==='alternatives'?r.items[c]?.quote:null);
 const stripTokens=result=>JSON.parse(JSON.stringify(result,(key,value)=>['quoteToken','quoteExpiresAt'].includes(key)?undefined:value));
-const quoteSnapshot=q=>q && ({title:q.item.title,link:q.item.link,currency:q.currency,totalCost:q.totalCost,payNow:{total:q.payNow.total},dutyOnDelivery:{estimate:q.dutyOnDelivery.estimate}});
+const BREAKDOWN=['itemKrw','shippingKrw','serviceFeeKrw','paymentFeeKrw','fxRate'];
+const quoteSnapshot=q=>q && ({title:q.item.title,link:q.item.link,currency:q.currency,totalCost:q.totalCost,payNow:{total:q.payNow.total,...Object.fromEntries(BREAKDOWN.map(k=>[k,q.payNow[k]]))},dutyOnDelivery:{estimate:q.dutyOnDelivery.estimate}});
 // Search-priced quotes carry a shopping-results link that can change between lookups, so the link is not compared.
 const sameQuote=(a,b)=>a && b && a.title===b.item.title && a.currency===b.currency && a.totalCost===b.totalCost && a.payNow.total===b.payNow.total && a.dutyOnDelivery.estimate===b.dutyOnDelivery.estimate;
 const allQuotes=r=>r?.kind==='same'?[r.quote]:r?.kind==='alternatives'?r.items.map(i=>i.quote):[];
@@ -32,10 +33,11 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
    const state=await status(sender);
    return {onboarded:state.onboarded,autoCheck:state.autoCheck,shopEnabled:state.shopEnabled,destination:state.destination};
   }
-  if(!['match','open_checkout','checkout_snapshot','buy'].includes(msg?.type)) throw new MatchError('malformed');
+  if(!['match','open_checkout','checkout_snapshot','buy','open_options'].includes(msg?.type)) throw new MatchError('malformed');
   const checkoutPage=['checkout_snapshot','buy'].includes(msg.type);
   const checkoutURL=()=>chrome.runtime.getURL(`checkout.html?h=${encodeURIComponent(msg.handle)}&c=${encodeURIComponent(msg.choice)}`);
   let record;
+  if(msg?.type==='open_options') {await chrome.runtime.openOptionsPage?.();return {ok:true};}
   if(msg.type!=='match') {
    const {snapshots={}}=await session.get('snapshots');
    record=typeof msg.handle==='string' && Object.hasOwn(snapshots,msg.handle)?snapshots[msg.handle]:null;
@@ -61,18 +63,29 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
    return {error:'changed'};
   }
   const live=t=>t?.quoteToken && Date.parse(t.quoteExpiresAt)-60000>now();
-  // Returns a payable token for the displayed choice, or null when the offer no longer matches what the buyer saw.
+  async function saveToken(token) {
+   const {quoteTokens={}}=await session.get('quoteTokens');
+   if(Object.hasOwn(quoteTokens,msg.handle)) {quoteTokens[msg.handle]={...quoteTokens[msg.handle],[msg.choice]:token};await session.set({quoteTokens});}
+  }
+  // Resolves the displayed choice to {token}, {repriced} when the same item now costs a different amount,
+  // or {gone} when the offer no longer exists. A repriced choice is rebound and must be confirmed before paying.
   async function ensureToken() {
    const prior=record.snapshot.choices[msg.choice];
    const token=((await session.get('quoteTokens')).quoteTokens ?? {})[msg.handle]?.[msg.choice];
-   if(live(token)) return token;
+   if(live(token)) return {token};
    // The refreshed result may list the same offer under a different kind or position.
-   const next=allQuotes(await lookup(true)).find(c=>sameQuote(prior,c)),fresh=tokenOf(next);
-   if(!next) return null;
-   if(!live(fresh)) throw new MatchError('unavailable');
-   const {quoteTokens={}}=await session.get('quoteTokens');
-   if(Object.hasOwn(quoteTokens,msg.handle)) {quoteTokens[msg.handle]={...quoteTokens[msg.handle],[msg.choice]:fresh};await session.set({quoteTokens});}
-   return fresh;
+   const quotes=allQuotes(await lookup(true)),next=quotes.find(c=>sameQuote(prior,c));
+   if(next) {
+    const fresh=tokenOf(next);if(!live(fresh)) throw new MatchError('unavailable');
+    await saveToken(fresh);return {token:fresh};
+   }
+   const moved=quotes.find(c=>c.item.title===prior.title && c.currency===prior.currency),fresh=tokenOf(moved);
+   if(!moved || !live(fresh)) return {gone:true};
+   const {snapshots={}}=await session.get('snapshots');
+   if(!Object.hasOwn(snapshots,msg.handle)) return {gone:true};
+   snapshots[msg.handle].snapshot.choices[msg.choice]=quoteSnapshot(moved);await session.set({snapshots});
+   record=snapshots[msg.handle];await saveToken(fresh);
+   return {repriced:{previous:prior,snapshot:record.snapshot.choices[msg.choice],expiresAt:fresh.quoteExpiresAt}};
   }
   if(msg.type==='open_checkout') {
    await stillAllowed();
@@ -85,8 +98,10 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
   if(msg.type==='checkout_snapshot') {
    await stillAllowed();
    // Refresh a cached (token-free) quote while the page loads, so a changed price shows before the buyer types.
-   if(!await ensureToken()) return changed();
-   return {snapshot:record.snapshot.choices[msg.choice],seller:'Munteok',destination:record.snapshot.destination};
+   const r=await ensureToken();
+   if(r.gone) return changed();
+   if(r.repriced) {await changed();return {...r.repriced,seller:'Munteok',destination:record.snapshot.destination};}
+   return {snapshot:record.snapshot.choices[msg.choice],expiresAt:r.token.quoteExpiresAt,seller:'Munteok',destination:record.snapshot.destination};
   }
   async function lookup(fresh=false) {
    if(!fresh) {
@@ -136,8 +151,10 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
   checkoutRequest({quoteToken:'VALIDATION_ONLY_TOKEN',email:msg.email,name:msg.name,method:msg.method});
   const prior=record.snapshot.choices[msg.choice];
   if(!['same',0,1].includes(msg.choice) || !prior) return {error:'changed'};
-  const token=await ensureToken();
-  if(!token) return changed();
+  const r=await ensureToken();
+  if(r.gone) return changed();
+  if(r.repriced) {await changed();return {error:'changed',...r.repriced};}
+  const {token}=r;
   await stillAllowed();
   const {url}=await send(checkoutRequest({quoteToken:token.quoteToken,email:msg.email,name:msg.name,method:msg.method}));
   await stillAllowed(); await chrome.tabs.update(sender.tab.id,{url});

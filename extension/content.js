@@ -22,7 +22,7 @@
      if(alive()) {handle=reply?.handle;instance.setState({...reply,view:['same','alternatives','none','cant_ship','paused'].includes(reply?.kind)?reply.kind:'busy',local,destination:status.destination});}
     }catch {if(alive())instance.setState({view:'busy'});}finally{checking=false;}
    }
-   const instance=card.mount(doc,{onCheck:()=>check(true),onBuy:async choice=>{
+   const instance=card.mount(doc,{onCheck:()=>check(true),onSettings:()=>{void sendMessage({type:'open_options'}).catch?.(()=>{});},onBuy:async choice=>{
     if(!alive())return;
     try {const reply=await sendMessage({type:'open_checkout',handle,choice});if(alive())instance.setState({view:reply?.ok?'opened':reply?.error==='changed'?'changed':'busy'});}
     catch {if(alive())instance.setState({view:'busy'});}
