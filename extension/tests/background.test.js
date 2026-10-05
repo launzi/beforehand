@@ -42,6 +42,15 @@ test('second identical lookup uses cache and disk contains no tokens',async()=>{
  const resumed=createBackground({chrome:a.chrome,fetchImpl:async()=>{throw Error('cache miss');},now:a.clock});
  assert.equal((await resumed.onMessage(match,sender)).kind,'same');
 });
+// An update that adds response fields must not keep showing results cached by the older version for a day.
+test('cache entries written before the current schema are ignored',async()=>{
+ const a=env(); await a.bg.onMessage(match,sender);
+ a.storage.data.resultCache=a.storage.data.resultCache.map(({v,...old})=>old);
+ const calls=[];
+ const updated=createBackground({chrome:a.chrome,now:a.clock,fetchImpl:async(url,init)=>{calls.push(1);return response({kind:'same',quote:quote(),titleEn:'Anua Toner 250ml',matchPercent:93});}});
+ const result=await updated.onMessage(match,sender);
+ assert.equal(calls.length,1); assert.equal(result.matchPercent,93);
+});
 test('Buy with expired token refreshes then opens Stripe',async()=>{
  const a=env(undefined,[{kind:'same',quote:quote({quoteExpiresAt:'2026-10-03T09:00:30Z'})},{kind:'same',quote:quote({quoteToken:'FAKE_NEW_TOKEN_12345'})},{method:'card',url:'https://checkout.stripe.com/c/pay/cs_x'}]);
  const {handle}=await a.bg.onMessage(match,sender); assert.deepEqual(await buyFrom(a.bg,a,handle),{ok:true});

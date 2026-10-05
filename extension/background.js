@@ -1,7 +1,7 @@
 import {shopFor,defaultDestination} from './core/shops.js';
 import {matchRequest,checkoutRequest,MatchError,parseMatchResponse} from './core/match.js';
 import {sendRequest} from './core/sink.js';
-import {getSettings,requireConsent,hasConsent,appendTrace,RESULT_CACHE_MS,DAILY_AUTO_LIMIT,withStorageLock} from './core/storage.js';
+import {getSettings,requireConsent,hasConsent,appendTrace,RESULT_CACHE_MS,RESULT_CACHE_SCHEMA,DAILY_AUTO_LIMIT,withStorageLock} from './core/storage.js';
 const selected=(r,c)=>c==='same'?(r?.kind==='same'?r.quote:null):([0,1].includes(c)&&r?.kind==='alternatives'?r.items[c]?.quote:null);
 const stripTokens=result=>JSON.parse(JSON.stringify(result,(key,value)=>['quoteToken','quoteExpiresAt'].includes(key)?undefined:value));
 const BREAKDOWN=['itemKrw','shippingKrw','serviceFeeKrw','paymentFeeKrw','fxRate'];
@@ -22,7 +22,7 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
  }
  async function cacheRead(key) {
   const {resultCache=[]}=await storage.get('resultCache');
-  const entries=Array.isArray(resultCache)?resultCache.filter(e=>e && now()-e.at<RESULT_CACHE_MS && e.at<=now()).slice(-200):[];
+  const entries=Array.isArray(resultCache)?resultCache.filter(e=>e && e.v===RESULT_CACHE_SCHEMA && now()-e.at<RESULT_CACHE_MS && e.at<=now()).slice(-200):[];
   const entry=entries.find(e=>e.key===key);
   if(!entry) return null;
   try {return parseMatchResponse(entry.result);} catch {return null;}
@@ -122,8 +122,8 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
    await stillAllowed();
    await withStorageLock(storage,async()=>{
     await stillAllowed(); const {resultCache=[]}=await storage.get('resultCache');
-    const entries=(Array.isArray(resultCache)?resultCache:[]).filter(e=>e.key!==key && now()-e.at<RESULT_CACHE_MS);
-    entries.push({key,at:now(),result:stripTokens(result)}); await storage.set({resultCache:entries.slice(-200)});
+    const entries=(Array.isArray(resultCache)?resultCache:[]).filter(e=>e.key!==key && e.v===RESULT_CACHE_SCHEMA && now()-e.at<RESULT_CACHE_MS);
+    entries.push({key,v:RESULT_CACHE_SCHEMA,at:now(),result:stripTokens(result)}); await storage.set({resultCache:entries.slice(-200)});
    });
    // A deleted log stays deleted even when an earlier request completes.
    await appendTrace(storage,{kind:'match_result',shop:state.shop.host,result:result.kind},now(),epoch);
