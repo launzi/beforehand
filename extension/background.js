@@ -5,11 +5,14 @@ import {getSettings,requireConsent,hasConsent,appendTrace,RESULT_CACHE_MS,DAILY_
 const selected=(r,c)=>c==='same'?(r?.kind==='same'?r.quote:null):([0,1].includes(c)&&r?.kind==='alternatives'?r.items[c]?.quote:null);
 const stripTokens=result=>JSON.parse(JSON.stringify(result,(key,value)=>['quoteToken','quoteExpiresAt'].includes(key)?undefined:value));
 const quoteSnapshot=q=>q && ({title:q.item.title,link:q.item.link,currency:q.currency,totalCost:q.totalCost,payNow:{total:q.payNow.total},dutyOnDelivery:{estimate:q.dutyOnDelivery.estimate}});
-const sameQuote=(a,b)=>a && b && a.title===b.item.title && a.link===b.item.link && a.currency===b.currency && a.totalCost===b.totalCost && a.payNow.total===b.payNow.total && a.dutyOnDelivery.estimate===b.dutyOnDelivery.estimate;
+// Search-priced quotes carry a shopping-results link that can change between lookups, so the link is not compared.
+const sameQuote=(a,b)=>a && b && a.title===b.item.title && a.currency===b.currency && a.totalCost===b.totalCost && a.payNow.total===b.payNow.total && a.dutyOnDelivery.estimate===b.dutyOnDelivery.estimate;
+const allQuotes=r=>r?.kind==='same'?[r.quote]:r?.kind==='alternatives'?r.items.map(i=>i.quote):[];
+const tokenOf=q=>q?.quoteToken && q.quoteExpiresAt?{quoteToken:q.quoteToken,quoteExpiresAt:q.quoteExpiresAt}:null;
 export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
- const storage=chrome.storage.local,session=chrome.storage.session,memory=new Map(); let queue=Promise.resolve();
+ const storage=chrome.storage.local,session=chrome.storage.session; let queue=Promise.resolve();
  const ready=session.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});
- chrome.storage.onChanged?.addListener((changes,area)=>{if(area==='local' && (changes.consent || changes.destination)) memory.clear();});
+ chrome.storage.onChanged?.addListener((changes,area)=>{if(area==='local' && (changes.consent || changes.destination)) void session.remove?.('quoteTokens');});
  const send=req=>sendRequest(req,{storage,fetchImpl});
  async function status(sender) {
   let host=''; try {const u=new URL(sender.url ?? sender.tab?.url);if(u.protocol==='https:') host=u.hostname;} catch { /* Untrusted or absent sender. */ }
@@ -53,6 +56,24 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
    const current=await requireConsent(storage),s=await status(context);
    if(current.revision!==consent.revision || !s.shopEnabled || s.destination!==state.destination || (msg.type==='match' && msg.manual!==true && !s.autoCheck)) throw new MatchError('unavailable');
   }
+  async function changed() {
+   try {await chrome.tabs.sendMessage(record.tabId,{type:'quote_changed',handle:msg.handle},record.documentId?{documentId:record.documentId}:{frameId:0});} catch { /* The source document may have closed. */ }
+   return {error:'changed'};
+  }
+  const live=t=>t?.quoteToken && Date.parse(t.quoteExpiresAt)-60000>now();
+  // Returns a payable token for the displayed choice, or null when the offer no longer matches what the buyer saw.
+  async function ensureToken() {
+   const prior=record.snapshot.choices[msg.choice];
+   const token=((await session.get('quoteTokens')).quoteTokens ?? {})[msg.handle]?.[msg.choice];
+   if(live(token)) return token;
+   // The refreshed result may list the same offer under a different kind or position.
+   const next=allQuotes(await lookup(true)).find(c=>sameQuote(prior,c)),fresh=tokenOf(next);
+   if(!next) return null;
+   if(!live(fresh)) throw new MatchError('unavailable');
+   const {quoteTokens={}}=await session.get('quoteTokens');
+   if(Object.hasOwn(quoteTokens,msg.handle)) {quoteTokens[msg.handle]={...quoteTokens[msg.handle],[msg.choice]:fresh};await session.set({quoteTokens});}
+   return fresh;
+  }
   if(msg.type==='open_checkout') {
    await stillAllowed();
    const tab=await chrome.tabs.create({url:checkoutURL()});
@@ -62,11 +83,10 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
    return {ok:true};
   }
   if(msg.type==='checkout_snapshot') {
-   await stillAllowed();return {snapshot:record.snapshot.choices[msg.choice],seller:'Munteok',destination:record.snapshot.destination};
-  }
-  async function changed() {
-   try {await chrome.tabs.sendMessage(record.tabId,{type:'quote_changed',handle:msg.handle},record.documentId?{documentId:record.documentId}:{frameId:0});} catch { /* The source document may have closed. */ }
-   return {error:'changed'};
+   await stillAllowed();
+   // Refresh a cached (token-free) quote while the page loads, so a changed price shows before the buyer types.
+   if(!await ensureToken()) return changed();
+   return {snapshot:record.snapshot.choices[msg.choice],seller:'Munteok',destination:record.snapshot.destination};
   }
   async function lookup(fresh=false) {
    if(!fresh) {
@@ -99,31 +119,27 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
    const result=await lookup(),publicResult=stripTokens(result);
    if(!['same','alternatives'].includes(result.kind)) return publicResult;
    if(!Number.isInteger(sender.tab?.id)) throw new MatchError('unavailable');
-   const handle=crypto.randomUUID(),choices={};
-   for(const choice of ['same',0,1]) {const q=selected(result,choice);if(q)choices[choice]=quoteSnapshot(q);}
-   const {snapshots={}}=await session.get('snapshots');
+   const handle=crypto.randomUUID(),choices={},tokens={};
+   for(const choice of ['same',0,1]) {const q=selected(result,choice);if(q){choices[choice]=quoteSnapshot(q);const t=tokenOf(q);if(t)tokens[choice]=t;}}
+   const {snapshots={},quoteTokens={}}=await session.get(['snapshots','quoteTokens']);
    snapshots[handle]={tabId:sender.tab.id,documentId:sender.documentId ?? null,shop:state.shop.host,revision:consent.revision,
     snapshot:{name:args.name,brand:args.brand ?? '',destination:args.destination,choices}};
    const handles=Object.keys(snapshots);
-   for(const old of handles.slice(0,Math.max(0,handles.length-200))) {delete snapshots[old];memory.delete(old);}
-   await session.set({snapshots});
-   memory.set(handle,result);
+   for(const old of handles.slice(0,Math.max(0,handles.length-200))) {delete snapshots[old];delete quoteTokens[old];}
+   for(const old of Object.keys(quoteTokens)) if(!Object.hasOwn(snapshots,old)) delete quoteTokens[old];
+   quoteTokens[handle]=tokens;
+   // Tokens live in trusted, in-memory session storage so an idle worker restart does not force a re-check mid-checkout.
+   await session.set({snapshots,quoteTokens});
    return {...publicResult,handle};
   }
   // Validate identity before spending a refresh; never persist it.
   checkoutRequest({quoteToken:'VALIDATION_ONLY_TOKEN',email:msg.email,name:msg.name,method:msg.method});
   const prior=record.snapshot.choices[msg.choice];
   if(!['same',0,1].includes(msg.choice) || !prior) return {error:'changed'};
-  let q=selected(memory.get(msg.handle),msg.choice);
-  if(!q?.quoteToken || !(Date.parse(q.quoteExpiresAt)-60000>now())) {
-   const fresh=await lookup(true),next=selected(fresh,msg.choice);
-   if(!sameQuote(prior,next)) return changed();
-   memory.set(msg.handle,fresh);q=next;
-  }
-  if(!sameQuote(prior,q)) return changed();
-  if(!q.quoteToken || !(Date.parse(q.quoteExpiresAt)-60000>now())) throw new MatchError('unavailable');
+  const token=await ensureToken();
+  if(!token) return changed();
   await stillAllowed();
-  const {url}=await send(checkoutRequest({quoteToken:q.quoteToken,email:msg.email,name:msg.name,method:msg.method}));
+  const {url}=await send(checkoutRequest({quoteToken:token.quoteToken,email:msg.email,name:msg.name,method:msg.method}));
   await stillAllowed(); await chrome.tabs.update(sender.tab.id,{url});
   await appendTrace(storage,{kind:'checkout_opened',shop:state.shop.host},now()); return {ok:true};
  }

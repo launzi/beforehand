@@ -13,7 +13,7 @@ Choose auto-check or Only when I click at setup. Checks send product name, brand
 
 Korea amounts come from the quote engine. The card's local price comes from the shop page; savings are computed on your device when currencies match.
 
-Buy from Korea opens an extension page. Your email and name go to Korea Concierge to create an order when you click Continue to payment; they are not stored by the extension. Quote tokens stay in service-worker memory and are sent only to Korea Concierge to start checkout. A Buy refresh re-checks the same product name, brand and delivery country. If the selected quote changed, check again. That checkout tab then opens Stripe. Seller: Munteok. Duty and tax are estimated and paid on delivery.
+Buy from Korea opens an extension page. Your email and name go to Korea Concierge to create an order when you click Continue to payment; they are not stored by the extension. Quote tokens are kept in Chrome's in-memory session storage and are sent only to Korea Concierge to start checkout. A Buy refresh re-checks the same product name, brand and delivery country. If the selected quote changed, check again. That checkout tab then opens Stripe or PayPal. Seller: Munteok. Duty and tax are estimated and paid on delivery.
 
 Supports 22 shops in the US, UK, Japan, Taiwan and Hong Kong, with delivery to those countries and China. Disable checks per shop or globally. Export or delete the local log, or turn off and delete everything in Settings.
 

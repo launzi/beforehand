@@ -9,8 +9,8 @@ test('manifest asks only for storage, the shops and KC',()=>{
  assert.ok(m.host_permissions.includes('https://concierge.youngji.kim/*'));
  assert.doesNotMatch(JSON.stringify(m),/history|tabs|<all_urls>|scripting|web_accessible|openai|anthropic|nebius/);
  assert.match(m.content_security_policy.extension_pages,/connect-src https:\/\/concierge\.youngji\.kim$/);
- assert.equal(m.version,'1.1.0');
- assert.equal(JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url),'utf8')).version,'1.1.0');
+ assert.equal(m.version,'1.1.1');
+ assert.equal(JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url),'utf8')).version,'1.1.1');
  assert.match(m.description,/Sends only the product name, brand and your country/);
  assert.ok(m.description.length<=132); assert.equal(m.name,'beforehand');
  assert.deepEqual(m.content_scripts[0].js,['core/extract.js','core/card.js','content.js']);

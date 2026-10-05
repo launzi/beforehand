@@ -35,7 +35,7 @@ test('privacy and listing describe the checkout boundary, quote refresh and amou
  for(const file of ['PRIVACY.md','STORE_LISTING.md']) {
   const text=await readFile(new URL('../'+file,import.meta.url),'utf8');
   assert.match(text,/extension page/);assert.match(text,/same product name, brand and delivery country/);
-  assert.match(text,/tokens stay in service-worker memory and are sent only to Korea Concierge to start checkout/);
+  assert.match(text,/tokens are kept in Chrome's in-memory session storage.*sent only to Korea Concierge to start checkout/);
   assert.match(text,/local price.*shop page/i);assert.match(text,/savings.*computed on your device/i);
   assert.match(text,/Korea amounts come from the quote engine/);
   assert.match(text,/email and name.*Korea Concierge to create (?:the|your|an) order/);
