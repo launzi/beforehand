@@ -1,5 +1,5 @@
 import {scrubText} from './scrub.js';
-export const KC_ENDPOINT='https://concierge.youngji.kim/api/mcp';
+export const KC_API='https://concierge.youngji.kim/api/commerce/v1';
 export const DESTINATIONS=Object.freeze(['US','GB','JP','CN','TW','HK']);
 export class MatchError extends Error {
  constructor(code='malformed') {super(({rate_limited:'Too many checks. Try again in a few minutes.',unavailable:'Korea check is unavailable right now.',malformed:'Korea check returned an invalid response.'})[code]);this.code=code;}
@@ -16,22 +16,20 @@ function matchArgs({name,brand,destination,fresh=false}) {
  args.destination=destination; if(fresh) args.fresh=true;
  return args;
 }
-function checkoutArgs({quoteToken,email,name}) {
+function checkoutArgs({quoteToken,email,name,method}) {
  text(quoteToken,10,8000); email=text(email,1,200).trim(); name=text(name,1,120).trim();
- if(!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) malformed();
- return {quoteToken,email,name};
+ if(!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !['card','paypal'].includes(method)) malformed();
+ return {quoteToken,email,name,method};
 }
-const request=(kind,name,args)=>Object.freeze({kind,url:KC_ENDPOINT,method:'POST',body:JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/call',params:{name,arguments:args}})});
-export const matchRequest=input=>request('match','match_korea_product',matchArgs(input));
-export const checkoutRequest=input=>request('checkout','start_bestseller_checkout',checkoutArgs(input));
+const request=(kind,path,args)=>Object.freeze({kind,url:KC_API+path,method:'POST',body:JSON.stringify(args)});
+export const matchRequest=input=>request('match','/matches',matchArgs(input));
+export const checkoutRequest=input=>request('checkout','/checkout',checkoutArgs(input));
 export function validRequest(req) {
  try {
-  if(!keys(req,['kind','url','method','body']) || req.url!==KC_ENDPOINT || req.method!=='POST' || typeof req.body!=='string') return false;
-  const rpc=JSON.parse(req.body);
-  if(!keys(rpc,['jsonrpc','id','method','params']) || rpc.jsonrpc!=='2.0' || rpc.id!==1 || rpc.method!=='tools/call' || !keys(rpc.params,['name','arguments'])) return false;
+  if(!keys(req,['kind','url','method','body']) || req.method!=='POST' || typeof req.body!=='string') return false;
   const match=req.kind==='match'; if(!match && req.kind!=='checkout') return false;
-  if(rpc.params.name!==(match?'match_korea_product':'start_bestseller_checkout')) return false;
-  const args=rpc.params.arguments, canonical=match?matchArgs(args):checkoutArgs(args);
+  if(req.url!==KC_API+(match?'/matches':'/checkout')) return false;
+  const args=JSON.parse(req.body),canonical=match?matchArgs(args):checkoutArgs(args);
   return keys(args,Object.keys(canonical)) && Object.keys(canonical).every(k=>args[k]===canonical[k]);
  } catch {return false;}
 }
@@ -51,18 +49,9 @@ export function sanitizeQuote(raw) {
   return quote;
  } catch(e) {if(e instanceof MatchError) throw e; malformed();}
 }
-function dataFromRPC(raw) {
- if(!raw || typeof raw!=='object') malformed();
- if(raw.error) throw new MatchError(raw.error.code===-32000 && /rate limit/i.test(String(raw.error.message))?'rate_limited':'unavailable');
- const result=raw.result; if(!result || typeof result!=='object') malformed();
- if(result.isError) throw new MatchError('unavailable');
- if(result.structuredContent!=null) return result.structuredContent;
- const texts=(result.content ?? []).filter(v=>v?.type==='text'); if(texts.length!==1) malformed();
- try {return JSON.parse(texts[0].text);} catch {malformed();}
-}
-export function parseMatchRPC(raw) {
+export function parseMatchResponse(data) {
  try {
-  const data=dataFromRPC(raw);
+  if(!data || typeof data!=='object' || Array.isArray(data)) malformed();
   if(data.kind==='rate_limited' || data.kind==='unavailable') throw new MatchError(data.kind);
   if(data.kind==='same') return {kind:'same',quote:sanitizeQuote(data.quote)};
   if(data.kind==='alternatives') {
@@ -73,7 +62,10 @@ export function parseMatchRPC(raw) {
   malformed();
  } catch(e) {if(e instanceof MatchError) throw e; malformed();}
 }
-export function parseCheckoutRPC(raw) {
- const data=dataFromRPC(raw),url=safeLink(data?.checkoutUrl);
- if(!url || new URL(url).host!=='checkout.stripe.com') malformed(); return {checkoutUrl:url};
+export function parseCheckoutResponse(data) {
+ const url=safeLink(text(data?.url,1,10000));
+ if(!url || !['card','paypal'].includes(data.method) || !['https://checkout.stripe.com','https://www.paypal.com','https://www.sandbox.paypal.com'].includes(new URL(url).origin)) malformed();
+ const result={method:data.method,url};
+ if(data.orderId!==undefined) result.orderId=text(data.orderId,1,200);
+ return result;
 }

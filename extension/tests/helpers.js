@@ -11,4 +11,4 @@ export const quote=(overrides={})=>({seller:'Munteok',item:{title:'Anua Toner 25
  dutyOnDelivery:{estimate:2,note:'Paid on delivery',lines:[{label:'Duty',rate:'10%',amount:2,source:'Engine fixture'}]},
  totalCost:32,localPrice:null,verdict:null,warnings:[],quoteToken:'FAKE_QUOTE_TOKEN_0123456789',quoteExpiresAt:'2099-01-01T00:00:00.000Z',...overrides});
 export const rpc=data=>({jsonrpc:'2.0',id:1,result:{structuredContent:data}});
-export const response=data=>({ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>rpc(data)});
+export const response=data=>({ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>data});

@@ -1,5 +1,5 @@
 import {shopFor,defaultDestination} from './core/shops.js';
-import {matchRequest,checkoutRequest,MatchError,parseMatchRPC} from './core/match.js';
+import {matchRequest,checkoutRequest,MatchError,parseMatchResponse} from './core/match.js';
 import {sendRequest} from './core/sink.js';
 import {getSettings,requireConsent,hasConsent,appendTrace,RESULT_CACHE_MS,DAILY_AUTO_LIMIT,withStorageLock} from './core/storage.js';
 const selected=(r,c)=>c==='same'?(r?.kind==='same'?r.quote:null):([0,1].includes(c)&&r?.kind==='alternatives'?r.items[c]?.quote:null);
@@ -21,7 +21,7 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
   const entries=Array.isArray(resultCache)?resultCache.filter(e=>e && now()-e.at<RESULT_CACHE_MS && e.at<=now()).slice(-200):[];
   const entry=entries.find(e=>e.key===key);
   if(!entry) return null;
-  try {return parseMatchRPC({result:{structuredContent:entry.result}});} catch {return null;}
+  try {return parseMatchResponse(entry.result);} catch {return null;}
  }
  async function run(msg,sender) {
   await ready;
@@ -45,7 +45,7 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
   const state=await status(context);
   if(!state.onboarded || !state.shopEnabled || (sender.frameId!=null && sender.frameId!==0)) throw new MatchError('unavailable');
   const input=record?record.snapshot:{name:msg.product?.name,brand:msg.product?.brand,destination:state.destination};
-  const req=matchRequest(input),args=JSON.parse(req.body).params.arguments;
+  const req=matchRequest(input),args=JSON.parse(req.body);
   const key=JSON.stringify([args.name,args.brand ?? '',args.destination]);
   const consent=await requireConsent(storage);
   if(record && (record.revision!==consent.revision || record.snapshot.destination!==state.destination)) throw new MatchError('unavailable');
@@ -111,7 +111,7 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
    return {...publicResult,handle};
   }
   // Validate identity before spending a refresh; never persist it.
-  checkoutRequest({quoteToken:'VALIDATION_ONLY_TOKEN',email:msg.email,name:msg.name});
+  checkoutRequest({quoteToken:'VALIDATION_ONLY_TOKEN',email:msg.email,name:msg.name,method:msg.method});
   const prior=record.snapshot.choices[msg.choice];
   if(!['same',0,1].includes(msg.choice) || !prior) return {error:'changed'};
   let q=selected(memory.get(msg.handle),msg.choice);
@@ -123,8 +123,8 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
   if(!sameQuote(prior,q)) return changed();
   if(!q.quoteToken || !(Date.parse(q.quoteExpiresAt)-60000>now())) throw new MatchError('unavailable');
   await stillAllowed();
-  const {checkoutUrl}=await send(checkoutRequest({quoteToken:q.quoteToken,email:msg.email,name:msg.name}));
-  await stillAllowed(); await chrome.tabs.update(sender.tab.id,{url:checkoutUrl});
+  const {url}=await send(checkoutRequest({quoteToken:q.quoteToken,email:msg.email,name:msg.name,method:msg.method}));
+  await stillAllowed(); await chrome.tabs.update(sender.tab.id,{url});
   await appendTrace(storage,{kind:'checkout_opened',shop:state.shop.host},now()); return {ok:true};
  }
  async function onMessage(msg,sender={}) {
