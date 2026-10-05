@@ -24,11 +24,10 @@ test('buyer fields and the chosen method go only in the buy message and stay fil
  assert.deepEqual(a.messages,[{type:'checkout_snapshot',handle:'opaque-handle',choice:0},{type:'buy',handle:'opaque-handle',choice:0,email:'buyer@example.com',name:'Buyer Identity',method:'card'}]);
  assert.equal(a.id('pay').textContent,'Opening Stripe…');
 });
-test('PayPal selection changes the provider line, the opening label and the buy method',async()=>{
+test('PayPal selection changes the opening label, the switch link and the buy method',async()=>{
  let finish;const pending=new Promise(r=>{finish=r;});const a=await setup(()=>pending);
- assert.match(a.id('provider').textContent,/You'll pay on Stripe\. beforehand never sees your card details\./);
  a.id('methodCard').checked=false;a.id('methodPaypal').checked=true;await a.id('methodPaypal').fire('change');
- assert.match(a.id('provider').textContent,/You'll pay on PayPal\./);
+ assert.equal(a.id('switchMethod').textContent,'Use card instead');
  fill(a);const first=submit(a);await submit(a);
  assert.equal(a.messages.length,2);assert.equal(a.messages[1].method,'paypal');assert.equal(a.id('pay').textContent,'Opening PayPal…');assert.equal(a.id('pay').disabled,true);
  finish({ok:true});await first;
@@ -38,7 +37,7 @@ test('a failure keeps the details, says nothing was charged and offers the other
  assert.equal(a.id('error').textContent,"Couldn't open the payment page. You haven't been charged.");assert.equal(a.id('error').hidden,false);
  assert.equal(a.id('pay').textContent,'Try again');assert.equal(a.id('pay').disabled,false);
  assert.equal(a.id('email').value,'buyer@example.com');assert.equal(a.id('switchMethod').hidden,false);assert.equal(a.id('switchMethod').textContent,'Use PayPal instead');
- await a.id('switchMethod').fire();assert.equal(a.id('methodPaypal').checked,true);assert.match(a.id('provider').textContent,/PayPal/);
+ await a.id('switchMethod').fire();assert.equal(a.id('methodPaypal').checked,true);assert.equal(a.id('switchMethod').textContent,'Use card instead');
 });
 test('rate limits show retry guidance without offering a method switch',async()=>{
  const a=await setup({kind:'rate_limited'});fill(a);await submit(a);
@@ -70,7 +69,7 @@ test('checkout HTML: extension-origin inputs, one pay button, methods, trust lin
  assert.match(html,/type="email"/);assert.match(html,/autocomplete="name"/);
  assert.match(html,/<button id="pay" type="submit"[^>]*>Continue to payment<\/button>/);
  assert.match(html,/type="radio" name="method" id="methodCard" value="card" checked/);assert.match(html,/type="radio" name="method" id="methodPaypal" value="paypal"/);
- assert.match(html,/Out of stock in Korea\? Full refund\./);
+ assert.match(html,/Out of stock in Korea\? Full refund\./);assert.match(html,/Card<small>Secure page by Stripe<\/small>/);assert.match(html,/PayPal<small>Sign in to PayPal<\/small>/);assert.match(html,/beforehand never sees your card details\./);
  assert.match(html,/href="mailto:support@munteok\.com"/);
  const build=await readFile(new URL('../scripts/build.mjs',import.meta.url),'utf8');assert.match(build,/'checkout.html','checkout.js'/);
 });

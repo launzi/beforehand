@@ -6,12 +6,11 @@ export async function initCheckout({doc,chrome,location,now=()=>Date.now(),setIn
  const choice=raw==='same'?'same':raw==='0'?0:raw==='1'?1:null;
  const id=name=>doc.getElementById(name);
  const form=id('checkoutForm'),pay=id('pay'),notice=id('notice'),error=id('error'),summary=id('summary'),expiry=id('expiry');
- const email=id('email'),name=id('name'),card=id('methodCard'),paypal=id('methodPaypal'),provider=id('provider'),switcher=id('switchMethod');
+ const email=id('email'),name=id('name'),card=id('methodCard'),paypal=id('methodPaypal'),switcher=id('switchMethod');
  const el=(tag,text,className)=>{const n=doc.createElement(tag);if(text!=null)n.textContent=text;if(className)n.className=className;return n;};
  let timer=null,expiresAt=null,submitting=false;
  const method=()=>paypal.checked?'paypal':'card';
  function showMethod() {
-  provider.textContent=`You'll pay on ${PROVIDERS[method()]}. beforehand never sees your card details.`;
   switcher.textContent=method()==='card'?'Use PayPal instead':'Use card instead';
  }
  function gone() {
