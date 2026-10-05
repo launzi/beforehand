@@ -35,12 +35,16 @@
    if(item.sameBrand!=null) tiles.push({key:'Brand',state:item.sameBrand?'same':'other',value:item.sameBrand?'Same':'Other'});
    if(item.sameType!=null) tiles.push({key:'Type',state:item.sameType?'same':'other',value:item.sameType?'Same':'Other'});
    if(item.size) {
-    if(source?.size && source.size.unit===item.size.unit) {const r=item.size.value/source.size.value;sizeSame=Math.abs(r-1)<=.15;tiles.push({key:'Size',state:sizeSame?'same':r>1?'better':'worse',value:fmtSize(item.size)});}
+    if(source?.size && source.size.unit===item.size.unit) {const r=item.size.value/source.size.value;sizeSame=Math.abs(r-1)<=.15+1e-9;tiles.push({key:'Size',state:sizeSame?'same':r>1?'better':'worse',value:fmtSize(item.size)});}
     else tiles.push({key:'Size',state:'other',value:fmtSize(item.size)});
    }
-   if(local) {const diff=Math.round((q.totalCost-local.price)*100)/100;tiles.push({key:'Price',state:diff<0?'better':diff>0?'worse':'same',value:diff<0?`▼ ${money(-diff,q.currency)}`:diff>0?`▲ ${money(diff,q.currency)}`:'Same'});}
+   // State comes from the exact difference; rounding is for display only. Prices in another currency are never compared.
+   if(local && local.currency===q.currency) {const diff=q.totalCost-local.price,shown=Math.abs(Math.round(diff*100)/100);tiles.push({key:'Price',state:diff<0?'better':diff>0?'worse':'same',value:diff<0?`▼ ${money(shown,q.currency)}`:diff>0?`▲ ${money(shown,q.currency)}`:'Same'});}
    return {item,tiles,sizeSame,total:q.totalCost,unit:item.size?q.totalCost/item.size.value:null,badges:[]};
   });
+  // Ranking across currencies would compare bare numbers, so badges need one currency throughout.
+  if(rows.some(r=>r.item.quote.currency!==rows[0].item.quote.currency)) return rows;
+  if(local && local.currency!==rows[0]?.item.quote.currency) local=null;
   const argmin=(list,f)=>list.reduce((best,r)=>best===null || f(r)<f(best)?r:best,null);
   const lowest=argmin(rows,r=>r.total);
   if(local && lowest && lowest.total<local.price && rows.filter(r=>r.total===lowest.total).length===1) lowest.badges.push('Lowest price');

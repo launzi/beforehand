@@ -79,6 +79,19 @@ test('badges need their inputs: no page price, mixed units or a single option hi
  const unknown=compareAlternatives([altItem({sameBrand:null,sameType:false,size:null})],{brand:null,typeEn:null,size:null},null);
  assert.deepEqual(unknown[0].tiles.map(t=>[t.key,t.state]),[['Type','other']]);
 });
+test('size at exactly -15% counts as the same size and can win Closest',()=>{
+ const [a,b]=compareAlternatives([altItem({sameBrand:null,sameType:null,size:ml(85),quote:quote({totalCost:20})}),altItem({sameBrand:null,sameType:null,size:ml(80),quote:quote({totalCost:21})})],{...source,size:ml(100)},null);
+ assert.equal(a.tiles.find(t=>t.key==='Size').state,'same');assert.ok(a.badges.includes('Closest'));assert.ok(!b.badges.includes('Closest'));
+});
+test('prices in different currencies are never compared or ranked',()=>{
+ const rows=compareAlternatives([altItem({quote:quote({totalCost:30})}),altItem({quote:quote({totalCost:20,currency:'GBP'})})],{...source,size:ml(100)},{price:25,currency:'USD'});
+ assert.deepEqual(rows.map(r=>r.badges),[[],[]]);
+ assert.equal(rows[1].tiles.some(t=>t.key==='Price'),false);
+});
+test('price state uses the exact difference, not the rounded one',()=>{
+ const [r]=compareAlternatives([altItem({quote:quote({totalCost:20})})],source,{price:20.004,currency:'USD'});
+ assert.equal(r.tiles.at(-1).state,'better');
+});
 test('alternatives card shows the reference row, title pair, tiles and badges; Korean title stands alone without English',()=>{
  const c=mount(documentFake());
  c.setState({view:'alternatives',source,local,items:[altItem(),altItem({titleEn:null,title:'라네즈 시카 슬리핑 마스크 60ml',quote:quote({totalCost:60.02}),size:ml(60)})]});
