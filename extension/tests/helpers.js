@@ -5,7 +5,8 @@ export class Store {
  async remove(keys) {for(const k of [].concat(keys)) delete this.data[k];}
  async clear() {this.data={};}
 }
-export const consent=()=>({consent:{accepted:true,version:4}});
+import {DISCLOSURE_VERSION} from '../core/storage.js';
+export const consent=()=>({consent:{accepted:true,version:DISCLOSURE_VERSION}});
 export const quote=(overrides={})=>({seller:'Munteok',item:{title:'Anua Toner 250ml',priceKrw:18000,link:'https://shop.example/product'},destination:'US',currency:'USD',
  payNow:{total:30,totalKrw:42000,itemKrw:18000,shippingKrw:18000,serviceFeeKrw:4000,paymentFeeKrw:2000,fxRate:1400},
  dutyOnDelivery:{estimate:2,note:'Paid on delivery',lines:[{label:'Duty',rate:'10%',amount:2,source:'Engine fixture'}]},

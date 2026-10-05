@@ -1,16 +1,16 @@
 import test from 'node:test'; import assert from 'node:assert/strict'; import {readFile,readdir} from 'node:fs/promises';
 import {initWelcome,renderDisclosure} from '../welcome.js'; import {initPopup} from '../popup.js'; import {initOptions} from '../options.js';
-import {Store,consent} from './helpers.js'; import {documentFake,all} from './dom.js'; import {DISCLOSURE_V4} from '../core/disclosure.js';
+import {Store,consent} from './helpers.js'; import {documentFake,all} from './dom.js'; import {DISCLOSURE} from '../core/disclosure.js';
 function ui(ids,data={}) {
  const doc=documentFake();for(const id of ids){const el=doc.createElement('div');el.id=id;doc.body.append(el);}
  const tabs=[],storage=new Store(data),chrome={storage:{local:storage},tabs:{query:async()=>[{}],create:async v=>tabs.push(v)},runtime:{getURL:p=>'chrome-extension://id/'+p}};
  return {doc,chrome,storage,tabs,id:id=>doc.getElementById(id)};
 }
 test('welcome renders the exact approved text with safe nodes and both choices accept v4',async()=>{
- const doc=documentFake(),root=doc.createElement('div');renderDisclosure(root,doc);assert.equal(root.textContent,DISCLOSURE_V4);
+ const doc=documentFake(),root=doc.createElement('div');renderDisclosure(root,doc);assert.equal(root.textContent,DISCLOSURE);
  for(const auto of [true,false]) {
   const e=ui(['disclosure','enable','notNow','welcomeActions','complete','shops']);await initWelcome({doc:e.doc,chrome:e.chrome});await e.id(auto?'enable':'notNow').fire();
-  assert.equal(e.storage.data.consent.version,4);assert.equal(e.storage.data.autoCheck,auto);assert.match(e.id('complete').textContent,/You're set/);assert.equal(all(e.id('shops')).filter(n=>n.tagName==='h3').length,5); // China ships but has no supported shop
+  assert.equal(e.storage.data.consent.version,5);assert.equal(e.storage.data.autoCheck,auto);assert.match(e.id('complete').textContent,/You're set/);assert.equal(all(e.id('shops')).filter(n=>n.tagName==='h3').length,5); // China ships but has no supported shop
  }
 });
 test('popup tolerates unavailable tab URL and persists global/destination controls',async()=>{

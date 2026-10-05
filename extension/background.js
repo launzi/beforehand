@@ -165,9 +165,10 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
   try {return await task;} catch(e) {return {kind:e instanceof MatchError?e.code:'unavailable'};}
  }
  async function onInstalled({reason}) {
-  // Clear retired provider credentials and old logs on the v4 migration.
+  // v3 and older held retired provider credentials, so updating from them clears local data.
+  // From v4 on, settings and the log are kept and only fresh consent is asked for.
   const value=await storage.get('consent');
-  if(reason==='update' && !hasConsent(value)) await storage.clear();
+  if(reason==='update' && !hasConsent(value) && !(value?.consent?.version>=4)) await storage.clear();
   if(reason==='install' || (reason==='update' && !hasConsent(value))) await chrome.tabs.create({url:chrome.runtime.getURL('welcome.html')});
  }
  return {onMessage,onInstalled};

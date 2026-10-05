@@ -1,6 +1,6 @@
 import {DESTINATIONS} from './match.js';
 import {shopFor} from './shops.js';
-export const DISCLOSURE_VERSION=4;
+export const DISCLOSURE_VERSION=5;
 export const RESULT_CACHE_MS=24*3600*1000, DAILY_AUTO_LIMIT=200, TRACE_LIMIT=500, TRACE_DAYS=30;
 export const hasConsent=value=>value?.consent?.accepted===true && value.consent.version===DISCLOSURE_VERSION;
 export async function requireConsent(storage) {

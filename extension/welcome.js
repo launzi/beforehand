@@ -1,10 +1,10 @@
-import {DISCLOSURE_V4} from './core/disclosure.js';
+import {DISCLOSURE} from './core/disclosure.js';
 import {acceptConsent} from './core/storage.js';
 import {SHOPS} from './core/shops.js';
 export const COUNTRIES={US:'United States',GB:'United Kingdom',JP:'Japan',CN:'China',TW:'Taiwan',HK:'Hong Kong'};
 export function renderDisclosure(root,doc) {
  root.replaceChildren();
- DISCLOSURE_V4.split('\n\n').forEach((block,index)=>{
+ DISCLOSURE.split('\n\n').forEach((block,index)=>{
   if(index)root.append('\n\n');const section=doc.createElement('section');const lines=block.split('\n');let list=null;
   lines.forEach((line,i)=>{
    if(i && !(line.startsWith('• ') && list))section.append('\n');

@@ -69,6 +69,14 @@ test('onInstalled opens welcome for install and stale consent updates only',asyn
  await acceptConsent(a.storage,{autoCheck:false}); await a.bg.onInstalled({reason:'update'});
  assert.equal(a.tabs.length,2); assert.equal(a.tabs[0].url,'chrome-extension://id/welcome.html'); assert.equal(a.storage.data.providerKey,undefined);
 });
+test('updating from v4 keeps settings and the log, stops checks and asks for v5 consent',async()=>{
+ const trace=[{kind:'match_result',shop:'amazon.com',result:'same',ts:'2026-10-03T08:00:00.000Z'}];
+ const a=env({consent:{accepted:true,version:4,revision:'old'},autoCheck:true,destination:'GB',disabledShops:['target.com'],trace});
+ await a.bg.onInstalled({reason:'update'});
+ assert.deepEqual(a.tabs,[{url:'chrome-extension://id/welcome.html'}]);
+ assert.equal(a.storage.data.destination,'GB');assert.deepEqual(a.storage.data.disabledShops,['target.com']);assert.deepEqual(a.storage.data.trace,trace);
+ assert.equal((await a.bg.onMessage(match,sender)).kind,'unavailable');assert.equal(a.calls.length,0);
+});
 test('deleting all data during fetch prevents cache/trace resurrection',async()=>{
  const a=env(); const bg=createBackground({chrome:a.chrome,fetchImpl:async()=>{await deleteAllData(a.storage);return response({kind:'same',quote:quote()});}});
  assert.equal((await bg.onMessage(match,sender)).kind,'unavailable'); assert.deepEqual(a.storage.data,{});
