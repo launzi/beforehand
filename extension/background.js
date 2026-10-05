@@ -83,7 +83,7 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
    if(!moved || !live(fresh)) return {gone:true};
    const {snapshots={}}=await session.get('snapshots');
    if(!Object.hasOwn(snapshots,msg.handle)) return {gone:true};
-   snapshots[msg.handle].snapshot.choices[msg.choice]=quoteSnapshot(moved);await session.set({snapshots});
+   snapshots[msg.handle].snapshot.choices[msg.choice]={...quoteSnapshot(moved),titleEn:prior.titleEn ?? null,matchPercent:prior.matchPercent ?? null};await session.set({snapshots});
    record=snapshots[msg.handle];await saveToken(fresh);
    return {repriced:{previous:prior,snapshot:record.snapshot.choices[msg.choice],expiresAt:fresh.quoteExpiresAt}};
   }
@@ -135,7 +135,8 @@ export function createBackground({chrome,fetchImpl,now=()=>Date.now()}) {
    if(!['same','alternatives'].includes(result.kind)) return publicResult;
    if(!Number.isInteger(sender.tab?.id)) throw new MatchError('unavailable');
    const handle=crypto.randomUUID(),choices={},tokens={};
-   for(const choice of ['same',0,1]) {const q=selected(result,choice);if(q){choices[choice]=quoteSnapshot(q);const t=tokenOf(q);if(t)tokens[choice]=t;}}
+   const display=choice=>choice==='same'?{titleEn:result.titleEn ?? null,matchPercent:result.matchPercent ?? null}:{titleEn:result.items?.[choice]?.titleEn ?? null,matchPercent:null};
+   for(const choice of ['same',0,1]) {const q=selected(result,choice);if(q){choices[choice]={...quoteSnapshot(q),...display(choice)};const t=tokenOf(q);if(t)tokens[choice]=t;}}
    const {snapshots={},quoteTokens={}}=await session.get(['snapshots','quoteTokens']);
    snapshots[handle]={tabId:sender.tab.id,documentId:sender.documentId ?? null,shop:state.shop.host,revision:consent.revision,
     snapshot:{name:args.name,brand:args.brand ?? '',destination:args.destination,choices}};

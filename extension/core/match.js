@@ -49,14 +49,21 @@ export function sanitizeQuote(raw) {
   return quote;
  } catch(e) {if(e instanceof MatchError) throw e; malformed();}
 }
+// Display fields are optional and lenient: a bad value is dropped, never fatal, so older KC results still parse.
+const optText=(v,max)=>typeof v==='string' && v.trim() && v.length<=max && !/[\u0000-\u001f]/.test(v)?v.trim():null;
+const optBool=v=>typeof v==='boolean'?v:null;
+const optSize=v=>v && typeof v==='object' && ['ml','g','count'].includes(v.unit) && typeof v.value==='number' && Number.isFinite(v.value) && v.value>0?{value:v.value,unit:v.unit}:null;
+const optPercent=v=>typeof v==='number' && Number.isFinite(v) && v>=0 && v<=100?Math.round(v):null;
+const optSource=v=>v && typeof v==='object'?{brand:optText(v.brand,60),typeEn:optText(v.typeEn,40),size:optSize(v.size)}:{brand:null,typeEn:null,size:null};
 export function parseMatchResponse(data) {
  try {
   if(!data || typeof data!=='object' || Array.isArray(data)) malformed();
   if(data.kind==='rate_limited' || data.kind==='unavailable') throw new MatchError(data.kind);
-  if(data.kind==='same') return {kind:'same',quote:sanitizeQuote(data.quote)};
+  if(data.kind==='same') return {kind:'same',quote:sanitizeQuote(data.quote),titleEn:optText(data.titleEn,200),matchPercent:optPercent(data.matchPercent),size:optSize(data.size),source:optSource(data.source)};
   if(data.kind==='alternatives') {
    if(!Array.isArray(data.items) || !data.items.length) malformed();
-   return {kind:'alternatives',items:data.items.slice(0,2).map(i=>({title:text(i.title,2,300),why:text(i.why,0,120),quote:sanitizeQuote(i.quote)}))};
+   return {kind:'alternatives',source:optSource(data.source),items:data.items.slice(0,2).map(i=>({title:text(i.title,2,300),why:text(i.why,0,120),quote:sanitizeQuote(i.quote),
+    titleEn:optText(i.titleEn,200),sameBrand:optBool(i.sameBrand),sameType:optBool(i.sameType),size:optSize(i.size)}))};
   }
   if(data.kind==='none' || data.kind==='cant_ship') return {kind:data.kind,message:text(data.message,1,500)};
   malformed();

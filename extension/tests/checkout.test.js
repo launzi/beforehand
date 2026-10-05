@@ -73,3 +73,9 @@ test('checkout HTML: extension-origin inputs, one pay button, methods, trust lin
  assert.match(html,/href="mailto:support@munteok\.com"/);
  const build=await readFile(new URL('../scripts/build.mjs',import.meta.url),'utf8');assert.match(build,/'checkout.html','checkout.js'/);
 });
+test('the item block shows the match ring and English title over the Korean original',async()=>{
+ const a=await setup(undefined,{snapshot:{...snapshot,title:'아누아 어성초 토너 250ml',titleEn:'Anua Heartleaf Toner 250ml',matchPercent:96},expiresAt:'2026-10-05T09:29:41Z',destination:'US'});
+ const text=a.id('summary').textContent;assert.ok(text.includes('96%'));assert.ok(text.includes('Anua Heartleaf Toner 250ml'));assert.ok(text.includes('아누아 어성초 토너 250ml'));
+ const b=await setup(undefined,{snapshot:{...snapshot,titleEn:null,matchPercent:null},destination:'US'});
+ assert.ok(!b.id('summary').textContent.includes('%'));assert.ok(b.id('summary').textContent.includes('Anua Toner 250ml'));
+});

@@ -29,7 +29,10 @@ export async function initCheckout({doc,chrome,location,now=()=>Date.now(),setIn
   const krw=value=>money(value,'KRW',0);
   const row=(label,value,className)=>{const r=el('div',null,'line'+(className?' '+className:''));r.append(el('span',label),el('span',value));return r;};
   summary.replaceChildren();
-  summary.append(el('p',`Korea → ${COUNTRY_NAMES[destination] ?? destination ?? ''}`,'eyebrow'),el('h1',q.title,'item'),el('p','Sold by Munteok','mute sm'));
+  const head=el('div',null,'itemrow'),names=el('div');
+  if(Number.isInteger(q.matchPercent)) {const r=el('div',null,'ring');r.setAttribute('style',`--p:${q.matchPercent}`);r.setAttribute('aria-label',`${q.matchPercent}% match`);r.append(el('span',`${q.matchPercent}%`));head.append(r);}
+  names.append(el('h1',q.titleEn || q.title,'item'));if(q.titleEn)names.append(el('p',q.title,'ko'));names.append(el('p','Sold by Munteok','mute sm'));head.append(names);
+  summary.append(el('p',`Korea → ${COUNTRY_NAMES[destination] ?? destination ?? ''}`,'eyebrow'),head);
   if(previous && previous.payNow.total!==q.payNow.total) {
    const banner=el('p',null,'changed');banner.append(el('b','Price changed'),el('span',' · Pay now '),el('s',money(previous.payNow.total)),el('span',' → '),el('b',money(q.payNow.total)));summary.append(banner);
   }

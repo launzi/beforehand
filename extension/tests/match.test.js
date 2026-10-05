@@ -59,3 +59,14 @@ test('checkout response URLs must be strings rather than URL-coercible values',(
   assert.throws(()=>api.parseCheckoutResponse({method:'card',url}),e=>e.code==='malformed');
  }
 });
+test('display fields parse leniently and never break an older response',async()=>{
+ const {parseMatchResponse}=await import('../core/match.js');const {quote}=await import('./helpers.js');
+ const same=parseMatchResponse({kind:'same',quote:quote(),titleEn:' LANEIGE Water Sleeping Mask 70ml ',matchPercent:95.6,size:{value:70,unit:'ml'},source:{brand:'LANEIGE',typeEn:'Sleeping mask',size:{value:70,unit:'ml'}}});
+ assert.equal(same.titleEn,'LANEIGE Water Sleeping Mask 70ml');assert.equal(same.matchPercent,96);assert.deepEqual(same.source,{brand:'LANEIGE',typeEn:'Sleeping mask',size:{value:70,unit:'ml'}});
+ const bad=parseMatchResponse({kind:'same',quote:quote(),titleEn:42,matchPercent:140,size:{value:-1,unit:'ml'},source:'x'});
+ assert.deepEqual([bad.titleEn,bad.matchPercent,bad.size,bad.source],[null,null,null,{brand:null,typeEn:null,size:null}]);
+ const old=parseMatchResponse({kind:'alternatives',items:[{title:'Toner',why:'x',quote:quote()}]});
+ assert.deepEqual([old.items[0].titleEn,old.items[0].sameBrand,old.items[0].sameType,old.items[0].size],[null,null,null,null]);
+ const alt=parseMatchResponse({kind:'alternatives',source:{brand:'Anua'},items:[{title:'Toner',why:'x',quote:quote(),titleEn:'Round Lab Toner 200ml',sameBrand:false,sameType:true,size:{value:200,unit:'ml'}}]});
+ assert.deepEqual([alt.items[0].sameBrand,alt.items[0].sameType,alt.items[0].size.value,alt.source.brand],[false,true,200,'Anua']);
+});

@@ -193,7 +193,7 @@ test('only the registered extension checkout tab can read its snapshot or buy',a
  const {handle}=await a.bg.onMessage(match,sender),page=await openCheckout(a.bg,a,handle);
  assert.equal(page.url,`chrome-extension://id/checkout.html?h=${handle}&c=same`);
  const shown=await a.bg.onMessage({type:'checkout_snapshot',handle,choice:'same'},page);
- assert.deepEqual(shown.snapshot,{title:quote().item.title,link:quote().item.link,currency:'USD',totalCost:32,payNow:{total:30,itemKrw:18000,shippingKrw:18000,serviceFeeKrw:4000,paymentFeeKrw:2000,fxRate:1400},dutyOnDelivery:{estimate:2}});
+ assert.deepEqual(shown.snapshot,{title:quote().item.title,link:quote().item.link,currency:'USD',totalCost:32,payNow:{total:30,itemKrw:18000,shippingKrw:18000,serviceFeeKrw:4000,paymentFeeKrw:2000,fxRate:1400},dutyOnDelivery:{estimate:2},titleEn:null,matchPercent:null});
  assert.equal(shown.expiresAt,quote().quoteExpiresAt);
  assert.equal(shown.seller,'Munteok');assert.doesNotMatch(JSON.stringify(shown),/quoteToken|quoteExpiresAt/);
  for(const intruder of [sender,{...page,tab:{id:999}},{...page,url:'chrome-extension://id/popup.html'}]) {

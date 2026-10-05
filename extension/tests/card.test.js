@@ -1,5 +1,5 @@
 import test from 'node:test'; import assert from 'node:assert/strict'; import {quote} from './helpers.js'; import {documentFake,all,findText} from './dom.js';
-await import('../core/card.js'); const {mount,savings}=globalThis.BeforehandCard;
+await import('../core/card.js'); const {mount,savings,compareAlternatives}=globalThis.BeforehandCard;
 test('local price and savings use only same-currency shop-page prices',()=>{
  const q=quote(),local={price:2980,currency:'JPY'}; assert.equal(savings(q,local),null);
  const c=mount(documentFake()); c.setState({view:'same',quote:q,local}); assert.doesNotMatch(c.root.testShadow.textContent,/you save/i);
@@ -38,14 +38,10 @@ test('changed quote asks for an explicit re-check',async()=>{
  assert.match(c.root.testShadow.textContent,/Price changed/);assert.match(c.root.testShadow.textContent,/Check again to see the current price\./);
  await findText(c.root.testShadow,'Check again').fire();assert.equal(checks,1);c.destroy();
 });
-test('alternative why is omitted for every numeric or currency marker',()=>{
+test('the engine note is never shown: tiles replace free text',()=>{
  const c=mount(documentFake());
- for(const why of ['Save 250','Save ２５０','Save ٢٥٠','Save Ⅻ','Save ²',...['$','£','€','¥','￥','₩','%'].map(symbol=>'Save '+symbol)]) {
-  c.setState({view:'alternatives',items:[{title:'Toner',why,quote:quote()}]});
-  assert.ok(!c.root.testShadow.textContent.includes(why),why);
- }
- const why='A gentle Korean toner';c.setState({view:'alternatives',items:[{title:'Toner',why,quote:quote()}]});
- assert.ok(c.root.testShadow.textContent.includes(why));c.destroy();
+ for(const why of ['Save 250','A gentle Korean toner']) {c.setState({view:'alternatives',items:[{title:'Toner',why,quote:quote()}]});assert.ok(!c.root.testShadow.textContent.includes(why),why);}
+ c.destroy();
 });
 test('same-item card shows the estimated total split and the reviewed wording only',()=>{
  const c=mount(documentFake());c.setState({view:'same',quote:quote(),local:null});const text=c.root.testShadow.textContent;
@@ -61,4 +57,39 @@ test('every card state has one line and one next step with reviewed copy',async(
  c.setState({view:'busy'});assert.match(c.root.testShadow.textContent,/Couldn't get a quote/);await findText(c.root.testShadow,'Try again').fire();assert.equal(checks,2);
  c.setState({view:'none'});assert.match(c.root.testShadow.textContent,/No match in Korea/);assert.ok(findText(c.root.testShadow,'Hide for this item'));
  assert.doesNotMatch(c.root.testShadow.textContent,/—/);c.destroy();
+});
+
+const ml=value=>({value,unit:'ml'});
+const altItem=(o={})=>({title:'라네즈 워터 슬리핑 마스크 EX 100ml',why:'x',quote:quote({totalCost:58.8}),titleEn:'LANEIGE Water Sleeping Mask EX 100ml',sameBrand:true,sameType:true,size:ml(100),...o});
+const source={brand:'LANEIGE',typeEn:'Sleeping mask',size:ml(70)},local={price:78,currency:'USD'};
+test('alternatives compare brand, type, size and price with the page product',()=>{
+ const [ex,cica]=compareAlternatives([altItem(),altItem({title:'시카',titleEn:'LANEIGE Cica Sleeping Mask 60ml',quote:quote({totalCost:60.02}),size:ml(60)})],source,local);
+ assert.deepEqual(ex.tiles.map(t=>[t.key,t.state,t.value]),[['Brand','same','Same'],['Type','same','Same'],['Size','better','100 ml'],['Price','better','▼ $19.20']]);
+ assert.deepEqual(cica.tiles.map(t=>[t.key,t.state]),[['Brand','same'],['Type','same'],['Size','same'],['Price','better']]);
+ assert.deepEqual(ex.badges,['Lowest price','Most for the money']);assert.deepEqual(cica.badges,['Closest']);
+});
+test('badges need their inputs: no page price, mixed units or a single option hide them',()=>{
+ const [only]=compareAlternatives([altItem()],source,null);
+ assert.deepEqual(only.badges,[]);assert.deepEqual(only.tiles.map(t=>t.key),['Brand','Type','Size']);
+ const mixed=compareAlternatives([altItem(),altItem({size:{value:50,unit:'g'},quote:quote({totalCost:40})})],source,local);
+ assert.deepEqual(mixed.map(r=>r.badges.includes('Most for the money')),[false,false]);
+ const pricier=compareAlternatives([altItem({quote:quote({totalCost:90})})],source,local);
+ // $90 for 100 ml costs less per ml than the page's $78 for 70 ml: more for the money, not the lowest price.
+ assert.deepEqual(pricier[0].badges,['Most for the money']);assert.equal(pricier[0].tiles.at(-1).value,'▲ $12.00');
+ const unknown=compareAlternatives([altItem({sameBrand:null,sameType:false,size:null})],{brand:null,typeEn:null,size:null},null);
+ assert.deepEqual(unknown[0].tiles.map(t=>[t.key,t.state]),[['Type','other']]);
+});
+test('alternatives card shows the reference row, title pair, tiles and badges; Korean title stands alone without English',()=>{
+ const c=mount(documentFake());
+ c.setState({view:'alternatives',source,local,items:[altItem(),altItem({titleEn:null,title:'라네즈 시카 슬리핑 마스크 60ml',quote:quote({totalCost:60.02}),size:ml(60)})]});
+ const text=c.root.testShadow.textContent;
+ for(const t of ['vs this page · LANEIGE · Sleeping mask · 70 ml','$78.00','LANEIGE Water Sleeping Mask EX 100ml','라네즈 워터 슬리핑 마스크 EX 100ml','Lowest price','✓ Same','100 ml','▼ $19.20','라네즈 시카 슬리핑 마스크 60ml']) assert.ok(text.includes(t),t);
+ c.destroy();
+});
+test('same item shows the match ring and English title over the Korean original',()=>{
+ const c=mount(documentFake());
+ c.setState({view:'same',quote:quote(),local:null,titleEn:'Anua Toner 250ml',matchPercent:96});
+ const text=c.root.testShadow.textContent;assert.ok(text.includes('96%'));assert.ok(text.includes('MATCH'));assert.ok(text.includes('Anua Toner 250ml'));assert.ok(text.includes('Anua Toner 250ml'+quote().item.title) || text.includes(quote().item.title));
+ c.setState({view:'same',quote:quote(),local:null,titleEn:null,matchPercent:null});assert.ok(!c.root.testShadow.textContent.includes('MATCH'));
+ c.destroy();
 });
