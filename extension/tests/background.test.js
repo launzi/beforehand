@@ -11,7 +11,7 @@ function env(data={...consent(),autoCheck:true},replies=[{kind:'same',quote:quot
  session.setAccessLevel=async value=>access.push(value);
  const chrome={storage:{local:storage,session},tabs:{create:async x=>{tabs.push(x);return {id:100+tabs.length};},update:async(id,x)=>updates.push({id,...x}),sendMessage:async(...args)=>notifications.push(args)},runtime:{getURL:x=>'chrome-extension://id/'+x}};
  const fetchImpl=async(url,init)=>{calls.push(JSON.parse(init.body));return response(replies.shift());};
- return {storage,session,access,calls,tabs,updates,notifications,chrome,bg:createBackground({chrome,fetchImpl,now:clock})};
+ return {storage,session,access,calls,tabs,updates,notifications,chrome,clock,bg:createBackground({chrome,fetchImpl,now:clock})};
 }
 async function openCheckout(bg,a,handle,source=sender,choice='same') {
  const opened=await bg.onMessage({type:'open_checkout',handle,choice},source);
@@ -37,7 +37,7 @@ test('second identical lookup uses cache and disk contains no tokens',async()=>{
  const a=env(); const [first,second]=await Promise.all([a.bg.onMessage(match,sender),a.bg.onMessage(match,sender)]);
  assert.equal(first.kind,'same'); assert.equal(second.kind,'same'); assert.equal(a.calls.length,1);
  assert.doesNotMatch(JSON.stringify(a.storage.data),/FAKE_QUOTE_TOKEN|quoteToken|quoteExpiresAt/);
- const resumed=createBackground({chrome:a.chrome,fetchImpl:async()=>{throw Error('cache miss');}});
+ const resumed=createBackground({chrome:a.chrome,fetchImpl:async()=>{throw Error('cache miss');},now:a.clock});
  assert.equal((await resumed.onMessage(match,sender)).kind,'same');
 });
 test('Buy with expired token refreshes then opens Stripe',async()=>{
