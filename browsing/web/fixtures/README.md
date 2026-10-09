@@ -48,3 +48,12 @@ already included by the existing Dockerfile and .dockerignore. No Dockerfile
 change or new dependency is required. Existing image builds with a separately
 supplied synthetic DB still require a cache for that exact DB; the fixture cache
 must not be relabelled as a match for an older deployment bundle.
+
+## LIVE cache (spends money; release owner only)
+
+`python -m browsing.web live-cache --db <synthetic.db> --out browsing/demo-assets/cache-live-YYYYMMDD-HHMMSS.json --confirm-spend`
+runs the three mandate profiles once against live Nebius Token Factory, Tavily and Korea
+Concierge for an explicit validated synthetic DB. It writes nothing unless every profile
+completes, refuses to overwrite, and requires a timestamped file name. Snapshots keep
+`source: live`; the page labels them `CACHED · live`. Pass the file to the image build with
+`--build-arg DEMO_CACHE_FILE=...` together with the same `SYNTHETIC_DB`.

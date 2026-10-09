@@ -43,6 +43,11 @@ def main():
     evaluate.add_argument("--runs", type=int, default=3)
     evaluate.add_argument("--profile", choices=tuple(PROFILES), action="append",
                           help="Repeat for selected profiles; default: all three")
+    live = sub.add_parser("live-cache", help="SPENDS MONEY: run all profiles once with live Nebius, Tavily and Korea Concierge and save a LIVE cache")
+    live.add_argument("--db", type=Path, required=True)
+    live.add_argument("--out", type=Path, required=True)
+    live.add_argument("--confirm-spend", action="store_true",
+                      help="Required. Pass only after the spend was approved.")
     args = parser.parse_args()
     if args.command == "regenerate-fixtures":
         from browsing.web.regenerate import regenerate_fixtures
@@ -55,6 +60,13 @@ def main():
         print(json.dumps(result, ensure_ascii=False, indent=2))
         if result["status"] != "complete":
             raise SystemExit(1)
+    elif args.command == "live-cache":
+        if not args.confirm_spend:
+            parser.error("live-cache calls paid providers; pass --confirm-spend only after approval")
+        from browsing.web.live_cache import build_live_cache
+        cache = build_live_cache(db_path=args.db, out=args.out)
+        print(json.dumps({"out": str(args.out), "dataset": cache["dataset"],
+                          "profiles": {p: s["status"] for p, s in cache["profiles"].items()}}, indent=2))
     else:
         export_cache(db_path=args.db, state_dir=args.state, out=args.out)
 
