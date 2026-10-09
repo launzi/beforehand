@@ -1,8 +1,8 @@
 # beforehand privacy policy
 
-Publisher: **Munteok**, an individual developer in the Republic of Korea.
+Publisher: **Munteok**. Sold by Munteok, operated by Youngji Kim (Seoul, Korea).
 Contact: **privacy@munteok.com**.
-Policy version 5 · Effective: 2026-10-05.
+Policy version 5 · Effective: 2026-10-05 · Text revised: 2026-10-09 (publisher line and order record; what the extension reads or sends is unchanged).
 
 ## What it does
 
@@ -20,7 +20,7 @@ Your browsing history, the shopping page address, the price on the page and othe
 
 ## Korea Concierge processing and retention
 
-Korea Concierge uses **NVIDIA Nemotron on Nebius** to interpret product names and judge matches, and **Serper (Google Shopping)** to find Korean listings and a local price. Its own quote engine estimates shipping, fees and duty; for that it sends the Korean listing's title, not the page you are viewing, to **Anthropic (Claude)** to estimate the duty category and shipping weight. Payment is processed by **Stripe** when you pay by card, which receives your email and name with the order, or by **PayPal** when you choose PayPal. Korea Concierge keeps an order record with your email, name, the quote and the payment reference. The extension does not contact Nebius, Serper, Anthropic, Stripe or PayPal directly and does not require an AI account or key.
+Korea Concierge uses **NVIDIA Nemotron on Nebius** to interpret product names and judge matches, and **Serper (Google Shopping)** to find Korean listings and a local price. Its own quote engine estimates shipping, fees and duty; for that it sends the Korean listing's title, not the page you are viewing, to **Anthropic (Claude)** to estimate the duty category and shipping weight. Payment is processed by **Stripe** when you pay by card, which receives your email and name with the order, or by **PayPal** when you choose PayPal. Korea Concierge keeps an order record with your email, name, the quote and the payment reference, plus the shipping address and phone number that Stripe or PayPal returns after you pay. After the item is bought in Korea, the record also holds the Korean purchase details and the shipping tracking number. Order alerts to the operator, sent through **Telegram**, include your name, email, shipping address and phone number. The extension does not contact Nebius, Serper, Anthropic, Stripe or PayPal directly and does not require an AI account or key.
 
 Korea Concierge keeps a demand record containing a normalized product name, category, delivery country, result type, channel label and browser family. It does not keep your IP address with that record. To limit abuse, requests are counted per 10 minutes under a keyed hash of the IP address; these counters are deleted within 24 hours. Demand records support product demand analysis by the operator. This policy does not promise a deletion period for those records or for order records. Contact Munteok about data already received. Other processors apply their own retention policies.
 
