@@ -326,3 +326,14 @@ async def test_quote_card_tolerates_cached_quotes_without_new_fields(tmp_path):
     assert page.text.count('class="quote-card"') == 3
     assert ">unknown<" in page.text
     assert "Seller: Munteok" in page.text
+
+
+async def test_regenerated_fixture_cache_carries_kc_fulfilment(tmp_path):
+    cache = json.loads((ROOT / "fixtures" / "cache.json").read_text())
+    quotes = [a["quote"] for s in cache["profiles"].values() for a in s["result"]["actions"] if a.get("quote")]
+    assert quotes and all(isinstance(q["fulfilment"], str) and q["fulfilment"] for q in quotes)
+    assert all(s["source"] == "illustrative-fixture" for s in cache["profiles"].values())
+    async with client_for(create_app(state_dir=tmp_path)) as client:
+        page = await client.get("/")
+    from markupsafe import escape
+    assert all(str(escape(q["fulfilment"])) in page.text for q in quotes)
