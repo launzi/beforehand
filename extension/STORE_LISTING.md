@@ -13,9 +13,15 @@ Choose auto-check or Only when I click at setup. Checks send product name, brand
 
 Korea amounts come from the quote engine. The card's local price comes from the shop page; savings are computed on your device when currencies match.
 
-Buy from Korea opens an extension page. Your email and name go to Korea Concierge to create an order when you click Continue to payment; they are not stored by the extension. Quote tokens are kept in Chrome's in-memory session storage and are sent only to Korea Concierge to start checkout. A Buy refresh re-checks the same product name, brand and delivery country. If the price changed, the checkout page shows the new price and asks you to confirm. You pay on Stripe (card) or PayPal. Out of stock in Korea means a full refund. Seller: Munteok. Duty and tax are estimated and paid on delivery.
+Buy from Korea opens an extension page. When you click Continue to payment, your email, name and payment method (card or PayPal) go to Korea Concierge to create an order; the extension does not store them. Quote tokens are kept in Chrome's in-memory session storage and are sent only to Korea Concierge to start checkout. A Buy refresh re-checks the same product name, brand and delivery country. If the price changed, the checkout page shows the new price and asks you to confirm. You pay on Stripe (card) or PayPal; beforehand never sees your card.
+
+Seller: Munteok, the developer of this extension, operated by Youngji Kim in Seoul, Korea. Munteok earns the service fee shown at checkout. Quotes are free. Out of stock in Korea means a full refund. Duty and tax are estimated and paid on delivery.
+
+Your order record: Korea Concierge keeps your email, name, the quote and the payment reference, plus the shipping address and phone number that Stripe or PayPal returns after you pay. After the item is bought in Korea, the record also holds the Korean purchase details and the tracking number. The operator receives order alerts through Telegram with your name, email, shipping address and phone number, and uses them to buy and ship your item.
 
 Supports 22 shops in the US, UK, Japan, Taiwan and Hong Kong, with delivery to those countries and China. Disable checks per shop or globally. Export or delete the local log, or turn off and delete your data in Settings.
+
+Privacy policy: https://munteok.com/privacy#beforehand. Order support: support@munteok.com. Privacy: privacy@munteok.com.
 
 ## Single purpose
 Show the Korea delivered price, or Korean alternatives, for the product on the shopping page you are viewing.
