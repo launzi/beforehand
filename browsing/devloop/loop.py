@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import re
 import subprocess
 import sys
@@ -239,8 +240,9 @@ def _resolve_nebius_cli() -> Path:
     if env_cli:
         candidates.append(Path(env_cli).expanduser())
 
-    candidates.append(Path("~/claude/tools/nebius.py").expanduser())
-    candidates.append(Path("~/Desktop/claude/tools/nebius.py").expanduser())
+    on_path = shutil.which("nebius.py")
+    if on_path:
+        candidates.append(Path(on_path))
 
     for c in candidates:
         if c.is_file():
