@@ -30,6 +30,7 @@
 <p>{{ quote_disclosure }}</p><p>{{ quote_checkout_notice }}</p>{% if quote.fulfilment %}<p>{{ quote.fulfilment }}</p>{% endif %}
 <p>Original comparison verdict: <code>{{ quote.verdict or 'unknown' }}</code></p>
 <pre class="raw-quote">{{ quote|tojson(indent=2) }}</pre>
+<p class="evidence-summary small muted">{{ row.evidence_summary }}</p>
 <div class="model-suggestion"><p class="eyebrow">Model suggestion · original output</p><pre>{{ action.text }}</pre></div>
 </details>
 </div></article>

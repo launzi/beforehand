@@ -10,7 +10,7 @@ import secrets
 import sqlite3
 from contextlib import closing
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -112,15 +112,18 @@ def model_text(value):
 
 
 def decision_view(decision, action=None):
-    """Model skips take precedence in the *display*, not in mandate evaluation."""
+    """Keep the actual rule verdict separate from the model and final outcome."""
     decision, action = decision or {}, action or {}
     triage = decision.get("triage")
     verdict = (decision.get("mandate") or {}).get("verdict")
-    state = "skipped" if triage == "SKIP" else {
+    rule_state = {
         "allow": "allowed", "deny": "blocked", "hold": "held"}.get(verdict, "pending")
+    state = "skipped" if triage == "SKIP" else rule_state
     outcome = {"skipped": "Not run — skipped by model", "blocked": "Not run — blocked by your rules",
                "held": "Not run — held for your OK"}.get(state, "No run yet")
-    if decision.get("execution_status") == "failed":
+    if triage == "ERROR":
+        outcome = "Not run — model triage failed"
+    elif decision.get("execution_status") == "failed":
         outcome = "Could not complete — see details"
     elif state == "allowed" and (decision.get("executed") or action):
         outcome = ("Request completed — no quote returned" if action.get("quote_unavailable") else
@@ -128,8 +131,10 @@ def decision_view(decision, action=None):
                    "Setup suggestion generated" if decision.get("signal_kind") == "new_entry" else
                    "Research briefing generated" if decision.get("signal_kind") == "unresolved" else "Done")
     label, symbol = STATUSES[state]
+    rule_label, rule_symbol = STATUSES[rule_state]
     return {"state": state, "label": label, "symbol": symbol,
-            "model": {"ACT": "Proceed", "SKIP": "Skip"}.get(triage, "Not run"),
+            "rule_state": rule_state, "rule_label": rule_label, "rule_symbol": rule_symbol,
+            "model": {"ACT": "Proceed", "SKIP": "Skip", "ERROR": "Could not complete"}.get(triage, "Not run"),
             "outcome": outcome,
             "proposed": ACTION_LABELS.get((decision.get("planned_action") or {}).get("action_kind"), "Follow-up")}
 
@@ -141,6 +146,39 @@ def comparison_counts(snapshot):
     for decision in snapshot.get("result", {}).get("decisions", []):
         counts[decision_view(decision)["state"]] += 1
     return counts
+
+
+def evidence_summary(signal):
+    """Describe detector evidence, never infer intent from model-generated prose."""
+    evidence = signal.evidence
+
+    def counted(count, word, plural=None):
+        return f"{count} {word if count == 1 else plural or word + 's'}"
+
+    try:
+        if signal.kind == "new_entry" and evidence.get("onboarding_paths"):
+            first = datetime(1601, 1, 1, tzinfo=timezone.utc) + timedelta(microseconds=evidence["first_visit_us"])
+            date = human_date(first.isoformat())
+            visits = evidence["visit_count"]
+            detail = (f"1 visit to an onboarding page on {date}" if visits == 1 else
+                      f"{counted(visits, 'visit')} to this site, including an onboarding page; first visit {date}")
+        elif signal.kind == "unresolved":
+            searches, follows = evidence["search_count"], evidence["follow_through_counts"]
+            detail = (f"1 search; {counted(follows[0], 'follow-through visit')} within 30 minutes"
+                      if searches == 1 and len(follows) == 1 else
+                      f"{counted(searches, 'search', 'searches')}; "
+                      f"follow-through visits per search: {', '.join(map(str, follows))} (30-minute windows)")
+        elif signal.kind == "korea_product":
+            detail = f"{counted(evidence['visit_count'], 'product-page visit')} across {counted(evidence['distinct_days'], 'day')}"
+        elif signal.kind == "recurring":
+            detail = f"{counted(evidence['total_visits'], 'visit')} to this site across {counted(evidence['distinct_days'], 'day')}"
+        elif signal.kind == "dropped":
+            detail = f"Visits on {counted(evidence['active_days'], 'day')}; no visits for the next {counted(evidence['days_quiet'], 'day')}"
+        else:
+            return "Sample history: see the recorded evidence below."
+    except (KeyError, TypeError, ValueError, OverflowError):
+        return "Sample history: see the recorded evidence below."
+    return f"Sample history: {detail}."
 
 
 def remaining_runs(store):
@@ -229,12 +267,13 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
                 return candidate
         return None
 
-    def render(request, profile, *, snapshot=None, mode="cached", notice="", status=200):
+    def render(request, profile, *, snapshot=None, mode="cached", request_activity="not_started", notice="", status=200):
         mandate = load_mandate(PROFILES[profile], None)
         snapshot = cached(profile) if snapshot is None else snapshot
         decisions = {} if snapshot is None else {d["signal_key"]: d for d in snapshot["result"]["decisions"]}
         actions = {} if snapshot is None else {a["signal_key"]: a for a in snapshot["result"]["actions"]}
         rows = [{"signal": signal, "decision": decisions.get(signal.key), "action": actions.get(signal.key),
+                 "evidence_summary": evidence_summary(signal),
                  "kind": SIGNAL_LABELS.get(signal.kind, "Browsing pattern"),
                  "view": decision_view(decisions.get(signal.key), actions.get(signal.key))} for signal in signals]
         csrf = secrets.token_urlsafe(32)
@@ -243,7 +282,7 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
             "signals": signals, "scenario": scenario, "profiles": LABELS, "profile": profile,
             "mandate": mandate, "mandate_text": PROFILES[profile].read_text(),
             "snapshot": snapshot, "decisions": decisions, "actions": actions, "mode": mode,
-            "notice": notice, "csrf": csrf, "daily_limit": store.daily_limit,
+            "notice": notice, "request_activity": request_activity, "csrf": csrf, "daily_limit": store.daily_limit,
             "remaining_runs": remaining_runs(store), "history_window": history_window(scenario),
             "rows": rows, "statuses": STATUSES,
             "comparisons": {key: comparison_counts(cached(key)) for key in PROFILES},
@@ -301,11 +340,13 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
         if status == "ran":
             failed = snapshot["status"] != "complete"
             return render(request, profile, snapshot=snapshot, mode="live",
+                          request_activity="ran",
                           notice="Live run failed; errors below. Last successful cache was preserved." if failed else "Live run completed.",
                           status=502 if failed else 200)
         notices = {"busy": "Another run is active. Showing cached results; no new calls were made.",
                    "limit": "Daily server limit reached. Showing cached results; no new calls were made."}
         return render(request, profile, snapshot=store.latest(dataset),
+                      request_activity="failed_attempt" if status.startswith("error:") else "not_started",
                       notice=notices.get(status, "Live run failed (" + status + "). Showing cached results."),
                       status=502 if status.startswith("error:") else 200)
 
