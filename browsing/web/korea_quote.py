@@ -29,12 +29,15 @@ _SUMMARY_RULES = (
 )
 SUMMARY_SYSTEM = (
     "Write exactly 2-3 sentences in English interpreting this quote for you. "
-    "Explain the comparison and uncertainty only. " + _SUMMARY_RULES
+    "Explain the comparison and what could change the Korea total (duty is an estimate paid on delivery). "
+    "Do not question or reverse the comparison the numbers show. " + _SUMMARY_RULES
 )
 LOCAL_SUMMARY_SYSTEM = (
     "Code supplies the first sentence disclosing the cheaper local option and its price comparison. "
-    "Write only the remaining 1-2 sentences in English about uncertainty. "
-    "Do not restate the local-price comparison. " + _SUMMARY_RULES
+    "Write only the remaining 1-2 sentences in English about what the Korea total includes and what could change it "
+    "(duty is an estimate paid on delivery). "
+    "Do not restate the local-price comparison. Do not question or reverse the conclusion that buying locally is cheaper. "
+    + _SUMMARY_RULES
 )
 UNAVAILABLE_SUMMARY = "No Korea quote is available for this item right now; it needs a manual price."
 
@@ -276,12 +279,19 @@ def local_first_sentence(facts: dict) -> str:
             f"{currency} {facts['totalCost']} estimated total cost from Korea.")
 
 
+_HEDGE = re.compile(r"\b(?:cannot|can't|can not|unable to|hard to|difficult to|impossible to|not sure)\s+(?:determine|tell|say|know|judge)\b|\bunclear (?:which|whether)\b", re.I)
+
+
 def validate_summary(text: str, quote: dict) -> str:
     allowed = set(re.findall(r"[+-]?\d+(?:,\d{3})*(?:\.\d+)?", json.dumps(summary_facts(quote))))
     if any(n not in allowed for n in re.findall(r"[+-]?\d+(?:,\d{3})*(?:\.\d+)?", text)):
         raise QuoteError("Quote summary contains an unsupported number")
     if quote["verdict"] == "buy_local" and not text.startswith("It's cheaper to buy locally"):
         raise QuoteError("Quote summary must disclose the cheaper local option first")
+    # The model must not hedge away the comparison the numbers settle (LIVE cache 2026-10-09:
+    # "It's cheaper to buy locally ... I cannot determine which offers better value").
+    if _HEDGE.search(text):
+        raise QuoteError("Quote summary undoes the verdict with a hedge")
     sentences = re.split(r"(?<=[.!?])\s+(?=[A-Za-z])", text.strip())
     if not 2 <= len(sentences) <= 3:
         raise QuoteError("Quote summary must contain 2-3 sentences")

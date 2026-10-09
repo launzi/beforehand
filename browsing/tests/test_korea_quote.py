@@ -424,3 +424,27 @@ def test_client_failures_remain_execution_errors(tmp_path, korea_signal, failure
     assert result.actions == []
     assert result.stats['errors'] == 1
     assert result.decisions[0].execution_status == 'failed'
+
+
+@pytest.mark.parametrize('hedge', [
+    'I cannot determine which offers better value.',
+    "It's unclear which option is better.",
+    'It is hard to say which is the better deal.',
+    "I can't tell which is cheaper overall.",
+])
+def test_summary_rejects_a_model_remainder_that_undoes_the_verdict(raw, hedge):
+    # LIVE cache 2026-10-09: code said "cheaper to buy locally", the model then added
+    # "I cannot determine which offers better value" and the page showed both.
+    raw['localPrice']['price'] = 18.25
+    raw['totalCost'] = 66.75
+    q = sanitize_quote(raw)
+    text = "It's cheaper to buy locally: USD 18.25 locally versus USD 66.75 estimated total cost from Korea. " + hedge
+    with pytest.raises(QuoteError, match='undoes the verdict'):
+        validate_summary(text, q)
+
+
+def test_summary_prompts_ask_for_cost_drivers_not_open_uncertainty():
+    from browsing.web.korea_quote import LOCAL_SUMMARY_SYSTEM, SUMMARY_SYSTEM
+    for system in (LOCAL_SUMMARY_SYSTEM, SUMMARY_SYSTEM):
+        assert 'Do not question or reverse' in system
+    assert 'about uncertainty' not in LOCAL_SUMMARY_SYSTEM
