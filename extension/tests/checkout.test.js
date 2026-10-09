@@ -73,6 +73,15 @@ test('checkout HTML: extension-origin inputs, one pay button, methods, trust lin
  assert.match(html,/href="mailto:support@munteok\.com"/);
  const build=await readFile(new URL('../scripts/build.mjs',import.meta.url),'utf8');assert.match(build,/'checkout.html','checkout.js'/);
 });
+test('checkout HTML: the approved operator notice sits directly under Continue to payment and links the privacy policy',async()=>{
+ const html=await readFile(new URL('../checkout.html',import.meta.url),'utf8');
+ const notice='Munteok\'s operator reads your order details, including the shipping address and phone number from Stripe or PayPal, to buy and ship your item. See the privacy policy.';
+ const m=/<button id="pay"[^>]*>Continue to payment<\/button>\n<p id="operatorNotice" class="trust">(.*?)<\/p>/.exec(html);
+ assert.ok(m,'notice must follow the pay button');
+ assert.equal(m[1].replace(/<[^>]+>/g,''),notice);
+ assert.match(m[1],/See the <a href="https:\/\/munteok\.com\/privacy" target="_blank" rel="noopener noreferrer">privacy policy<\/a>\./);
+ assert.equal((html.match(/href="https:\/\/[^"]+"/g)||[]).length,1);
+});
 test('the item block shows the match ring and English title over the Korean original',async()=>{
  const a=await setup(undefined,{snapshot:{...snapshot,title:'아누아 어성초 토너 250ml',titleEn:'Anua Heartleaf Toner 250ml',matchPercent:96},expiresAt:'2026-10-05T09:29:41Z',destination:'US'});
  const text=a.id('summary').textContent;assert.ok(text.includes('96%'));assert.ok(text.includes('Anua Heartleaf Toner 250ml'));assert.ok(text.includes('아누아 어성초 토너 250ml'));
