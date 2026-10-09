@@ -233,7 +233,7 @@ async def test_comparison_uses_changed_saved_results_not_hardcoded_counts(tmp_pa
     app = app_for(tmp_path)
     snapshot = json.loads(CACHE.read_text())["profiles"]["no-search"]
     snapshot["result"]["decisions"][1]["triage"] = "SKIP"
-    app.state.store.save(app.state.dataset, "no-search", snapshot)
+    app.state.seed["profiles"]["no-search"] = snapshot
     page = await page_for(app)
     card = page.select_one('.comparison [data-profile="no-search"]')
     assert card.select_one('[data-count="blocked"]').text == "3"
@@ -245,7 +245,7 @@ async def test_model_text_is_escaped_and_urls_cannot_inject_markup(tmp_path):
     snapshot = json.loads(CACHE.read_text())["profiles"]["public"]
     action = next(a for a in snapshot["result"]["actions"] if a["kind"] == "unresolved")
     action["text"] = '<script>alert(1)</script> See https://example.test/path?q=" onclick="bad and [bad](javascript:alert(1)).'
-    app.state.store.save(app.state.dataset, "public", snapshot)
+    app.state.seed["profiles"]["public"] = snapshot
     page = await page_for(app)
     assert not page.select("script, [onclick]")
     assert not page.select('a[href^="javascript:"]')
@@ -257,7 +257,7 @@ async def test_human_dates_do_not_rewrite_dates_inside_source_urls(tmp_path):
     snapshot = json.loads(CACHE.read_text())["profiles"]["public"]
     action = next(a for a in snapshot["result"]["actions"] if a["kind"] == "unresolved")
     action["text"] = "Read https://example.test/2026-10-09/report and [Report](https://example.test/2026-09-01). Recorded on 2026-10-09."
-    app.state.store.save(app.state.dataset, "public", snapshot)
+    app.state.seed["profiles"]["public"] = snapshot
     page = await page_for(app)
     research = page.select_one("#research-result")
     assert [a["href"] for a in research.select("a")] == [
@@ -312,7 +312,7 @@ async def test_missing_skipped_triage_error_and_failed_action_render_distinctly(
     else:
         decision.update(triage={"skip": "SKIP", "error": "ERROR", "action_failed": "ACT"}[case],
                         executed=False, execution_status="failed" if case == "action_failed" else "not_run")
-    app.state.store.save(app.state.dataset, "public", snapshot)
+    app.state.seed["profiles"]["public"] = snapshot
     row = (await page_for(app)).select_one(".signal-row")
     assert f"Model: {model}" in visible(row)
     assert row.select_one(".outcome").text == f"Outcome: {outcome}"
@@ -327,7 +327,7 @@ async def test_triage_error_keeps_actual_mandate(tmp_path, verdict, label):
     decision = snapshot["result"]["decisions"][0]
     decision["triage"] = "ERROR"
     decision["mandate"]["verdict"] = verdict
-    app.state.store.save(app.state.dataset, "public", snapshot)
+    app.state.seed["profiles"]["public"] = snapshot
     row = (await page_for(app)).select_one(".signal-row")
     assert "Model: Could not complete" in visible(row)
     assert f"Rules: {label}" in visible(row)

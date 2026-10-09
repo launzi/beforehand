@@ -258,14 +258,18 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
         raise ValueError("Precomputed cache does not match the synthetic dataset")
 
     def cached(profile):
-        saved = store.get(dataset, profile)
-        if saved is not None:
-            return saved
+        # Precedence: reviewed LIVE seed > a stored live run > the illustrative fixture.
+        # A visitor's live run is shown in that visitor's response and kept in the store for
+        # audit, but it never replaces a reviewed live seed for every other visitor
+        # (2026-10-09: one live run put an unreviewed model sentence on the public page).
+        candidate = None
         if seed["dataset"] == dataset:
-            candidate = seed["profiles"].get(profile)
-            if candidate and candidate["mandate_digest"] == load_mandate(PROFILES[profile], None).digest:
-                return candidate
-        return None
+            found = seed["profiles"].get(profile)
+            if found and found["mandate_digest"] == load_mandate(PROFILES[profile], None).digest:
+                candidate = found
+        if candidate is not None and candidate.get("source") == "live":
+            return candidate
+        return store.get(dataset, profile) or candidate
 
     def render(request, profile, *, snapshot=None, mode="cached", request_activity="not_started", notice="", status=200):
         mandate = load_mandate(PROFILES[profile], None)
@@ -356,5 +360,6 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
     app = Starlette(routes=[Route("/", home), Route("/run", run_request, methods=["POST"]),
                            Route("/healthz", health)])
     app.state.store = store
+    app.state.seed = seed
     app.state.dataset = dataset
     return app

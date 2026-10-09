@@ -337,3 +337,21 @@ async def test_regenerated_fixture_cache_carries_kc_fulfilment(tmp_path):
         page = await client.get("/")
     from markupsafe import escape
     assert all(str(escape(q["fulfilment"])) in page.text for q in quotes)
+
+
+async def test_a_visitor_live_run_does_not_replace_the_shared_saved_run(tmp_path):
+    # 2026-10-09: one live run on the deployed demo replaced the curated saved run for every
+    # visitor (store.get won over the seed), carrying a model sentence the validator now rejects.
+    def runner(signals, profile, path):
+        snapshot = execute(signals, profile, path, llm=FakeLLM(), search=FakeSearch(), quote_client=ScriptedQuote())
+        for action in snapshot["result"]["actions"]:
+            action["text"] = "LIVE-ONLY-MARKER " + action["text"]
+        return snapshot
+    from browsing.web.tests.test_redesign import CACHE, DB  # reviewed LIVE seed + its synthetic DB
+    app = create_app(db_path=DB, cache_path=CACHE, state_dir=tmp_path, daily_limit=2, runner=runner)
+    async with client_for(app) as client:
+        response = await post_run(client)
+        assert response.status_code == 200 and "LIVE-ONLY-MARKER" in response.text
+        after = (await client.get('/?profile=public')).text
+    assert "LIVE-ONLY-MARKER" not in after
+    assert app.state.store.get(app.state.dataset, "public") is not None  # still recorded for audit
