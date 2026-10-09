@@ -150,6 +150,60 @@ def test_triage_prompt_carries_the_evidence(conn):
     assert "/signup" in llm.calls[0]
 
 
+@pytest.fixture
+def korea_triage_signal():
+    title = "Anua Heartleaf 77% Soothing Toner 250ml | OLIVE YOUNG Global"
+    return Signal(
+        kind="korea_product", key="korea_product|global.oliveyoung.com/product/detail/123",
+        host="global.oliveyoung.com", term=title,
+        evidence={"product": title, "visit_count": 3, "distinct_days": 2,
+                  "purchase_page_observed": False,
+                  "url": "https://global.oliveyoung.com/product/detail/123",
+                  "page_title": title},
+        first_us=US, last_us=US + DAY,
+    )
+
+
+def test_korea_triage_prompt_has_rubric_and_evidence(korea_triage_signal):
+    from browsing.agent import TRIAGE_RUBRICS
+
+    llm = FakeLLM()
+    triage_signal(korea_triage_signal, llm=llm)
+    prompt = llm.calls[0]
+    assert "Kind rubric:" in prompt
+    assert TRIAGE_RUBRICS["korea_product"] in prompt
+    for text in ("delivered-price quote from Korea", "visit_count: 3", "distinct_days: 2",
+                 "purchase_page_observed: False", "purchase intent is not required",
+                 "SKIP a single incidental revisit within one short session",
+                 "checkout is never part of this action"):
+        assert text in prompt
+    assert "Term: Anua Heartleaf 77% Soothing Toner 250ml" in prompt
+
+
+def test_korea_triage_prompt_withholds_browsing_identifiers(korea_triage_signal):
+    llm = FakeLLM()
+    triage_signal(korea_triage_signal, llm=llm)
+    prompt = llm.calls[0]
+    for forbidden in (
+        "global.oliveyoung.com", "/product/detail/123",
+        "https://global.oliveyoung.com/product/detail/123",
+        "korea_product|global.oliveyoung.com/product/detail/123",
+        "Anua Heartleaf 77% Soothing Toner 250ml | OLIVE YOUNG Global",
+        "OLIVE YOUNG Global", str(US), str(US + DAY),
+    ):
+        assert forbidden not in prompt
+
+
+@pytest.mark.parametrize("reply,expected", [
+    ("ACT", True), ("ACT: a quote would help", True),
+    ("SKIP", False), ("SKIP: not enough evidence to ACT", False),
+])
+def test_korea_triage_preserves_verdict_parser(korea_triage_signal, reply, expected):
+    llm = FakeLLM({"Anua Heartleaf": reply})
+    assert triage_signal(korea_triage_signal, llm=llm) is expected
+    assert len(llm.calls) == 1
+
+
 def test_result_counts_what_was_skipped(conn):
     """몇 건을 버렸는지 알려야 임계값을 조정할 수 있다."""
     llm = FakeLLM({"keep.test": "ACT: yes"})

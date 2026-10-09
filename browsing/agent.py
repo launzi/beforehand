@@ -152,6 +152,14 @@ TRIAGE_RUBRICS = {
         "short synthesis. Endpoints and aggregate counts alone do not prove concentration "
         "in the recent week; do not invent a daily distribution or an unfinished task."
     ),
+    "korea_product": (
+        "Repeated visits to the same Korean product page with no purchase page observed can "
+        "merit a delivered-price quote from Korea. Use visit_count, distinct_days and "
+        "purchase_page_observed. ACT when the same product was revisited, especially across "
+        "days, and a quote is a concrete next step; SKIP a single incidental revisit within "
+        "one short session. A quote is information only: purchase intent is not required "
+        "for ACT and must not be invented; checkout is never part of this action."
+    ),
 }
 
 TRIAGE_TEMPLATE = """Signal kind: {kind}
@@ -171,26 +179,43 @@ Bind the decision to the evidence fields above. Missing evidence is unknown, not
 Reply with exactly one word: ACT or SKIP."""
 
 
+# Korea triage receives only a scrubbed product name and aggregate evidence.
+TRIAGE_KOREA_TEMPLATE = """Signal kind: {kind}
+Term: {term}
+Evidence:
+{evidence}
+
+Kind rubric:
+{rubric}
+
+Bind the decision to the evidence fields above. Missing evidence is unknown, not a fact.
+Reply with exactly one word: ACT or SKIP."""
+
+
 def triage_signal(signal: Signal, *, llm) -> bool:
     """
     Ask the LLM whether this signal deserves action.
     Returns True for ACT, False for SKIP (or any other reply).
     """
-    if signal.kind == "korea_product":
-        from browsing.web.korea_quote import product_name
-        prompt = "Repeated Korean product visits; a quote may help, purchase intent is unknown. Product: " + product_name(signal.term or "")
-        reply = llm.complete(prompt, tier=TRIAGE_TIER, system=TRIAGE_SYSTEM, max_tokens=TRIAGE_MAX_TOKENS)
-        return re.fullmatch(r"ACT(?:\s*:[^\r\n]+)?", (reply or "").strip().upper()) is not None
-    evidence_str = _format_evidence(signal.evidence)
+    template = TRIAGE_TEMPLATE
+    evidence = signal.evidence
     host_str = signal.host if signal.host is not None else "(none)"
     term_str = signal.term if signal.term is not None else "(none)"
+    if signal.kind == "korea_product":
+        from browsing.web.korea_quote import product_name
+        template = TRIAGE_KOREA_TEMPLATE
+        term_str = product_name(signal.term or "")
+        evidence = {"product": term_str}
+        evidence.update({field: signal.evidence[field]
+                         for field in ("visit_count", "distinct_days", "purchase_page_observed")
+                         if field in signal.evidence})
 
-    prompt = TRIAGE_TEMPLATE.format(
+    prompt = template.format(
         kind=signal.kind,
         key=signal.key,
         host=host_str,
         term=term_str,
-        evidence=evidence_str,
+        evidence=_format_evidence(evidence),
         first_us=signal.first_us,
         last_us=signal.last_us,
         rubric=TRIAGE_RUBRICS.get(signal.kind, "Unknown kind: SKIP unless a concrete supported next step exists."),

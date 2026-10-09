@@ -478,7 +478,10 @@ def detect_korea_product(conn, *, since_us, until_us, profile=None, include_rest
                and re.search(r"/(?:checkout|orders?|payment|purchase)(?:/|$|[.?])", r["path"] or "", re.I) for r in rows):
             continue
         result.append(Signal("korea_product", _make_key("korea_product", key), host, product,
-                             {"product": product, "visit_count": len(times), "purchase_page_observed": False},
+                             {"product": product, "visit_count": len(times),
+                              # Chrome's epoch is UTC midnight; integer day buckets stay exact.
+                              "distinct_days": len({t // 86_400_000_000 for t in times}),
+                              "purchase_page_observed": False},
                              min(times), max(times)))
     return sorted(result, key=lambda s: (s.kind, s.key))
 

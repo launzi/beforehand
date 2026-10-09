@@ -13,7 +13,7 @@ import sqlite3
 import pytest
 
 from browsing.ingest import init_db, ingest_records
-from browsing.signals import Signal, detect_all, detect_dropped, detect_new_entry, detect_recurring, detect_unresolved
+from browsing.signals import Signal, detect_all, detect_dropped, detect_new_entry, detect_recurring, detect_unresolved, detect_korea_product, _chrome_us_from_iso
 
 US = 13404038416000000
 HOUR = 3_600_000_000
@@ -41,6 +41,24 @@ def conn():
 
 def kinds(signals, kind):
     return [s for s in signals if s.kind == kind]
+
+
+@pytest.mark.parametrize("first,last,days", [
+    # Crossing KST midnight is still one UTC calendar day.
+    ("2026-09-28T14:59:00Z", "2026-09-28T15:01:00Z", 1),
+    # Crossing UTC midnight is two UTC days, even within one KST day.
+    ("2026-09-28T23:59:00Z", "2026-09-29T00:01:00Z", 2),
+])
+def test_korea_product_distinct_days_are_utc(conn, first, last, days):
+    first_us, last_us = _chrome_us_from_iso(first), _chrome_us_from_iso(last)
+    url = "https://global.oliveyoung.com/product/detail/123"
+    title = "Anua Heartleaf 77% Soothing Toner 250ml | OLIVE YOUNG Global"
+    ingest_records(conn, [visit(url, us, title=title) for us in (first_us, last_us)])
+    signals = detect_korea_product(conn, since_us=first_us, until_us=last_us + 1)
+    assert len(signals) == 1
+    assert signals[0].evidence["distinct_days"] == days
+    assert signals[0].evidence["visit_count"] == 2
+    assert signals[0].evidence["purchase_page_observed"] is False
 
 
 # ── 신호 3: 새 진입 — 실증된 신호 ─────────────────────────────────────────────
