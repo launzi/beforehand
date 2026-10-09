@@ -38,7 +38,7 @@ PROFILES = {"public": DEFAULT_BASE_PATH,
             "no-search": ROOT / "profiles" / "no-search.toml",
             "confirm-research": ROOT / "profiles" / "confirm-research.toml"}
 LABELS = {"public": "Allow research & quotes", "no-search": "Block research & quotes",
-          "confirm-research": "Hold for my OK"}
+          "confirm-research": "Hold research & quotes"}
 SIGNAL_LABELS = {"dropped": "Activity went quiet", "korea_product": "Korean product interest",
                  "new_entry": "First recorded visit", "recurring": "Repeat visits",
                  "unresolved": "Search with little follow-through"}
@@ -46,7 +46,8 @@ ACTION_LABELS = {"followup_nudge": "Follow-up suggestion", "commerce.quote": "Ko
                  "setup_check": "Setup suggestion", "theme_summary": "Theme summary",
                  "research_briefing": "Research briefing"}
 STATUSES = {"allowed": ("Allowed", "✓"), "blocked": ("Blocked", "✕"),
-            "held": ("Held", "◐"), "skipped": ("Skipped", "—"),
+            "held": ("Held", "◐"), "skipped": ("Skipped by model", "○"),
+            "failed": ("Failed", "!"),
             "pending": ("Not evaluated", "—")}
 
 
@@ -118,9 +119,10 @@ def decision_view(decision, action=None):
     verdict = (decision.get("mandate") or {}).get("verdict")
     rule_state = {
         "allow": "allowed", "deny": "blocked", "hold": "held"}.get(verdict, "pending")
-    state = "skipped" if triage == "SKIP" else rule_state
-    outcome = {"skipped": "Not run — skipped by model", "blocked": "Not run — blocked by your rules",
-               "held": "Not run — held for your OK"}.get(state, "No run yet")
+    state = ("failed" if triage == "ERROR" or decision.get("execution_status") == "failed" else
+             "skipped" if triage == "SKIP" else rule_state if triage == "ACT" else "pending")
+    outcome = {"skipped": "Not run — skipped by the model", "blocked": "Not run — blocked by your rules",
+               "held": "Not run — held by your rules"}.get(state, "No run yet")
     if triage == "ERROR":
         outcome = "Not run — model triage failed"
     elif decision.get("execution_status") == "failed":
@@ -132,6 +134,9 @@ def decision_view(decision, action=None):
                    "Research briefing generated" if decision.get("signal_kind") == "unresolved" else "Done")
     label, symbol = STATUSES[state]
     rule_label, rule_symbol = STATUSES[rule_state]
+    if triage == "SKIP":
+        rule_label = {"allowed": "would allow", "blocked": "would block", "held": "would hold"}.get(
+            rule_state, rule_label)
     return {"state": state, "label": label, "symbol": symbol,
             "rule_state": rule_state, "rule_label": rule_label, "rule_symbol": rule_symbol,
             "model": {"ACT": "Proceed", "SKIP": "Skip", "ERROR": "Could not complete"}.get(triage, "Not run"),
@@ -148,6 +153,55 @@ def comparison_counts(snapshot):
     return counts
 
 
+def result_summary(snapshot):
+    """Count policy outcomes and successful outputs from the displayed snapshot only."""
+    counts = comparison_counts(snapshot)
+    if counts is None:
+        return "No saved result for this profile. No run yet."
+    actions = {a["signal_key"]: a for a in snapshot.get("result", {}).get("actions", [])}
+    outputs = dict.fromkeys(("research brief", "quote", "setup suggestion", "no quote returned", "other output"), 0)
+    for decision in snapshot.get("result", {}).get("decisions", []):
+        action = actions.get(decision["signal_key"])
+        if decision_view(decision)["state"] != "allowed" or not action:
+            continue
+        kind = ("no quote returned" if action.get("quote_unavailable") else
+                "quote" if action.get("quote") else
+                {"unresolved": "research brief", "new_entry": "setup suggestion"}.get(action.get("kind"), "other output"))
+        outputs[kind] += 1
+    parts = [f"{n} {kind}{'s' if n != 1 and kind != 'no quote returned' else ''}"
+             for kind, n in outputs.items() if n]
+    allowed = f"{counts['allowed']} allowed" + (f" ({', '.join(parts)})" if parts else "")
+    other = [f"{counts[key]} {label}" for key, label in (
+        ("held", "held"), ("blocked", "blocked"), ("skipped", "skipped by the model"),
+        ("failed", "failed"), ("pending", "not evaluated")) if counts[key]]
+    return ", ".join([allowed, *other]) + "."
+
+
+def result_provenance(snapshot, mode):
+    if snapshot is None:
+        return "No saved result for this profile. No run yet."
+    if mode == "live":
+        return "Live run just now" + (" — some actions failed." if snapshot.get("status") != "complete" else ".")
+    origin = "a real API run" if snapshot.get("source") == "live" else "an illustrative run with scripted providers"
+    return (f"Saved results from {origin} on {human_date(snapshot.get('created_at'), include_time=True)}. "
+            "Switching profiles makes no new calls.")
+
+
+def research_sources(action):
+    """Extract references, without repeating the model's claims about user behaviour."""
+    urls = re.findall(r'https?://[^\s<>"\']+', action.get("text", ""))
+    result = []
+    for raw in urls:
+        url = raw.rstrip(".,;:!?)]}")
+        try:
+            host = urlsplit(url).hostname
+        except ValueError:
+            continue
+        if host and url not in [source["url"] for source in result]:
+            result.append({"url": url, "label": host.removeprefix("www.")})
+    return result
+
+
 def evidence_summary(signal):
     """Describe detector evidence, never infer intent from model-generated prose."""
     evidence = signal.evidence
@@ -160,7 +214,7 @@ def evidence_summary(signal):
             first = datetime(1601, 1, 1, tzinfo=timezone.utc) + timedelta(microseconds=evidence["first_visit_us"])
             date = human_date(first.isoformat())
             visits = evidence["visit_count"]
-            detail = (f"1 visit to an onboarding page on {date}" if visits == 1 else
+            detail = (f"Visited the setup page once on {date}" if visits == 1 else
                       f"{counted(visits, 'visit')} to this site, including an onboarding page; first visit {date}")
         elif signal.kind == "unresolved":
             searches, follows = evidence["search_count"], evidence["follow_through_counts"]
@@ -199,7 +253,14 @@ def quote_view(quote):
                     "It's cheaper to buy locally according to the service verdict; no local price was supplied.")
     # Keep the full fulfilment statement in the disclosure, beside the raw quote.
     seller = quote.get("seller") or "Not supplied"
-    return {"local_first": sentence, "seller": seller,
+    total_krw = None
+    try:
+        total_krw = Decimal(str(quote["totalCost"])) * Decimal(str(quote["payNow"]["fxRate"]))
+        if not total_krw.is_finite():
+            total_krw = None
+    except (KeyError, InvalidOperation, TypeError, ValueError):
+        pass
+    return {"local_first": sentence, "seller": seller, "total_krw": total_krw,
             "verdict": {"buy_local": "Local reference is lower", "buy_from_korea": "Korea estimate is lower",
                         "close_call": "Prices are close", "insufficient_data": "Not enough data to compare"}.get(
                             quote.get("verdict"), "No comparison verdict")}
@@ -278,8 +339,22 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
         actions = {} if snapshot is None else {a["signal_key"]: a for a in snapshot["result"]["actions"]}
         rows = [{"signal": signal, "decision": decisions.get(signal.key), "action": actions.get(signal.key),
                  "evidence_summary": evidence_summary(signal),
+                 "sources": research_sources(actions.get(signal.key) or {}),
                  "kind": SIGNAL_LABELS.get(signal.kind, "Browsing pattern"),
                  "view": decision_view(decisions.get(signal.key), actions.get(signal.key))} for signal in signals]
+        # The comparison is the bundled saved experiment, even after a visitor runs live.
+        saved = {key: seed.get("profiles", {}).get(key) if seed["dataset"] == dataset else None
+                 for key in PROFILES}
+        saved = {key: value if value and value["mandate_digest"] == load_mandate(PROFILES[key], None).digest
+                 else None for key, value in saved.items()}
+        signal_sets = [set(d["signal_key"] for d in value["result"]["decisions"])
+                       for value in saved.values() if value]
+        same_signals = len(signal_sets[0]) if signal_sets and all(s == signal_sets[0] for s in signal_sets) else None
+        public_actions = (saved.get("public") or {}).get("result", {}).get("actions", [])
+        featured_key = next((a["signal_key"] for a in public_actions if a.get("quote")), None)
+        product_rows = [row for row in rows if row["signal"].kind == "korea_product"]
+        featured_quote = next((row for row in product_rows if row["signal"].key == featured_key),
+                              product_rows[0] if product_rows else None)
         csrf = secrets.token_urlsafe(32)
         response = templates.TemplateResponse(request=request, name="index.html", context={
             "quote_disclosure": DISCLOSURE, "quote_checkout_notice": CHECKOUT_NOTICE,
@@ -289,7 +364,10 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
             "notice": notice, "request_activity": request_activity, "csrf": csrf, "daily_limit": store.daily_limit,
             "remaining_runs": remaining_runs(store), "history_window": history_window(scenario),
             "rows": rows, "statuses": STATUSES,
-            "comparisons": {key: comparison_counts(cached(key)) for key in PROFILES},
+            "comparisons": {key: comparison_counts(saved[key]) for key in PROFILES},
+            "same_signals": same_signals, "featured_quote": featured_quote,
+            "result_counts": comparison_counts(snapshot), "result_summary": result_summary(snapshot),
+            "result_provenance": result_provenance(snapshot, mode),
             "quote_requests": {s.key: quote_request(s.term) for s in signals if s.kind == "korea_product"},
         }, status_code=status)
         response.set_cookie("demo_csrf", csrf, httponly=True, samesite="strict",

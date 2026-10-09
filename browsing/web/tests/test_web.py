@@ -1,5 +1,6 @@
 import asyncio
 from contextlib import suppress
+from html import unescape
 import json
 import re
 import threading
@@ -300,7 +301,7 @@ async def test_quote_card_and_exact_outbound_panel_are_visible_without_network(t
         for expected in ['What this demo server sends','quote_korea_product','product','destination',
                          'KRW 16,127','USD 65.27','2.089235915388495','91 FR 47318',
                          'Local reference price','Quote assumptions and warnings',DISCLOSURE,'Seller: Munteok',CHECKOUT_NOTICE]:
-            assert expected in page.text
+            assert expected in unescape(page.text)
         for forbidden in ['quoteToken','REDACTED-IN-FIXTURE','next_steps','start checkout']:
             assert forbidden not in page.text
         assert page.text.count('class="quote-card"')==3

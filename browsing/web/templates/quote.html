@@ -2,11 +2,13 @@
 <article class="quote-card"><div class="receipt">
 <div class="receipt-head"><p class="eyebrow">Korea price quote</p><span class="small muted">{{ quote.destination }}</span></div>
 <h3>{{ quote.item.title }}</h3>
-<div class="prices"><div><span class="price-label">Local reference price</span><strong class="big">{% if quote.localPrice %}{{ quote.currency }} {{ quote.localPrice.price|number }}{% else %}Not available{% endif %}</strong></div><div><span class="price-label">Estimated Korea total</span><strong class="big">{{ quote.currency }} {{ quote.totalCost|number }}</strong></div></div>
-<p class="quote-only">Quote only. No order or payment is created.</p>
+<p class="evidence-summary small muted">{{ row.evidence_summary }}</p>
+{{ steps(row) }}
+<div class="prices"><div><span class="price-label">Local reference price</span><strong class="big">{% if quote.localPrice %}{{ quote.currency }} {{ quote.localPrice.price|number }}{% else %}Not available{% endif %}</strong></div><div><span class="price-label">Estimated total from Korea to {{ quote.destination }}</span><strong class="big">≈ {{ quote.currency }} {{ quote.totalCost|number }}</strong>{% if display.total_krw is not none %}<span class="small muted">≈ KRW {{ display.total_krw|number(0) }} including estimated duty</span>{% endif %}<span class="quote-date small muted">Quoted {{ snapshot.created_at|human_date }}</span></div></div>
+<p class="quote-only"><strong>Quote only.</strong> No order or payment is created.</p>
 {% if display.local_first %}<p class="local-first">{{ display.local_first }}</p>{% else %}<p class="local-first">{{ display.verdict }}. No additional recommendation is made.</p>{% endif %}
-<p class="duty">Import charges: {{ quote.currency }} {{ quote.dutyOnDelivery.estimate|number }} estimated, paid on delivery.</p>
-<details><summary>Fee breakdown and calculation</summary>
+<p class="duty">Estimated {{ quote.destination }} import charges — paid on delivery: {{ quote.currency }} {{ quote.dutyOnDelivery.estimate|number }}.</p>
+<details class="fee-breakdown"><summary>Fees included in the estimate</summary>
 <div class="timeline">
 <div class="line"><span>Item price</span><span>KRW {{ quote.payNow.itemKrw|number(0) }}</span></div>
 <div class="line"><span>Shipping</span><span>KRW {{ quote.payNow.shippingKrw|number(0) }}</span></div>
@@ -16,7 +18,7 @@
 <div class="line later"><span>Estimated import charges on delivery</span><span>{{ quote.currency }} {{ quote.dutyOnDelivery.estimate|number }}</span></div>
 <div class="line strong total"><span>Estimated Korea total</span><span>{{ quote.currency }} {{ quote.totalCost|number }}</span></div>
 </div>
-<p>Exchange rate used: {{ quote.payNow.fxRate|number(0) }} KRW / {{ quote.currency }}</p>
+<p class="small muted">Exchange rate used: {{ quote.payNow.fxRate|number(0) }} KRW / {{ quote.currency }}</p>
 </details>
 <details><summary>Import charge estimate and sources</summary>
 {% for line in quote.dutyOnDelivery.lines %}<p>{{ line.label }}: {{ line.rate }} · {{ quote.currency }} {{ line.amount|number }}<br>Source: {{ line.source|model_text }}</p>{% endfor %}
@@ -25,12 +27,12 @@
 <details><summary>Quote assumptions and warnings ({{ quote.warnings|length }})</summary>{% for warning in quote.warnings %}<p>{{ warning }}</p>{% endfor %}</details>
 <p class="seller">Seller: {{ display.seller }}</p>
 <div class="reference-links">{% if quote.item.link %}<a href="{{ quote.item.link }}" target="_blank" rel="noopener noreferrer">View Korean product reference</a>{% endif %}{% if quote.localPrice and quote.localPrice.url %}<a href="{{ quote.localPrice.url }}" target="_blank" rel="noopener noreferrer">View local price reference</a>{% endif %}</div>
-<p class="receipt-foot">Korea Concierge is a separate service run by the developer of Beforehand. Its service fee is included in the estimate and applies only if you buy through that service. Checkout is always blocked by this agent.</p>
+<p class="receipt-foot quote-disclosure">{{ quote_disclosure }}</p>
 <details><summary>Disclosure and original quote</summary>
-<p>{{ quote_disclosure }}</p><p>{{ quote_checkout_notice }}</p>{% if quote.fulfilment %}<p>{{ quote.fulfilment }}</p>{% endif %}
+<p>{{ quote_checkout_notice }}</p>{% if quote.fulfilment %}<p>{{ quote.fulfilment }}</p>{% endif %}
 <p>Original comparison verdict: <code>{{ quote.verdict or 'unknown' }}</code></p>
 <pre class="raw-quote">{{ quote|tojson(indent=2) }}</pre>
 <p class="evidence-summary small muted">{{ row.evidence_summary }}</p>
-<div class="model-suggestion"><p class="eyebrow">Model suggestion · original output</p><pre>{{ action.text }}</pre></div>
+<div class="model-suggestion"><p class="eyebrow">Model output (original)</p><pre class="original-model-output">{{ action.text }}</pre></div>
 </details>
 </div></article>

@@ -17,8 +17,9 @@ from types import SimpleNamespace
 ENDPOINT = "https://concierge.youngji.kim/api/mcp"
 DESTINATIONS = ("US", "GB", "JP", "CN", "TW", "HK")
 VERDICTS = ("buy_from_korea", "buy_local", "close_call", "insufficient_data")  # KC verdict.ts
-DISCLOSURE = ("Quotes come from Korea Concierge, a separate service run by the developer of Beforehand. "
-              "Quotes are free; a service fee is included only if you choose to buy through it.")
+DISCLOSURE = ("Quotes are free. The estimate above includes Korea Concierge's service fee, "
+              "which is charged only if you buy through Korea Concierge. "
+              "Korea Concierge is a separate service run by the developer of Beforehand.")
 CHECKOUT_NOTICE = ("This agent stops at the quote. Checkout is outside its mandate "
                    "(commerce.checkout is always denied), so no order or payment is created.")
 _SUMMARY_RULES = (
