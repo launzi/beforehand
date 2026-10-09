@@ -13,11 +13,11 @@ Choose auto-check or Only when I click at setup. Checks send product name, brand
 
 Korea amounts come from the quote engine. The card's local price comes from the shop page; savings are computed on your device when currencies match.
 
-Buy from Korea opens an extension page. When you click Continue to payment, your email, name and payment method (card or PayPal) go to Korea Concierge to create an order; the extension does not store them. Quote tokens are kept in Chrome's in-memory session storage and are sent only to Korea Concierge to start checkout. A Buy refresh re-checks the same product name, brand and delivery country. If the price changed, the checkout page shows the new price and asks you to confirm. You pay on Stripe (card) or PayPal; beforehand never sees your card.
+Buy from Korea opens an extension page. When you click Continue to payment, your email and name, with your payment method (card or PayPal), go to Korea Concierge to create an order. They are not stored by the extension. Quote tokens are kept in Chrome's in-memory session storage and are sent only to Korea Concierge to start checkout. A Buy refresh re-checks the same product name, brand and delivery country. If the price changed, the checkout page shows the new price and asks you to confirm. You pay on Stripe (card) or PayPal; beforehand never sees your card.
 
 Seller: Munteok, the developer of this extension, operated by Youngji Kim in Seoul, Korea. Munteok earns the service fee shown at checkout. Quotes are free. Out of stock in Korea means a full refund. Duty and tax are estimated and paid on delivery.
 
-Your order record: Korea Concierge keeps your email, name, the quote and the payment reference, plus the shipping address and phone number that Stripe or PayPal returns after you pay. After the item is bought in Korea, the record also holds the Korean purchase details and the tracking number. The operator receives order alerts through Telegram with your name, email, shipping address and phone number, and uses them to buy and ship your item.
+Your order record: Korea Concierge keeps your email, name, the quote and the payment reference, plus the shipping address and phone number that Stripe or PayPal returns after you pay. After the item is bought in Korea, the record also holds the Korean purchase details and the tracking number. The operator uses this record to buy and ship your item. Order alerts to the operator contain only operational details, such as the order number, amount and product link, and no personal information.
 
 Supports 22 shops in the US, UK, Japan, Taiwan and Hong Kong, with delivery to those countries and China. Disable checks per shop or globally. Export or delete the local log, or turn off and delete your data in Settings.
 
@@ -43,7 +43,7 @@ Not collected:
 - User activity: no clicks, keystrokes or scroll tracking; the local log stays on the device.
 - Web history: no history permission; page addresses are never sent.
 
-Korea Concierge keeps an order record with email, name, the quote, the payment reference, the shipping address and phone number, and after purchase the Korean purchase details and tracking number. Order alerts to the operator, sent through Telegram, include name, email, shipping address and phone number. Purpose: the single purpose above, including disclosed Korea Concierge processing and demand records.
+Korea Concierge keeps an order record with email, name, the quote, the payment reference, the shipping address and phone number, and after purchase the Korean purchase details and tracking number. Order alerts to the operator contain only operational details (order number, amount, product link) and no personal information. Purpose: the single purpose above, including disclosed Korea Concierge processing and demand records.
 
 Certify: no sale or transfer of user data to third parties outside the approved use cases; no use or transfer for purposes unrelated to the single purpose; no use or transfer to determine creditworthiness or for lending.
 

@@ -5,7 +5,7 @@ import {matchPatterns} from '../core/shops.js';
 const root=new URL('../',import.meta.url);
 export function manifestFor(target) {
  if(target!=='store') throw new Error('Unknown target');
- return {manifest_version:3,name:'beforehand',version:'1.4.2',minimum_chrome_version:'116',
+ return {manifest_version:3,name:'beforehand',version:'1.4.3',minimum_chrome_version:'116',
  description:"See what the product you're viewing costs from Korea, delivered. Sends only the product name, brand and your country.",
  permissions:['storage'],host_permissions:[...matchPatterns(),'https://concierge.youngji.kim/*'],
  background:{service_worker:'background.js',type:'module'},
