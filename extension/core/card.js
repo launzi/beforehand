@@ -32,8 +32,8 @@
  function compareAlternatives(items,source,local) {
   const rows=items.map(item=>{
    const q=item.quote,tiles=[];let sizeSame=null;
-   if(item.sameBrand!=null) tiles.push({key:'Brand',state:item.sameBrand?'same':'other',value:item.sameBrand?'Same':'Other'});
-   if(item.sameType!=null) tiles.push({key:'Type',state:item.sameType?'same':'other',value:item.sameType?'Same':'Other'});
+   if(item.sameBrand!=null) tiles.push({key:'Brand',state:item.sameBrand?'same':'other',value:item.sameBrand?'Same':'Different'});
+   if(item.sameType!=null) tiles.push({key:'Type',state:item.sameType?'same':'other',value:item.sameType?'Same':'Different'});
    if(item.size) {
     if(source?.size && source.size.unit===item.size.unit) {const r=item.size.value/source.size.value;sizeSame=Math.abs(r-1)<=.15+1e-9;tiles.push({key:'Size',state:sizeSame?'same':r>1?'better':'worse',value:fmtSize(item.size)});}
     else tiles.push({key:'Size',state:'other',value:fmtSize(item.size)});
@@ -56,7 +56,8 @@
   if(rows.length===2) {
    const score=r=>[r.item.sameBrand,r.item.sameType,r.sizeSame].filter(v=>v===true).length,[a,b]=rows;
    const win=score(a)!==score(b)?(score(a)>score(b)?a:b):a.total!==b.total?(a.total<b.total?a:b):null;
-   if(win && score(win)>0) win.badges.push('Closest');
+   // A different brand is never the closest match to a branded item, however well it scores elsewhere.
+   if(win && score(win)>0 && win.item.sameBrand!==false) win.badges.push('Closest');
   }
   return rows;
  }
@@ -115,8 +116,9 @@
     if(cheaper) body.append(el('p','Cheaper at this shop','sm'));else buyButton(body,'same');
     details(q,body);
    } else if(current.view==='alternatives') {
-    body.className='card';header();body.append(el('p','Alternatives from Korea','eyebrow'));
+    body.className='card';header();body.append(el('p','Similar items from Korea','eyebrow'));
     const items=current.items.slice(0,2),currency=items[0]?.quote.currency;
+    body.append(el('p',"We couldn't find this exact item in Korea."+(items.every(i=>i.sameBrand===false)?' These are different brands.':''),'muted sm'));
     const local=current.local?.currency===currency && Number.isFinite(current.local.price) && current.local.price>0?current.local:null;
     const src=current.source ?? {},parts=[src.brand,src.typeEn,fmtSize(src.size)].filter(Boolean);
     if(parts.length || local) {const ref=el('div',null,'ref');ref.append(el('span',['vs this page',...parts].join(' · ')));if(local)ref.append(el('b',money(local.price,currency)));body.append(ref);}
@@ -134,6 +136,10 @@
     });
    } else if(current.view==='loading') {
     body.className='card state';const b=el('span','Checking Korea…','brand');b.prepend?.(mark());if(!b.prepend)b.append(mark());body.append(b);
+    // A check takes 20-50 s (measured 2026-10-09), so the card names the current stage on a timer instead of sitting silent.
+    const step=current.step ?? 0,status=el('p',step===0?'Finding this item in Korea…':'Pricing delivery and duty…','sm');status.setAttribute('role','status');body.append(status);
+    if(step===2) body.append(el('p','This can take up to a minute.','muted xs'));
+    else timer=later(()=>{current={...current,step:step+1};render();},step===0?8000:17000);
     for(const w of [70,40,85]){const s=el('div',null,'skeleton');s.setAttribute('style',`width:${w}%`);body.append(s);}
    } else if(current.view==='none') {
     state('No match in Korea',null,button('Hide for this item',()=>{collapsed=true;render();},'link'));timer=later(()=>{collapsed=true;render();},4000);

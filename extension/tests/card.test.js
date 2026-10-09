@@ -106,3 +106,27 @@ test('same item shows the match ring and English title over the Korean original'
  c.setState({view:'same',quote:quote(),local:null,titleEn:null,matchPercent:null});assert.ok(!c.root.testShadow.textContent.includes('MATCH'));
  c.destroy();
 });
+test('different brands are labelled Different and never win Closest',()=>{
+ const rows=compareAlternatives([altItem({sameBrand:false,sameType:true,size:null,quote:quote({totalCost:63.66})}),altItem({sameBrand:false,sameType:true,size:null,quote:quote({totalCost:69})})],{brand:'ANUA',typeEn:'Toner Pads',size:null},null);
+ assert.deepEqual(rows[0].tiles.map(t=>[t.key,t.state,t.value]),[['Brand','other','Different'],['Type','same','Same']]);
+ assert.deepEqual(rows.map(r=>r.badges.includes('Closest')),[false,false]);
+});
+test('alternatives card says the exact item was not found and names different brands',()=>{
+ const c=mount(documentFake());
+ c.setState({view:'alternatives',source:{brand:'ANUA',typeEn:'Toner Pads',size:null},local:null,items:[altItem({sameBrand:false,size:null}),altItem({sameBrand:false,size:null,quote:quote({totalCost:69})})]});
+ const text=c.root.testShadow.textContent;
+ assert.ok(text.includes('Similar items from Korea'));assert.ok(text.includes("We couldn't find this exact item in Korea. These are different brands."));
+ assert.ok(!text.includes('Closest'));assert.ok(!text.includes('Alternatives from Korea'));
+ c.setState({view:'alternatives',source,local,items:[altItem(),altItem({quote:quote({totalCost:60.02}),size:ml(60)})]});
+ const same=c.root.testShadow.textContent;assert.ok(same.includes("We couldn't find this exact item in Korea."));assert.ok(!same.includes('different brands'));
+ c.destroy();
+});
+test('loading shows staged progress over time instead of a silent spinner',()=>{
+ const timers=[];const c=mount(documentFake(),{setTimeout:(fn,ms)=>{timers.push({fn,ms});return timers.length;},clearTimeout:()=>{}});
+ c.setState({view:'loading'});
+ const text=()=>c.root.testShadow.textContent;
+ assert.ok(text().includes('Finding this item in Korea…'));assert.equal(timers.at(-1).ms,8000);
+ timers.at(-1).fn();assert.ok(text().includes('Pricing delivery and duty…'));assert.ok(!text().includes('Finding this item'));assert.equal(timers.at(-1).ms,17000);
+ const n=timers.length;timers.at(-1).fn();assert.ok(text().includes('Pricing delivery and duty…'));assert.ok(text().includes('This can take up to a minute.'));assert.equal(timers.length,n,'no further timers after the last stage');
+ c.destroy();
+});
