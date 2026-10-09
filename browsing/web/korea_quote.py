@@ -16,6 +16,7 @@ from types import SimpleNamespace
 
 ENDPOINT = "https://concierge.youngji.kim/api/mcp"
 DESTINATIONS = ("US", "GB", "JP", "CN", "TW", "HK")
+VERDICTS = ("buy_from_korea", "buy_local", "close_call", "insufficient_data")  # KC verdict.ts
 DISCLOSURE = "Korea Concierge is operated by the developer of this extension (Munteok). Quotes are free; a service fee is included only if you choose to buy through it."
 SUMMARY_SYSTEM = (
     "Write exactly 2-3 sentences in English interpreting this quote for you. "
@@ -74,6 +75,13 @@ def _number(value):
     return value
 
 
+def _short_text(value, limit=500):
+    text = re.sub(r"\s+", " ", re.sub(r"[\x00-\x1f\x7f]", " ", _text(value))).strip()
+    if not text or len(text) > limit:
+        raise QuoteError("Malformed quote text")
+    return text
+
+
 def safe_link(value):
     if not isinstance(value, str):
         return None
@@ -92,7 +100,7 @@ def sanitize_quote(raw: dict) -> dict:
         if not isinstance(duty["lines"], list) or not isinstance(raw["warnings"], list):
             raise QuoteError("Malformed quote arrays")
         quote = {
-            "seller": _text(raw["seller"]),
+            "seller": _short_text(raw["seller"], 80),
             "item": {"title": product_name(item["title"]), "priceKrw": _number(item["priceKrw"]), "link": safe_link(item.get("link"))},
             "destination": _text(raw["destination"]), "currency": _text(raw["currency"]),
             "payNow": {k: _number(pay[k]) for k in ("total", "totalKrw", "itemKrw", "shippingKrw", "serviceFeeKrw", "paymentFeeKrw", "fxRate")},
@@ -100,7 +108,9 @@ def sanitize_quote(raw: dict) -> dict:
                 "lines": [{"label": _text(line["label"]), "rate": _text(line["rate"]), "amount": _number(line["amount"]), "source": _text(line["source"])} for line in duty["lines"]]},
             "totalCost": _number(raw["totalCost"]),
             "localPrice": None if local is None or local.get("price") is None else {"price": _number(local["price"]), "url": safe_link(local.get("url"))},
-            "verdict": _text(raw["verdict"]), "warnings": [_text(w) for w in raw["warnings"]],
+            "verdict": None if raw.get("verdict") is None else _text(raw["verdict"]),
+            "warnings": [_text(w) for w in raw["warnings"]],
+            "fulfilment": None if raw.get("fulfilment") is None else _short_text(raw["fulfilment"]),
         }
         if quote["destination"] not in DESTINATIONS or not re.fullmatch(r"[A-Z]{3}", quote["currency"]):
             raise QuoteError("Malformed quote destination or currency")
@@ -139,6 +149,12 @@ def parse_rpc(raw: dict) -> dict:
             if "price" in str(texts[0]).lower():
                 raise QuoteError("price not found") from exc
             raise QuoteError("Malformed quote response") from exc
+    if isinstance(data, dict) and isinstance(data.get("error"), str):
+        if data.get("needsManualPrice") or "price" in json.dumps(data).lower():
+            raise QuoteError("price not found")
+        if data["error"] == "quote_unavailable":
+            raise QuoteError("Quote unavailable for this item")
+        raise QuoteError("Quote service unavailable")
     if isinstance(data, dict) and not data.get("payNow") and ("price" in json.dumps(data).lower()):
         raise QuoteError("price not found")
     return sanitize_quote(data)

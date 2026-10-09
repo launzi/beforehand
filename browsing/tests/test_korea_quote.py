@@ -50,9 +50,10 @@ def test_exact_minimal_wire_and_token_boundary(raw, sse):
     assert call['headers'] == {'content-type':'application/json','accept':'application/json, text/event-stream'}
     assert quote['payNow']['total'] == 60.49
     assert quote['dutyOnDelivery']['lines'][1]['amount'] == 2.089235915388495
-    for forbidden in ['quoteToken','TOP_SECRET','NESTED_SECRET','next_steps','fulfilment','quoteExpiresAt']:
+    for forbidden in ['quoteToken','TOP_SECRET','NESTED_SECRET','next_steps','quoteExpiresAt']:
         assert forbidden not in json.dumps(quote)
         assert forbidden not in json.dumps(summary_facts(quote))
+    assert "fulfilment" not in json.dumps(summary_facts(quote))
 
 
 @pytest.mark.parametrize('rpc,message', [
@@ -204,3 +205,62 @@ def test_quote_failure_is_an_error_not_a_successful_action(tmp_path):
     assert result.stats['errors']==1
     assert 'price not found' in result.errors[0]
     assert result.decisions[0].execution_status=='failed'
+
+
+# KC contract pinned from kc-order-pipeline origin/main 193bf2a (PR #13):
+# src/lib/jikgugak/deliveredQuote.ts success body keys.
+KC_SUCCESS_KEYS = {"seller", "item", "destination", "currency", "payNow", "dutyOnDelivery",
+                   "totalCost", "localPrice", "verdict", "hs", "warnings", "quoteToken",
+                   "quoteExpiresAt", "fulfilment", "next_steps"}
+SANITIZED_KEYS = {"seller", "item", "destination", "currency", "payNow", "dutyOnDelivery",
+                  "totalCost", "localPrice", "verdict", "warnings", "fulfilment"}
+
+
+def rpc(data):
+    return {"jsonrpc": "2.0", "id": 1, "result": {"structuredContent": data}}
+
+
+def test_fixture_matches_current_kc_contract_and_sanitize_allowlist(raw):
+    assert set(raw) == KC_SUCCESS_KEYS
+    quote = sanitize_quote(raw)
+    assert set(quote) == SANITIZED_KEYS
+    assert quote["seller"] == "Munteok"
+    assert quote["fulfilment"] == raw["fulfilment"]
+    assert quote["fulfilment"]
+    assert "fulfilment" not in summary_facts(quote)
+    for leaked in ("hs", "quoteToken", "quoteExpiresAt", "next_steps"):
+        assert leaked not in quote
+
+
+@pytest.mark.parametrize("missing", [False, True])
+def test_null_or_missing_verdict_is_unknown_not_error(raw, missing):
+    if missing:
+        del raw["verdict"]
+    else:
+        raw["verdict"] = None
+    quote = sanitize_quote(raw)
+    assert quote["verdict"] is None
+    assert summary_facts(quote)["verdict"] is None
+
+
+def test_fulfilment_is_optional_and_bounded(raw):
+    raw.pop("fulfilment")
+    assert sanitize_quote(raw)["fulfilment"] is None
+    raw["fulfilment"] = "Munteok\x00 is\nthe seller."
+    assert sanitize_quote(raw)["fulfilment"] == "Munteok is the seller."
+    raw["fulfilment"] = "x" * 501
+    with pytest.raises(QuoteError):
+        sanitize_quote(raw)
+
+
+@pytest.mark.parametrize("data,message", [
+    ({"error": "quote_unavailable", "message": "This item needs a manual quote.", "warnings": []},
+     "Quote unavailable for this item"),
+    ({"error": "quote_unavailable", "message": "No Korean listing found.", "warnings": [],
+      "needsManualPrice": "Send koreaPriceKrw"}, "price not found"),
+    ({"error": "estimate_unavailable", "message": "Estimate service unavailable. Try again later."},
+     "Quote service unavailable"),
+])
+def test_kc_error_envelopes_map_to_clear_errors(data, message):
+    with pytest.raises(QuoteError, match=message):
+        parse_rpc(rpc(data))
