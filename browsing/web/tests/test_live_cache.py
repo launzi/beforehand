@@ -131,9 +131,11 @@ async def test_unavailable_quote_completes_cache_and_renders_without_prices(tmp_
         page = await client.get('/')
     assert '<strong>CACHED</strong> · live · complete' in page.text
     cards = [c.split('</article>', 1)[0] for c in page.text.split('<article class="quote-card">')[1:]]
-    unavailable = [c for c in cards if 'Quote unavailable for this item' in c]
+    unavailable = [c for c in cards if 'No quote returned — Korea Concierge could not price this item.' in c]
     assert len(cards) == 3 and len(unavailable) == 1
     assert '<table' not in unavailable[0]
     assert '<a ' not in unavailable[0]
     assert 'USD' not in unavailable[0] and 'KRW' not in unavailable[0]
-    assert 'commerce.checkout is always denied' in unavailable[0]
+    assert 'No order or payment was created.' in unavailable[0]
+    # Technical checkout denial remains in the signal's collapsed disclosure.
+    assert 'commerce.checkout is always denied' in page.text

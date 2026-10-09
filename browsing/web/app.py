@@ -5,13 +5,15 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 import sqlite3
 from contextlib import closing
 from dataclasses import asdict
 from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlsplit
 from uuid import uuid4
 
 from starlette.applications import Starlette
@@ -20,6 +22,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse
 from starlette.routing import Route
 from starlette.templating import Jinja2Templates
+from markupsafe import Markup, escape
 
 from browsing import providers
 from browsing.web.korea_quote import CHECKOUT_NOTICE, DISCLOSURE, quote_request
@@ -34,8 +37,134 @@ ROOT = Path(__file__).parent
 PROFILES = {"public": DEFAULT_BASE_PATH,
             "no-search": ROOT / "profiles" / "no-search.toml",
             "confirm-research": ROOT / "profiles" / "confirm-research.toml"}
-LABELS = {"public": "Public default", "no-search": "Search disabled",
-          "confirm-research": "Confirm research first"}
+LABELS = {"public": "Allow research & quotes", "no-search": "Block research & quotes",
+          "confirm-research": "Hold for my OK"}
+SIGNAL_LABELS = {"dropped": "Activity went quiet", "korea_product": "Korean product interest",
+                 "new_entry": "First recorded visit", "recurring": "Repeat visits",
+                 "unresolved": "Search with little follow-through"}
+ACTION_LABELS = {"followup_nudge": "Follow-up suggestion", "commerce.quote": "Korea price quote",
+                 "setup_check": "Setup suggestion", "theme_summary": "Theme summary",
+                 "research_briefing": "Research briefing"}
+STATUSES = {"allowed": ("Allowed", "✓"), "blocked": ("Blocked", "✕"),
+            "held": ("Held", "◐"), "skipped": ("Skipped", "—"),
+            "pending": ("Not evaluated", "—")}
+
+
+def human_date(value, *, include_time=False):
+    """Format dates for display only; exact timestamps remain in the audit details."""
+    try:
+        date = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return "Date unavailable"
+    if date.tzinfo:
+        date = date.astimezone(timezone.utc)
+    result = f"{date:%b} {date.day}, {date.year}"
+    return result + (f", {date:%H:%M} UTC" if include_time else "")
+
+
+def history_window(scenario):
+    start, end = human_date(scenario.get("since")), human_date(scenario.get("until"))
+    if start[-4:] == end[-4:] and start != "Date unavailable":
+        start = start.rsplit(",", 1)[0]
+    return f"{start} – {end}"
+
+
+def number(value, decimals=2):
+    try:
+        amount = Decimal(str(value))
+        if amount.is_finite():
+            return f"{amount:,.{decimals}f}"
+    except (InvalidOperation, ValueError, TypeError):
+        pass
+    return "Not available"
+
+
+def model_text(value):
+    """Escape untrusted prose; only construct HTTP(S) links, with readable labels."""
+    text = str(value or "").strip()
+
+    def prose(fragment):
+        # A date inside a URL is part of the resource address, not display copy.
+        return escape(re.sub(
+            r"\b\d{4}[-‑]\d{2}[-‑]\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)?",
+            lambda m: human_date(m[0].replace("‑", "-")), fragment))
+
+    pattern = r'\[([^\]\n]+)\]\((https?://[^\s<>"\']+)\)|https?://[^\s<>"\']+'
+    parts, position = [], 0
+    for match in re.finditer(pattern, text):
+        parts.append(prose(text[position:match.start()]))
+        url = match[2] if match[2] else match[0]
+        url = url.rstrip(".,;:!?)]}")
+        suffix = (match[2] if match[2] else match[0])[len(url):]
+        try:
+            host = urlsplit(url).hostname
+        except ValueError:
+            host = None
+        if host:
+            label = match[1] or host.removeprefix("www.")
+            parts.append(Markup('<a href="{}" target="_blank" rel="noopener noreferrer">{}</a>').format(url, label))
+            parts.append(escape(suffix))
+        else:
+            parts.append(escape(match[0]))
+        position = match.end()
+    parts.append(prose(text[position:]))
+    return Markup("").join(parts)
+
+
+def decision_view(decision, action=None):
+    """Model skips take precedence in the *display*, not in mandate evaluation."""
+    decision, action = decision or {}, action or {}
+    triage = decision.get("triage")
+    verdict = (decision.get("mandate") or {}).get("verdict")
+    state = "skipped" if triage == "SKIP" else {
+        "allow": "allowed", "deny": "blocked", "hold": "held"}.get(verdict, "pending")
+    outcome = {"skipped": "Not run — skipped by model", "blocked": "Not run — blocked by your rules",
+               "held": "Not run — held for your OK"}.get(state, "No run yet")
+    if decision.get("execution_status") == "failed":
+        outcome = "Could not complete — see details"
+    elif state == "allowed" and (decision.get("executed") or action):
+        outcome = ("Request completed — no quote returned" if action.get("quote_unavailable") else
+                   "Quote received" if action.get("quote") else
+                   "Setup suggestion generated" if decision.get("signal_kind") == "new_entry" else
+                   "Research briefing generated" if decision.get("signal_kind") == "unresolved" else "Done")
+    label, symbol = STATUSES[state]
+    return {"state": state, "label": label, "symbol": symbol,
+            "model": {"ACT": "Proceed", "SKIP": "Skip"}.get(triage, "Not run"),
+            "outcome": outcome,
+            "proposed": ACTION_LABELS.get((decision.get("planned_action") or {}).get("action_kind"), "Follow-up")}
+
+
+def comparison_counts(snapshot):
+    if snapshot is None:
+        return None
+    counts = dict.fromkeys(STATUSES, 0)
+    for decision in snapshot.get("result", {}).get("decisions", []):
+        counts[decision_view(decision)["state"]] += 1
+    return counts
+
+
+def remaining_runs(store):
+    """Read the same UTC budget as reserve(), without consuming an attempt."""
+    day = store.clock().astimezone(timezone.utc).date().isoformat()
+    with store.connect() as conn:
+        row = conn.execute("SELECT used FROM budget WHERE day=?", (day,)).fetchone()
+    return max(0, store.daily_limit - (row[0] if row else 0))
+
+
+def quote_view(quote):
+    currency = quote.get("currency", "")
+    local = quote.get("localPrice")
+    sentence = ""
+    if quote.get("verdict") == "buy_local":
+        sentence = (f"It's cheaper to buy locally: {currency} {number(local.get('price'))} locally versus "
+                    f"{currency} {number(quote.get('totalCost'))} estimated total cost from Korea." if local else
+                    "It's cheaper to buy locally according to the service verdict; no local price was supplied.")
+    # Keep the full fulfilment statement in the disclosure, beside the raw quote.
+    seller = quote.get("seller") or "Not supplied"
+    return {"local_first": sentence, "seller": seller,
+            "verdict": {"buy_local": "Local reference is lower", "buy_from_korea": "Korea estimate is lower",
+                        "close_call": "Prices are close", "insufficient_data": "Not enough data to compare"}.get(
+                            quote.get("verdict"), "No comparison verdict")}
 
 
 def load_dataset(db_path: Path | None):
@@ -83,6 +212,8 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
     store = RunStore(Path(state_dir or os.getenv("DEMO_STATE_DIR", ".demo-state")),
                      int(os.getenv("DEMO_DAILY_LIMIT", "20")) if daily_limit is None else daily_limit)
     templates = Jinja2Templates(directory=ROOT / "templates")
+    templates.env.filters.update(number=number, human_date=human_date, model_text=model_text)
+    templates.env.globals.update(quote_view=quote_view)
     configured_cache = cache_path or os.getenv("DEMO_CACHE")
     seed = json.loads(Path(configured_cache or ROOT / "fixtures" / "cache.json").read_text())
     if configured_cache and seed["dataset"] != dataset:
@@ -103,6 +234,9 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
         snapshot = cached(profile) if snapshot is None else snapshot
         decisions = {} if snapshot is None else {d["signal_key"]: d for d in snapshot["result"]["decisions"]}
         actions = {} if snapshot is None else {a["signal_key"]: a for a in snapshot["result"]["actions"]}
+        rows = [{"signal": signal, "decision": decisions.get(signal.key), "action": actions.get(signal.key),
+                 "kind": SIGNAL_LABELS.get(signal.kind, "Browsing pattern"),
+                 "view": decision_view(decisions.get(signal.key), actions.get(signal.key))} for signal in signals]
         csrf = secrets.token_urlsafe(32)
         response = templates.TemplateResponse(request=request, name="index.html", context={
             "quote_disclosure": DISCLOSURE, "quote_checkout_notice": CHECKOUT_NOTICE,
@@ -110,6 +244,9 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
             "mandate": mandate, "mandate_text": PROFILES[profile].read_text(),
             "snapshot": snapshot, "decisions": decisions, "actions": actions, "mode": mode,
             "notice": notice, "csrf": csrf, "daily_limit": store.daily_limit,
+            "remaining_runs": remaining_runs(store), "history_window": history_window(scenario),
+            "rows": rows, "statuses": STATUSES,
+            "comparisons": {key: comparison_counts(cached(key)) for key in PROFILES},
             "quote_requests": {s.key: quote_request(s.term) for s in signals if s.kind == "korea_product"},
         }, status_code=status)
         response.set_cookie("demo_csrf", csrf, httponly=True, samesite="strict",
