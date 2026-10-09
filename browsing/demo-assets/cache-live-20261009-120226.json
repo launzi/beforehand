@@ -1,0 +1,806 @@
+{
+  "dataset": "9085ec92ccd07f18f86fa0fef0d65de3de304ab4f928f4e675702a58067a0c1d",
+  "profiles": {
+    "public": {
+      "profile": "public",
+      "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507",
+      "created_at": "2026-10-09T03:02:26.730322+00:00",
+      "source": "live",
+      "status": "complete",
+      "result": {
+        "actions": [
+          {
+            "signal_key": "65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604",
+            "kind": "korea_product",
+            "text": "It's cheaper to buy locally: USD 17.85 locally versus USD 76.7 estimated total cost from Korea. Uncertainty remains about whether the final amount will align with the quoted 70.88\u202fUSD payment plus a 5.82\u202fUSD duty, which would total 76.7\u202fUSD, but the exact figure is not guaranteed.",
+            "evidence": {
+              "product": "Anua Heartleaf 77% Soothing Toner 250ml",
+              "visit_count": 2,
+              "distinct_days": 2,
+              "purchase_page_observed": false
+            },
+            "quote": {
+              "seller": "Munteok",
+              "item": {
+                "title": "Anua Heartleaf 77% Soothing Toner 250ml",
+                "priceKrw": 31500,
+                "link": null
+              },
+              "destination": "US",
+              "currency": "USD",
+              "payNow": {
+                "total": 70.88,
+                "totalKrw": 91429,
+                "itemKrw": 31500,
+                "shippingKrw": 39000,
+                "serviceFeeKrw": 16575,
+                "paymentFeeKrw": 4354,
+                "fxRate": 1290
+              },
+              "dutyOnDelivery": {
+                "estimate": 5.82,
+                "note": "Estimated import duty and tax. Not charged at checkout; the carrier or customs collects it from the buyer on delivery.",
+                "lines": [
+                  {
+                    "label": "US base duty (HTS Column 1 General)",
+                    "rate": "Free",
+                    "amount": 0,
+                    "source": "HTS 3304.99.10.00, Column 1 General \"Free\" (hts.usitc.gov)"
+                  },
+                  {
+                    "label": "Section 301 forced-labor baseline (origin KR)",
+                    "rate": "12.5%",
+                    "amount": 3.052325581395349,
+                    "source": "91 FR 47318 (FR doc 2026-15181); CBP CSMS #69326983"
+                  },
+                  {
+                    "label": "Merchandise Processing Fee (informal entry, flat)",
+                    "rate": "flat",
+                    "amount": 2.77,
+                    "source": "CBP, Customs User Fees To Be Adjusted for Inflation in Fiscal Year 2027 (July 31, 2026), FR 2026-15530 \u2014 https://www.federalregister.gov/documents/2026/07/31/2026-15530/customs-user-fees-to-be-adjusted-for-inflation-in-fiscal-year-2027"
+                  }
+                ]
+              },
+              "totalCost": 76.7,
+              "localPrice": {
+                "price": 17.85,
+                "url": "https://www.google.com/search?ibp=oshop&q=Anua+Heartleaf+77%25+Soothing+Toner+250ml&prds=localAnnotatedOfferId:1,catalogid:9049195207786840332,gpcid:4298588583901715693,pvo:2,pvt:hg&gl=us&udm=28&pvorigin=2"
+              },
+              "verdict": "buy_local",
+              "warnings": [
+                "Exchange rate used: 1 USD = 1290 KRW (Korea Concierge rate, 2026-10-08).",
+                "Shipping uses actual-weight EMS estimate; bulky items may cost more under volumetric weight. [Korea Post EMS rates effective 2026-07-01: https://www.koreapost.go.kr/user/extra/570/4072/Userbbs_04/bbsview/jsp/LayOutPage.do?bbsSetIdx=98&bbsDataIdx=100099326]",
+                "De minimis exemption is eliminated (since 2025-08-29). [EO 14388, 91 FR 9433; CBP CSMS #67845486; FR 2026-12669]",
+                "KORUS note: effectively nil \u2014 the Section 301 forced-labor duty is a top-up to a 12.5% floor measured against the column 1 rate, so a KORUS 0% good still lands at 12.5% total [91 FR 47318 Annex I (KORUS not among the exempted FTAs); CBP CSMS #69326983 headings 9903.05.70/.71]"
+              ],
+              "fulfilment": "Sold by Munteok, operated by Youngji Kim (Seoul, Korea). Its Korea partner buys the item from the Korean retailer, checks it and ships it by EMS with tracking."
+            },
+            "quote_unavailable": false
+          },
+          {
+            "signal_key": "d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a",
+            "kind": "korea_product",
+            "text": "No Korea quote is available for this item right now; it needs a manual price.",
+            "evidence": {
+              "product": "MUSINSA STANDARD Relaxed Basic Crew Neck T-Shirt",
+              "visit_count": 2,
+              "distinct_days": 2,
+              "purchase_page_observed": false
+            },
+            "quote": null,
+            "quote_unavailable": true
+          },
+          {
+            "signal_key": "f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d",
+            "kind": "korea_product",
+            "text": "No Korea quote is available for this item right now; it needs a manual price.",
+            "evidence": {
+              "product": "Korean Ceramic Moon Jar Mini Vase",
+              "visit_count": 2,
+              "distinct_days": 2,
+              "purchase_page_observed": false
+            },
+            "quote": null,
+            "quote_unavailable": true
+          },
+          {
+            "signal_key": "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
+            "kind": "new_entry",
+            "text": "\nYou have visited the onboarding page once, with the first visit recorded on 2026-09-29. That indicates you started the initial setup, although it isn\u2019t clear whether the process is complete. You might want to check the configuration settings next.",
+            "evidence": {
+              "onboarding_paths": [
+                "/onboarding"
+              ],
+              "first_visit_us": 13435156800000000,
+              "visit_count": 1
+            },
+            "quote": null,
+            "quote_unavailable": false
+          },
+          {
+            "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
+            "kind": "new_entry",
+            "text": "\nYou visited the signup page once, on September\u202f28,\u202f2026, which shows the first step of onboarding was started. You could now look into setting up your first workspace.",
+            "evidence": {
+              "onboarding_paths": [
+                "/signup"
+              ],
+              "first_visit_us": 13435070400000000,
+              "visit_count": 1
+            },
+            "quote": null,
+            "quote_unavailable": false
+          },
+          {
+            "signal_key": "285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb",
+            "kind": "unresolved",
+            "text": "\nYou searched for a Python static site generator comparison and examined four hits: the Full Stack Python overview (https://www.fullstackpython.com/static-site-generator.html) which states that Pelican, Nikola and Acrylamid all use Jinja2 and Markdown, the Python wiki page for StaticSiteGenerator (https://wiki.python.org/moin/StaticSiteGenerator.html) that mentions Blogofile and wok providing Git and S3 publishing, the Jochen Schr\u00f6der blog (https://jochenschroeder.com/blog/articles/a-comparison-of-static-site-generators) noting Pelican\u2019s larger technical community compared to more web\u2011dev\u2011focused generators, and the tutorial on building one (https://samburkhard.com/static-site-gen) that shows a simple template\u2011replacement workflow. Now visit the official project pages of the generators that interest you to see which features best match your workflow.",
+            "evidence": {
+              "term": "python static site generator comparison",
+              "search_count": 1,
+              "follow_through_counts": [
+                0
+              ],
+              "distinct_days": 1,
+              "low_follow_through": true,
+              "repeat_across_days": false
+            },
+            "quote": null,
+            "quote_unavailable": false
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "acted": 6,
+          "skipped": 3,
+          "errors": 0,
+          "held": 0,
+          "denied": 0
+        },
+        "decisions": [
+          {
+            "signal_key": "02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b",
+            "signal_kind": "dropped",
+            "triage": "SKIP",
+            "planned_action": {
+              "skill": "dropped",
+              "signal_kind": "dropped",
+              "action_kind": "followup_nudge",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
+            "signal_kind": "new_entry",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "new_entry",
+              "signal_kind": "new_entry",
+              "action_kind": "setup_check",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
+            "signal_kind": "new_entry",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "new_entry",
+              "signal_kind": "new_entry",
+              "action_kind": "setup_check",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f",
+            "signal_kind": "recurring",
+            "triage": "SKIP",
+            "planned_action": {
+              "skill": "recurring",
+              "signal_kind": "recurring",
+              "action_kind": "theme_summary",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070",
+            "signal_kind": "recurring",
+            "triage": "SKIP",
+            "planned_action": {
+              "skill": "recurring",
+              "signal_kind": "recurring",
+              "action_kind": "theme_summary",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb",
+            "signal_kind": "unresolved",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "unresolved",
+              "signal_kind": "unresolved",
+              "action_kind": "research_briefing",
+              "uses_search": true,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          }
+        ]
+      },
+      "trace": "{\"ts\": \"2026-10-09T03:02:46.697463+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"SKIP\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:03:13.847749+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:03:22.046635+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:03:30.099867+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:03:36.499200+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:03:40.150215+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:03:40.150295+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"SKIP\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:03:40.150323+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"SKIP\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:03:49.265610+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"59e3752d1c7c05b4e4ce26772096614a8c4ec9caf12b36365856470d28f78507\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n"
+    },
+    "no-search": {
+      "profile": "no-search",
+      "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106",
+      "created_at": "2026-10-09T03:03:49.267069+00:00",
+      "source": "live",
+      "status": "complete",
+      "result": {
+        "actions": [
+          {
+            "signal_key": "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
+            "kind": "new_entry",
+            "text": "\nThe fact that you visited the onboarding pages and recorded a single visit on September\u202f29 shows that you have begun the onboarding flow. Next, you might want to explore the settings or configuration sections to see what options are available.",
+            "evidence": {
+              "onboarding_paths": [
+                "/onboarding"
+              ],
+              "first_visit_us": 13435156800000000,
+              "visit_count": 1
+            },
+            "quote": null,
+            "quote_unavailable": false
+          },
+          {
+            "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
+            "kind": "new_entry",
+            "text": "\nYou have opened the signup page once, with the first visit recorded on\u202f2026\u201109\u201128, indicating you began the onboarding flow. That action suggests you started the setup process some time ago. You might now check the next step, such as completing your account details.",
+            "evidence": {
+              "onboarding_paths": [
+                "/signup"
+              ],
+              "first_visit_us": 13435070400000000,
+              "visit_count": 1
+            },
+            "quote": null,
+            "quote_unavailable": false
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "acted": 2,
+          "skipped": 3,
+          "errors": 0,
+          "held": 0,
+          "denied": 4
+        },
+        "decisions": [
+          {
+            "signal_key": "02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b",
+            "signal_kind": "dropped",
+            "triage": "SKIP",
+            "planned_action": {
+              "skill": "dropped",
+              "signal_kind": "dropped",
+              "action_kind": "followup_nudge",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "deny",
+              "reason": "External commerce quotes are not allowed",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "deny",
+              "reason": "External commerce quotes are not allowed",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "deny",
+              "reason": "External commerce quotes are not allowed",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
+            "signal_kind": "new_entry",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "new_entry",
+              "signal_kind": "new_entry",
+              "action_kind": "setup_check",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
+            "signal_kind": "new_entry",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "new_entry",
+              "signal_kind": "new_entry",
+              "action_kind": "setup_check",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f",
+            "signal_kind": "recurring",
+            "triage": "SKIP",
+            "planned_action": {
+              "skill": "recurring",
+              "signal_kind": "recurring",
+              "action_kind": "theme_summary",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070",
+            "signal_kind": "recurring",
+            "triage": "SKIP",
+            "planned_action": {
+              "skill": "recurring",
+              "signal_kind": "recurring",
+              "action_kind": "theme_summary",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb",
+            "signal_kind": "unresolved",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "unresolved",
+              "signal_kind": "unresolved",
+              "action_kind": "research_briefing",
+              "uses_search": true,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "deny",
+              "reason": "External search provider calls are not allowed",
+              "mandate_digest": "ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          }
+        ]
+      },
+      "trace": "{\"ts\": \"2026-10-09T03:04:10.579817+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"SKIP\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:10.579889+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"deny\", \"reason\": \"External commerce quotes are not allowed\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:10.579919+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"deny\", \"reason\": \"External commerce quotes are not allowed\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:10.579972+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"deny\", \"reason\": \"External commerce quotes are not allowed\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:14.213922+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:18.577272+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:18.577365+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"SKIP\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:18.577406+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"SKIP\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:18.577445+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"ff3d1e1864ce701fec0c5f96ea2e93e15436b52d28f68cbdff887c0f1924e106\", \"verdict\": \"deny\", \"reason\": \"External search provider calls are not allowed\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n"
+    },
+    "confirm-research": {
+      "profile": "confirm-research",
+      "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb",
+      "created_at": "2026-10-09T03:04:18.579040+00:00",
+      "source": "live",
+      "status": "complete",
+      "result": {
+        "actions": [
+          {
+            "signal_key": "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
+            "kind": "new_entry",
+            "text": "\nYou have visited the onboarding pages, with the earliest recorded visit on 2026\u201109\u201129 and a total of one page view. Consider moving on to the next setup step, such as creating your first project file.",
+            "evidence": {
+              "onboarding_paths": [
+                "/onboarding"
+              ],
+              "first_visit_us": 13435156800000000,
+              "visit_count": 1
+            },
+            "quote": null,
+            "quote_unavailable": false
+          },
+          {
+            "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
+            "kind": "new_entry",
+            "text": "\nYou visited the signup page on September\u202f28,\u202f2026. Now you might want to start creating your first workspace or add a contact to see how the platform organizes information.",
+            "evidence": {
+              "onboarding_paths": [
+                "/signup"
+              ],
+              "first_visit_us": 13435070400000000,
+              "visit_count": 1
+            },
+            "quote": null,
+            "quote_unavailable": false
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "acted": 2,
+          "skipped": 3,
+          "errors": 0,
+          "held": 4,
+          "denied": 0
+        },
+        "decisions": [
+          {
+            "signal_key": "02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b",
+            "signal_kind": "dropped",
+            "triage": "SKIP",
+            "planned_action": {
+              "skill": "dropped",
+              "signal_kind": "dropped",
+              "action_kind": "followup_nudge",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "hold",
+              "reason": "Action 'commerce.quote' requires user confirmation",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "hold",
+              "reason": "Action 'commerce.quote' requires user confirmation",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d",
+            "signal_kind": "korea_product",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "korea_quote",
+              "signal_kind": "korea_product",
+              "action_kind": "commerce.quote",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "hold",
+              "reason": "Action 'commerce.quote' requires user confirmation",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
+            "signal_kind": "new_entry",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "new_entry",
+              "signal_kind": "new_entry",
+              "action_kind": "setup_check",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
+            "signal_kind": "new_entry",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "new_entry",
+              "signal_kind": "new_entry",
+              "action_kind": "setup_check",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": true,
+            "execution_status": "succeeded",
+            "execution_error": null
+          },
+          {
+            "signal_key": "4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f",
+            "signal_kind": "recurring",
+            "triage": "SKIP",
+            "planned_action": {
+              "skill": "recurring",
+              "signal_kind": "recurring",
+              "action_kind": "theme_summary",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070",
+            "signal_kind": "recurring",
+            "triage": "SKIP",
+            "planned_action": {
+              "skill": "recurring",
+              "signal_kind": "recurring",
+              "action_kind": "theme_summary",
+              "uses_search": false,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "allow",
+              "reason": "Action is within the configured mandate",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          },
+          {
+            "signal_key": "285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb",
+            "signal_kind": "unresolved",
+            "triage": "ACT",
+            "planned_action": {
+              "skill": "unresolved",
+              "signal_kind": "unresolved",
+              "action_kind": "research_briefing",
+              "uses_search": true,
+              "uses_llm": true
+            },
+            "mandate": {
+              "verdict": "hold",
+              "reason": "Action 'research_briefing' requires user confirmation",
+              "mandate_digest": "b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb"
+            },
+            "executed": false,
+            "execution_status": "not_run",
+            "execution_error": null
+          }
+        ]
+      },
+      "trace": "{\"ts\": \"2026-10-09T03:04:37.537721+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b\", \"signal_kind\": \"dropped\", \"triage\": \"SKIP\", \"planned_action\": {\"skill\": \"dropped\", \"signal_kind\": \"dropped\", \"action_kind\": \"followup_nudge\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:37.537791+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"hold\", \"reason\": \"Action 'commerce.quote' requires user confirmation\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:37.537821+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"hold\", \"reason\": \"Action 'commerce.quote' requires user confirmation\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:37.537842+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d\", \"signal_kind\": \"korea_product\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"korea_quote\", \"signal_kind\": \"korea_product\", \"action_kind\": \"commerce.quote\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"hold\", \"reason\": \"Action 'commerce.quote' requires user confirmation\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:40.434145+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:45.275814+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e\", \"signal_kind\": \"new_entry\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"new_entry\", \"signal_kind\": \"new_entry\", \"action_kind\": \"setup_check\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": true, \"execution_status\": \"succeeded\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:45.275924+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f\", \"signal_kind\": \"recurring\", \"triage\": \"SKIP\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:45.275961+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070\", \"signal_kind\": \"recurring\", \"triage\": \"SKIP\", \"planned_action\": {\"skill\": \"recurring\", \"signal_kind\": \"recurring\", \"action_kind\": \"theme_summary\", \"uses_search\": false, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"allow\", \"reason\": \"Action is within the configured mandate\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n{\"ts\": \"2026-10-09T03:04:45.276000+00:00\", \"kind\": \"mandate_decision\", \"signal_key\": \"285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb\", \"signal_kind\": \"unresolved\", \"triage\": \"ACT\", \"planned_action\": {\"skill\": \"unresolved\", \"signal_kind\": \"unresolved\", \"action_kind\": \"research_briefing\", \"uses_search\": true, \"uses_llm\": true}, \"mandate_digest\": \"b3df2a928346cd6b7181ade565588dae1b986cf021be9ea037c8e790dc191afb\", \"verdict\": \"hold\", \"reason\": \"Action 'research_briefing' requires user confirmation\", \"executed\": false, \"execution_status\": \"not_run\", \"execution_error\": null}\n"
+    }
+  }
+}
