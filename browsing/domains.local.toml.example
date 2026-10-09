@@ -1,31 +1,31 @@
-# domains.local.toml — 예시. 이 파일을 복사해서 쓰세요.
+# domains.local.toml: example. Copy this file to domains.local.toml to use it.
 #
-# 이 파일은 버전관리에서 제외됩니다. 절대 커밋하지 마세요.
-# 여기 적은 항목은 같은 호스트에 대해 배포본 domains.toml 을 덮어씁니다.
-# 규칙 호스트는 자기 자신과 모든 서브도메인에 적용됩니다.
+# The copy is excluded from version control. Never commit it.
+# Entries here override the shipped domains.toml for the same host.
+# A rule host applies to itself and to all of its subdomains.
 #
-# ⚠ OPTIONAL — 이 파일이 없어도 파이프라인은 domains.toml 만으로 정상 동작합니다.
-#   (없이도 도는지가 곧 추상화가 됐는지의 시험이고, 테스트로 고정돼 있습니다)
+# OPTIONAL: without this file the pipeline runs on domains.toml alone
+# (that it still works without it is the test of the abstraction, and a test pins it).
 #
-# 왜 나눠 두는가: 어느 회사에 다니는지, 어느 은행을 쓰는지, 어떤 채용 사이트를
-# 보는지는 그 자체로 개인정보입니다. 배포본에는 일반 공개 서비스만 두고,
-# 본인 호스트는 여기에만 둡니다.
+# Why a separate file: where you work, which bank you use and which job sites you
+# visit are personal data in themselves. The shipped file lists only general public
+# services; your own hosts belong here only.
 
 [work]
 sensitivity = "none"
-hosts = ["work.test"]   # 사내 시스템 — ERP·어드민·이슈트래커 등
+hosts = ["work.test"]   # internal systems: ERP, admin consoles, issue trackers
 
 [finance]
 sensitivity = "restricted"
-hosts = ["finance.test"]   # 은행·카드·증권
+hosts = ["finance.test"]   # banks, cards, brokerages
 
 [career]
 sensitivity = "restricted"
-hosts = ["career.test"]   # 채용 플랫폼·헤드헌팅
+hosts = ["career.test"]   # job platforms, recruiters
 
 [health]
 sensitivity = "restricted"
-hosts = ["health.test"]   # 병의원·약국
+hosts = ["health.test"]   # clinics, pharmacies
 
 [personal]
 sensitivity = "none"
