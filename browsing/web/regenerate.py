@@ -56,7 +56,7 @@ class ScriptedLLM:
         if kwargs.get("system") == TRIAGE_SYSTEM:
             return "ACT"
         if prompt.startswith("Korea quote facts:"):
-            return "It's cheaper to buy locally. The example quote totals USD 65.27 versus a local price of USD 17.85, with estimated duty collected on delivery."
+            return "Duty is estimated and collected on delivery. Shipping costs may change."
         for marker, reply in (
             ("gone quiet", "You visited this project on several days, then it went quiet. If it still matters, reopen it and pick one small task to resume."),
             ("initial setup", "You opened the signup path, but this history alone can't tell whether setup finished. Check the service's settings page for any remaining step."),

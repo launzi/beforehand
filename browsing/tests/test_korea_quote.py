@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from browsing.agent import run_agent, SKILLS
+from browsing.agent import run_agent, skill_korea_quote, SKILLS, TRIAGE_SYSTEM
 from browsing.mandate import evaluate_mandate, load_mandate, PlannedAction
 from browsing.persona.generate import DEFAULT_SCENARIO, load_scenario, populate, records_from_payload, detector_window
 from browsing.ingest import ingest_records
@@ -264,3 +264,163 @@ def test_fulfilment_is_optional_and_bounded(raw):
 def test_kc_error_envelopes_map_to_clear_errors(data, message):
     with pytest.raises(QuoteError, match=message):
         parse_rpc(rpc(data))
+
+
+@pytest.fixture
+def korea_signal():
+    scenario = load_scenario(DEFAULT_SCENARIO)
+    with sqlite3.connect(':memory:') as conn:
+        return next(s for s in populate(conn, scripted_visits(scenario), scenario)
+                    if s.kind == 'korea_product')
+
+
+@pytest.mark.parametrize('remainder', [
+    'Duty is an estimate.',
+    'Duty is an estimate. Shipping may change.',
+])
+def test_buy_local_disclosure_is_generated_before_model_remainder(raw, korea_signal, remainder):
+    raw['localPrice']['price'] = 18.25
+    raw['totalCost'] = 66.75
+    calls = []
+
+    class LLM:
+        def complete(self, prompt, **kwargs):
+            calls.append((prompt, kwargs))
+            return remainder
+
+    text, quote = skill_korea_quote(korea_signal, llm=LLM(), search=None, verdict=True,
+        quote_client=KoreaQuoteClient(lambda *a, **kw: response(raw)))
+    assert text == ("It's cheaper to buy locally: USD 18.25 locally versus "
+                    "USD 66.75 estimated total cost from Korea. " + remainder)
+    assert validate_summary(text, quote) == text
+    assert len(calls) == 1
+    assert json.loads(calls[0][0].removeprefix('Korea quote facts: ')) == summary_facts(quote)
+    assert '1-2 sentences' in calls[0][1]['system']
+    assert 'not restate the local-price comparison' in calls[0][1]['system']
+
+
+@pytest.mark.parametrize('remainder,message', [
+    ('You save USD 9999.', 'unsupported number'),
+    ('', '2-3 sentences'),
+    ('Duty is estimated. Shipping may vary. Check the warnings.', '2-3 sentences'),
+])
+def test_buy_local_still_rejects_invalid_model_remainder(raw, korea_signal, remainder, message):
+    llm = SimpleNamespace(complete=lambda *a, **kw: remainder)
+    with pytest.raises(QuoteError, match=message):
+        skill_korea_quote(korea_signal, llm=llm, search=None, verdict=True,
+            quote_client=KoreaQuoteClient(lambda *a, **kw: response(raw)))
+
+
+@pytest.mark.parametrize('verdict', ['buy_from_korea', 'close_call', 'insufficient_data', None, 'future_verdict'])
+def test_other_verdict_summaries_are_unchanged(raw, korea_signal, verdict):
+    from browsing.web.korea_quote import SUMMARY_SYSTEM
+    raw['verdict'] = verdict
+    model_text = 'Duty is an estimate. Shipping may change.'
+
+    class LLM:
+        def complete(self, prompt, **kwargs):
+            assert kwargs['system'] == SUMMARY_SYSTEM
+            return model_text
+
+    text, quote = skill_korea_quote(korea_signal, llm=LLM(), search=None, verdict=True,
+        quote_client=KoreaQuoteClient(lambda *a, **kw: response(raw)))
+    assert text == model_text
+    assert quote['verdict'] == verdict
+
+
+def test_buy_local_without_local_price_does_not_invent_amount(raw, korea_signal):
+    raw['localPrice'] = None
+    text, quote = skill_korea_quote(korea_signal,
+        llm=SimpleNamespace(complete=lambda *a, **kw: 'Duty is an estimate.'),
+        search=None, verdict=True, quote_client=KoreaQuoteClient(lambda *a, **kw: response(raw)))
+    assert text.startswith("It's cheaper to buy locally according to the service verdict; no local price was supplied.")
+    assert validate_summary(text, quote) == text
+
+
+UNAVAILABLE_ENVELOPES = [
+    rpc({'error': 'quote_unavailable', 'message': 'This item needs a manual quote.', 'warnings': []}),
+    rpc({'error': 'quote_unavailable', 'message': 'No Korean listing found.',
+         'needsManualPrice': 'Send koreaPriceKrw', 'warnings': []}),
+    rpc({'needsManualPrice': 'Send koreaPriceKrw'}),
+    rpc({'error': 'price not found'}),
+    {'error': {'code': -32000, 'message': 'koreaPriceKrw required: price not found'}},
+    {'result': {'isError': True, 'content': [{'type': 'text', 'text': 'Please supply koreaPriceKrw'}]}},
+    {'result': {'content': [{'type': 'text', 'text': 'price not found'}]}},
+]
+
+
+@pytest.mark.parametrize('envelope', UNAVAILABLE_ENVELOPES)
+def test_unavailable_is_typed_and_succeeds_without_summary_llm(tmp_path, korea_signal, envelope):
+    from browsing.web.korea_quote import QuoteUnavailable
+    with pytest.raises(QuoteUnavailable):
+        parse_rpc(envelope)
+    client = KoreaQuoteClient(lambda *a, **kw: SimpleNamespace(
+        status_code=200, headers={}, json=lambda: envelope))
+
+    class TriageOnlyLLM:
+        def complete(self, prompt, **kwargs):
+            assert kwargs['system'] == TRIAGE_SYSTEM, 'Unavailable quotes must not call the summary LLM'
+            return 'ACT'
+
+    llm = TriageOnlyLLM()
+    text, quote = skill_korea_quote(korea_signal, llm=llm, search=None,
+                                   verdict=True, quote_client=client)
+    assert quote is None
+    assert text == 'No Korea quote is available for this item right now; it needs a manual price.'
+    with closing(Tracer(path=tmp_path / 'trace.jsonl')) as tracer:
+        result = run_agent(None, signals=[korea_signal], llm=llm, search=ScriptedSearch(),
+            quote_client=client, mandate_path=PROFILES['public'], mandate_local_path=None, tracer=tracer)
+    assert result.errors == []
+    assert result.stats['errors'] == 0
+    assert result.stats['acted'] == 1
+    assert result.decisions[0].execution_status == 'succeeded'
+    assert result.actions[0].quote is None
+    assert result.actions[0].quote_unavailable is True
+    assert asdict(result)['actions'][0]['quote_unavailable'] is True
+
+
+@pytest.mark.parametrize('envelope', [
+    {'error': {'code': -32000, 'message': 'Rate limit exceeded for price lookup'}},
+    {'result': {'isError': True, 'content': [{'type': 'text', 'text': 'Rate limit exceeded for price lookup'}]}},
+    rpc({'error': 'estimate_unavailable', 'message': 'Price estimate service unavailable.'}),
+    rpc({'error': 'service_unavailable', 'message': 'Price service unavailable.'}),
+    rpc({'item': {'priceKrw': 100}}),
+    {'result': {'content': [{'type': 'text', 'text': '{"price": broken json'}]}},
+    {'result': {'content': [{'type': 'text', 'text': '{"error": "price not found"'}]}},
+    {'result': {}},
+])
+def test_service_and_malformed_errors_remain_failed_actions(tmp_path, korea_signal, envelope):
+    from browsing.web.korea_quote import QuoteUnavailable
+    with pytest.raises(QuoteError) as exc:
+        parse_rpc(envelope)
+    assert not isinstance(exc.value, QuoteUnavailable)
+    client = KoreaQuoteClient(lambda *a, **kw: SimpleNamespace(
+        status_code=200, headers={}, json=lambda: envelope))
+    with closing(Tracer(path=tmp_path / 'trace.jsonl')) as tracer:
+        result = run_agent(None, signals=[korea_signal], llm=ScriptedLLM(), search=ScriptedSearch(),
+            quote_client=client, mandate_path=PROFILES['public'], mandate_local_path=None, tracer=tracer)
+    assert result.actions == []
+    assert result.stats['errors'] == 1
+    assert len(result.errors) == 1
+    assert result.decisions[0].execution_status == 'failed'
+
+
+@pytest.mark.parametrize('failure', ['rate_limit', 'malformed_json', 'transport'])
+def test_client_failures_remain_execution_errors(tmp_path, korea_signal, failure):
+    import urllib.error
+
+    def post(*args, **kwargs):
+        if failure == 'transport':
+            raise urllib.error.URLError('synthetic network failure')
+        def invalid_json():
+            raise ValueError('invalid JSON')
+        return SimpleNamespace(status_code=429 if failure == 'rate_limit' else 200,
+                               headers={}, json=invalid_json)
+
+    with closing(Tracer(path=tmp_path / 'trace.jsonl')) as tracer:
+        result = run_agent(None, signals=[korea_signal], llm=ScriptedLLM(), search=ScriptedSearch(),
+            quote_client=KoreaQuoteClient(post), mandate_path=PROFILES['public'],
+            mandate_local_path=None, tracer=tracer)
+    assert result.actions == []
+    assert result.stats['errors'] == 1
+    assert result.decisions[0].execution_status == 'failed'

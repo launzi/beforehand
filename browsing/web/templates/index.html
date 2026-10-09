@@ -22,7 +22,9 @@
 <p><strong>3 · Execution:</strong> {{ decision.execution_status }}</p>
 {% if decision.execution_error %}<p class="error">{{ decision.execution_error }}</p>{% endif %}
 {% if actions.get(signal.key) %}
-{% if actions[signal.key].quote %}{% set quote = actions[signal.key].quote %}{% include "quote.html" %}{% endif %}
+{% if actions[signal.key].quote_unavailable %}
+<article class="quote-card"><h3>Quote unavailable for this item</h3><p>{{ quote_checkout_notice }}</p></article>
+{% elif actions[signal.key].quote %}{% set quote = actions[signal.key].quote %}{% include "quote.html" %}{% endif %}
 <p>{{ actions[signal.key].text }}</p>{% endif %}
 {% else %}<p>1 · Triage: not run<br>2 · Mandate: not evaluated<br>3 · Execution: not run</p>{% endif %}
 </article>{% endfor %}</div>

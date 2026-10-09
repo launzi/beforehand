@@ -87,3 +87,53 @@ def test_cli_requires_confirm_spend_before_any_provider(tmp_path, monkeypatch):
     with pytest.raises(SystemExit) as exc:
         main()
     assert exc.value.code == 2
+
+
+@pytest.mark.parametrize('manual', [False, True])
+async def test_unavailable_quote_completes_cache_and_renders_without_prices(tmp_path, dataset, manual):
+    from types import SimpleNamespace
+    from browsing.web.korea_quote import KoreaQuoteClient
+
+    unavailable_signal = next(s for s in dataset[2] if s.kind == 'korea_product')
+    envelope = {'error': 'quote_unavailable', 'message': 'No Korean listing found.', 'warnings': []}
+    if manual:
+        envelope['needsManualPrice'] = 'Send koreaPriceKrw'
+    unavailable_client = KoreaQuoteClient(lambda *a, **kw: SimpleNamespace(
+        status_code=200, headers={}, json=lambda: {'result': {'structuredContent': envelope}}))
+
+    class QuoteClient(ScriptedQuote):
+        def quote(self, product, destination='US'):
+            if product == unavailable_signal.term:
+                return unavailable_client.quote(product, destination)
+            return super().quote(product, destination)
+
+    class LLM(ScriptedLLM):
+        def complete(self, prompt, **kwargs):
+            if prompt.startswith('Korea quote facts:'):
+                facts = json.loads(prompt.removeprefix('Korea quote facts: '))
+                assert facts['product'] != unavailable_signal.term
+            return super().complete(prompt, **kwargs)
+
+    out = tmp_path / 'cache-live-20261010-120004.json'
+    live_cache.build_live_cache(db_path=tmp_path / 'synthetic.db', out=out,
+        llm=LLM(), search=ScriptedSearch(), quote_client=QuoteClient())
+    saved = json.loads(out.read_text())
+    assert all(s['status'] == 'complete' for s in saved['profiles'].values())
+    snapshot = saved['profiles']['public']
+    assert snapshot['result']['errors'] == []
+    assert snapshot['result']['stats']['errors'] == 0
+    action = next(a for a in snapshot['result']['actions'] if a['signal_key'] == unavailable_signal.key)
+    assert action['quote'] is None and action['quote_unavailable'] is True
+    decision = next(d for d in snapshot['result']['decisions'] if d['signal_key'] == unavailable_signal.key)
+    assert decision['execution_status'] == 'succeeded'
+    app = create_app(state_dir=tmp_path, cache_path=out)
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
+        page = await client.get('/')
+    assert '<strong>CACHED</strong> · live · complete' in page.text
+    cards = [c.split('</article>', 1)[0] for c in page.text.split('<article class="quote-card">')[1:]]
+    unavailable = [c for c in cards if 'Quote unavailable for this item' in c]
+    assert len(cards) == 3 and len(unavailable) == 1
+    assert '<table' not in unavailable[0]
+    assert '<a ' not in unavailable[0]
+    assert 'USD' not in unavailable[0] and 'KRW' not in unavailable[0]
+    assert 'commerce.checkout is always denied' in unavailable[0]

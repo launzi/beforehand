@@ -39,6 +39,7 @@ class Action:
     text: str              # human-readable result
     evidence: dict         # what it was based on
     quote: dict | None = None
+    quote_unavailable: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -432,16 +433,25 @@ def _format_hits(hits: list[dict]) -> str:
 @declares_action(PlannedAction(
     "korea_quote", "korea_product", "commerce.quote", uses_search=False, uses_llm=True,
 ))
-def skill_korea_quote(signal: Signal, *, llm, search, verdict: bool, quote_client=None, destination="US"):
-    from browsing.web.korea_quote import (KoreaQuoteClient, SUMMARY_SYSTEM, quote_arguments,
-                                     sanitize_quote, summary_facts, validate_summary)
+def skill_korea_quote(signal: Signal, *, llm, search, verdict: bool, quote_client=None, destination="US") -> tuple[str, dict | None]:
+    from browsing.web.korea_quote import (KoreaQuoteClient, QuoteUnavailable, SUMMARY_SYSTEM,
+        LOCAL_SUMMARY_SYSTEM, UNAVAILABLE_SUMMARY, local_first_sentence, quote_arguments,
+        sanitize_quote, summary_facts, validate_summary)
     args = quote_arguments(signal.term or "", destination)
     client = KoreaQuoteClient() if quote_client is None else quote_client
-    quote = sanitize_quote(client.quote(**args))
+    try:
+        quote = sanitize_quote(client.quote(**args))
+    except QuoteUnavailable:
+        return UNAVAILABLE_SUMMARY, None
     if quote["destination"] != destination:
         raise ValueError("Quote destination mismatch")
-    prompt = "Korea quote facts: " + json.dumps(summary_facts(quote), ensure_ascii=False)
-    text = llm.complete(prompt, tier="nano", system=SUMMARY_SYSTEM, max_tokens=2348)
+    facts = summary_facts(quote)
+    local_first = quote["verdict"] == "buy_local"
+    prompt = "Korea quote facts: " + json.dumps(facts, ensure_ascii=False)
+    text = llm.complete(prompt, tier="nano",
+                        system=LOCAL_SUMMARY_SYSTEM if local_first else SUMMARY_SYSTEM, max_tokens=2348)
+    if local_first:
+        text = local_first_sentence(facts) + " " + text.strip()
     return validate_summary(text, quote), quote
 
 
@@ -538,7 +548,8 @@ def run_act(
                                         quote_client=quote_client, destination=destination)
                 else:
                     text = skill(signal, llm=llm, search=search, verdict=True)
-                actions.append(Action(signal.key, signal.kind, text, signal.evidence, quote))
+                actions.append(Action(signal.key, signal.kind, text, signal.evidence, quote,
+                                      quote_unavailable=signal.kind == "korea_product" and quote is None))
                 record = replace(record, executed=True, execution_status="succeeded")
             except Exception as e:
                 errors.append(f"act:{signal.key}: {e}")
