@@ -1,5 +1,5 @@
 <article class="quote-card">
-<h3>{{ quote.item.title }}</h3><strong class="tag">{{ quote.verdict }}</strong>
+<h3>{{ quote.item.title }}</h3><strong class="tag">{{ quote.verdict or "unknown" }}</strong>
 {% if quote.verdict == 'buy_local' %}<p>It's cheaper to buy locally</p>{% else %}<p>Service verdict shown verbatim; no recommendation inferred.</p>{% endif %}
 <table><tbody>
 <tr><th>Destination</th><td>{{ quote.destination }}</td></tr>
@@ -17,8 +17,9 @@
 {% for line in quote.dutyOnDelivery.lines %}<p>{{ line.label }}: {{ line.rate }} · {{ quote.currency }} {{ line.amount }}<br>Source: {{ line.source }}</p>{% endfor %}
 <p>{{ quote.dutyOnDelivery.note }}</p>
 <details><summary>Warnings ({{ quote.warnings|length }})</summary>{% for warning in quote.warnings %}<p>{{ warning }}</p>{% endfor %}</details>
-<p>Korea Concierge is operated by the developer of this extension (Munteok). Quotes are free; a service fee is included only if you choose to buy through it.</p>
-<p>Quotes only. No orders or payments are created.</p>
+<p>Seller: {{ quote.seller }}{% if quote.fulfilment %} · {{ quote.fulfilment }}{% endif %}</p>
+<p>{{ quote_disclosure }}</p>
+<p>{{ quote_checkout_notice }}</p>
 {% if quote.item.link %}<a href="{{ quote.item.link }}" target="_blank" rel="noopener noreferrer">Korean item reference</a>{% endif %}
 {% if quote.localPrice and quote.localPrice.url %}<a href="{{ quote.localPrice.url }}" target="_blank" rel="noopener noreferrer">Local price reference</a>{% endif %}
 </article>

@@ -294,12 +294,12 @@ async def test_required_trace_failure_is_visible(tmp_path, monkeypatch):
 
 
 async def test_quote_card_and_exact_outbound_panel_are_visible_without_network(tmp_path):
-    from browsing.web.korea_quote import DISCLOSURE
+    from browsing.web.korea_quote import CHECKOUT_NOTICE, DISCLOSURE
     async with client_for(create_app(state_dir=tmp_path)) as client:
         page=await client.get('/')
         for expected in ['What leaves your device','quote_korea_product','product','destination',
                          'KRW 16127','USD 65.27','2.089235915388495','91 FR 47318',
-                         'Local price','Warnings',DISCLOSURE]:
+                         'Local price','Warnings',DISCLOSURE,'Seller: Munteok',CHECKOUT_NOTICE]:
             assert expected in page.text
         for forbidden in ['quoteToken','REDACTED-IN-FIXTURE','next_steps','start checkout']:
             assert forbidden not in page.text
@@ -309,3 +309,20 @@ async def test_quote_card_and_exact_outbound_panel_are_visible_without_network(t
         held=await client.get('/?profile=confirm-research')
         assert 'class="quote-card"' not in denied.text
         assert 'class="quote-card"' not in held.text
+
+
+async def test_quote_card_tolerates_cached_quotes_without_new_fields(tmp_path):
+    cache = json.loads((ROOT / "fixtures" / "cache.json").read_text())
+    for snapshot in cache["profiles"].values():
+        for action in snapshot["result"]["actions"]:
+            if action.get("quote"):
+                action["quote"].pop("fulfilment", None)
+                action["quote"]["verdict"] = None
+    path = tmp_path / "old-cache.json"
+    path.write_text(json.dumps(cache))
+    async with client_for(create_app(state_dir=tmp_path, cache_path=path)) as client:
+        page = await client.get("/")
+    assert page.status_code == 200
+    assert page.text.count('class="quote-card"') == 3
+    assert ">unknown<" in page.text
+    assert "Seller: Munteok" in page.text

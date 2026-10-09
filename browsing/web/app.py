@@ -22,7 +22,7 @@ from starlette.routing import Route
 from starlette.templating import Jinja2Templates
 
 from browsing import providers
-from browsing.web.korea_quote import quote_request
+from browsing.web.korea_quote import CHECKOUT_NOTICE, DISCLOSURE, quote_request
 from browsing.agent import run_agent
 from browsing.mandate import DEFAULT_BASE_PATH, load_mandate
 from browsing.persona.generate import DEFAULT_SCENARIO, detector_window, load_scenario, populate
@@ -105,6 +105,7 @@ def create_app(*, db_path=None, state_dir=None, daily_limit=None, runner=execute
         actions = {} if snapshot is None else {a["signal_key"]: a for a in snapshot["result"]["actions"]}
         csrf = secrets.token_urlsafe(32)
         response = templates.TemplateResponse(request=request, name="index.html", context={
+            "quote_disclosure": DISCLOSURE, "quote_checkout_notice": CHECKOUT_NOTICE,
             "signals": signals, "scenario": scenario, "profiles": LABELS, "profile": profile,
             "mandate": mandate, "mandate_text": PROFILES[profile].read_text(),
             "snapshot": snapshot, "decisions": decisions, "actions": actions, "mode": mode,
