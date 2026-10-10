@@ -2,7 +2,7 @@
 
 Publisher: **Munteok**. Sold by Munteok, operated by Youngji Kim (Seoul, Korea).
 Contact: **privacy@munteok.com**.
-Policy version 5 · Effective: 2026-10-05 · Text revised: 2026-10-10 (publisher line, order record, operator alerts without personal information, and less detail about internal processing; what the extension reads or sends is unchanged).
+Policy version 5 · Effective: 2026-10-12 · Changes since the 2026-10-05 text: publisher line, order record, operator alerts without personal information, and less detail about internal processing. What the extension reads or sends is unchanged.
 
 ## What it does
 
