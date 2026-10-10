@@ -11,7 +11,7 @@ beforehand shows the Korea delivered price of the item you view, or up to two Ko
 
 Checks (automatic or on click) send product name, brand and delivery country to Korea Concierge, operated by Munteok. History, page address, page price and other tabs are not sent. Disable checks per shop or globally, and export or delete your data in Settings.
 
-Korea amounts come from the quote engine. The local price comes from the shop page; savings are computed on your device when currencies match.
+Korea amounts come from Korea Concierge. The local price comes from the shop page; savings are computed on your device when currencies match.
 
 Buy from Korea opens an extension page. Your email and name go to Korea Concierge to create an order and are not stored by the extension. Quote tokens are kept in Chrome's in-memory session storage and sent only to Korea Concierge to start checkout. A refresh re-checks the same product name, brand and delivery country; you confirm any price change. You pay on Stripe (card) or PayPal; beforehand never sees your card.
 
@@ -25,7 +25,7 @@ Privacy policy: https://munteok.com/privacy#beforehand. Support: support@munteok
 Show the Korea delivered price, or Korean alternatives, for the product on the shopping page you are viewing.
 
 ## Permission justifications
-- storage: settings, consent, local log, result cache, automatic-check counter and token-free session snapshots bound to source and checkout tabs.
+- storage: settings, consent, local log, result cache, automatic-check counter and session copies of displayed quotes.
 - Host permissions: read the product name on supported shop pages; contact Korea Concierge for matches and checkout. Page price and currency remain local.
 
 ## Data usage answers
