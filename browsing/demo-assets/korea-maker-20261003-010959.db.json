@@ -1,0 +1,88 @@
+{
+  "synthetic": true,
+  "source": "scripted-fictional-fixture-validated",
+  "scenario": {
+    "id": "synthetic-maker",
+    "fictional": true,
+    "since": "2026-09-01T00:00:00+00:00",
+    "until": "2026-10-01T00:00:00+00:00",
+    "allowed_hosts": [
+      "www.notion.so",
+      "www.figma.com",
+      "docs.python.org",
+      "github.com",
+      "www.google.com",
+      "global.oliveyoung.com",
+      "www.musinsa.com",
+      "smartstore.naver.com"
+    ],
+    "persona": {
+      "role": "A fictional hobby maker learning Python and planning a small creative project",
+      "context": "No name, employer, address, account, or other personal identifier. Entirely invented."
+    },
+    "signals": [
+      {
+        "kind": "new_entry",
+        "host": "www.notion.so",
+        "story": "Opened signup and left before completing setup."
+      },
+      {
+        "kind": "new_entry",
+        "host": "www.figma.com",
+        "story": "Started onboarding but did not finish."
+      },
+      {
+        "kind": "unresolved",
+        "term": "python static site generator comparison",
+        "story": "Searched without deciding; fewer than three follow-through visits within 30 minutes."
+      },
+      {
+        "kind": "dropped",
+        "host": "github.com",
+        "story": "Worked on a fictional project on at least three different days, then stopped at least seven days before until."
+      },
+      {
+        "kind": "recurring",
+        "host": "docs.python.org",
+        "story": "Learning Python: visited on at least three different days, including the final week."
+      },
+      {
+        "kind": "korea_product",
+        "host": "global.oliveyoung.com",
+        "product": "Anua Heartleaf 77% Soothing Toner 250ml",
+        "path": "/product/detail?prdtNo=GA230518738",
+        "title": "Anua Heartleaf 77% Soothing Toner 250ml | OLIVE YOUNG Global",
+        "story": "Repeated product views without an observed purchase page; intent remains unknown."
+      },
+      {
+        "kind": "korea_product",
+        "host": "www.musinsa.com",
+        "product": "MUSINSA STANDARD Relaxed Basic Crew Neck T-Shirt",
+        "path": "/products/2392256",
+        "title": "MUSINSA STANDARD Relaxed Basic Crew Neck T-Shirt | MUSINSA",
+        "story": "Repeated product views without an observed purchase page; intent remains unknown."
+      },
+      {
+        "kind": "korea_product",
+        "host": "smartstore.naver.com",
+        "product": "Korean Ceramic Moon Jar Mini Vase",
+        "path": "/synthetic-maker/products/10482930123",
+        "title": "Korean Ceramic Moon Jar Mini Vase - \ub124\uc774\ubc84 \uc2a4\ub9c8\ud2b8\uc2a4\ud1a0\uc5b4",
+        "story": "Fictional store slug and item ID; repeated product views, no purchase page."
+      }
+    ]
+  },
+  "attempts": 1,
+  "signal_keys": [
+    "02b1dea61dddd477208c89d7d2121ffec2fe6863bb41d56823352772e5c6115b",
+    "65a3aa778675258bbd4f26e3153032f65b75f8c7d2fc83ce954563dffaaba604",
+    "d684f3dea2a77aa8a99a9d1d8f27db37bebacc7839ef9c7680e2b0b2269e6a9a",
+    "f955679d68a62dd4015a8153087eabf0c4a161826ed845c356b9c7e6f6c9ba6d",
+    "9fd98932c26e154f2fb5e4f4be5e6fe6f419430661e560881cd77bcf9ee7bad9",
+    "e4096e4133038b5ed257d6fdbfb9880335dec47c1d4fc285456cdd754a413a1e",
+    "4acb6df211a7dbbcf7d83d927dd1af2d868c61e23eee16112f8bf43d8e60b19f",
+    "75ab5094cc7a212f69fdba49075ce2207e8365cd7febda618f4e61e4f14ce070",
+    "285832c339d0b25946d2b1f0ec747b9e784190863eff98a396b75ea68ae89abb"
+  ],
+  "sha256": "9085ec92ccd07f18f86fa0fef0d65de3de304ab4f928f4e675702a58067a0c1d"
+}
