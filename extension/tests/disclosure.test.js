@@ -21,7 +21,8 @@ import {manifestFor} from '../scripts/build.mjs';
 test('privacy names every shop host, KC and all processors; Limited Use is preserved',async()=>{
  const text=await readFile(new URL('../PRIVACY.md',import.meta.url),'utf8');
  for(const pattern of manifestFor('store').host_permissions) assert.ok(text.includes(pattern.replace('https://','').replace('*.','').replace('/*','')),pattern);
- for(const name of ['Nebius','Serper','Anthropic','Stripe','PayPal','/api/commerce/v1']) assert.ok(text.includes(name),name);
+ for(const name of ['Stripe','PayPal','/api/commerce/v1']) assert.ok(text.includes(name),name);
+ assert.doesNotMatch(text,/Nebius|Serper|Anthropic/);
  assert.doesNotMatch(text,/Jikgugak|api\/mcp/);
  assert.ok(text.includes('The use of information received from Google APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements.'));
  assert.doesNotMatch(text,/\{\{|provider key|no checkout/i);
