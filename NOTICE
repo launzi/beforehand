@@ -1,0 +1,11 @@
+Beforehand
+Copyright 2026 Munteok
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+browsing/   Python browsing agent and hosted demo (Nebius Token Factory with
+            NVIDIA Nemotron models, Tavily search).
+extension/  Chrome extension; see extension/NOTICE.
+
+Korea Concierge, the quote service these components call over HTTPS, is a
+separate proprietary service and is not part of this repository.

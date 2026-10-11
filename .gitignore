@@ -1,0 +1,23 @@
+# Personal configuration: copy the *.example files, never commit the copies
+*.local.toml
+*.local.yaml
+*.local.json
+.env
+.env.*
+!.env.example
+
+# Browsing data and demo state (generate synthetic DBs with browsing.persona)
+*.db
+*.sqlite
+*.sqlite3
+.demo-state/
+**/raw/
+**/data/
+**/reports/
+
+# Build and tool caches
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+extension/dist/

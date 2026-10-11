@@ -1,0 +1,10 @@
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+COPY browsing/__init__.py browsing/providers.py browsing/signals.py browsing/ingest.py browsing/scrub.py /app/browsing/
+COPY browsing/persona /app/browsing/persona
+RUN groupadd --gid 10001 demo && useradd --uid 10001 --gid demo --no-create-home demo \
+    && mkdir /output && chown demo:demo /output
+USER 10001:10001
+ENTRYPOINT ["python", "-m", "browsing.persona", "generate"]
+CMD ["--scenario", "browsing/persona/scenarios/maker.toml", "--out", "/output/browsing.db"]
