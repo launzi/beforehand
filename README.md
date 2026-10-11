@@ -22,7 +22,7 @@ The agent starts from what you already did, not from a new prompt. Five rule-bas
 
 - **Live demo:** https://port8080-dqwmnenkc4rf4bj.tunnel.applications.us-north1.nebius.cloud
 - **Chrome extension:** load it unpacked (steps below).
-- **Connectors:** Korea Concierge in the [Claude directory](https://claude.ai/directory/korea-concierge) and in [ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6a765e3255208191a04d01cebd4e82fc).
+- **Connectors:** Korea Concierge in the [Claude directory](https://claude.ai/directory/korea-concierge) and in [ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6a766b80051c8191a0821d5b4c5dcedb).
 - **Source:** https://github.com/launzi/beforehand
 
 ### What you see in the demo
