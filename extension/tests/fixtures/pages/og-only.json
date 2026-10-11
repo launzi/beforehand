@@ -1,0 +1,10 @@
+{
+  "jsonLd": [],
+  "meta": {
+    "og:type": "product",
+    "og:title": "Cotton shirt",
+    "product:price:amount": "1,234",
+    "product:price:currency": "JPY"
+  },
+  "selectors": {}
+}

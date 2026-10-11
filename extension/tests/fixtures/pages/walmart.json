@@ -1,0 +1,7 @@
+{
+  "jsonLd": [
+    "[{\"@type\": \"Product\", \"name\": \"Toner\", \"offers\": {\"@type\": \"AggregateOffer\", \"lowPrice\": \"12.97\", \"priceCurrency\": \"USD\"}}]"
+  ],
+  "meta": {},
+  "selectors": {}
+}
